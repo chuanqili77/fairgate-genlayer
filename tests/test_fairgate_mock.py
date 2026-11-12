@@ -6,8 +6,7 @@ tests check the ACTUAL shipped code, not a mirror:
   * scoped extraction: title + meta + JSON-LD + body minus
     nav/footer/aside/recommended; keywords in a footer, nav bar
     or recommended article about another event do not count
-  * keyword scan on the scoped text (cancelled/canceled,
-    postpone/reschedule stems)
+  * keyword scan on scoped text plus positive past-tense held evidence
   * identity check: each page must contain the artist token AND
     the venue token in the scoped text, or its keywords do not
     count (verdict UNREACHABLE)
@@ -85,10 +84,12 @@ def scan(text, id_a, id_b):
 
 
 def verdict_from(a, b):
-    # a, b: (ok, cancel, postpone, identity)
+    # a, b: (ok, cancel, postpone, identity[, held])
     return _verdict_from(
-        {'ok': a[0], 'cancel': a[1], 'postpone': a[2], 'identity': a[3]},
-        {'ok': b[0], 'cancel': b[1], 'postpone': b[2], 'identity': b[3]})
+        {'ok': a[0], 'cancel': a[1], 'postpone': a[2],
+         'identity': a[3], 'held': a[4] if len(a) > 4 else False},
+        {'ok': b[0], 'cancel': b[1], 'postpone': b[2],
+         'identity': b[3], 'held': b[4] if len(b) > 4 else False})
 
 
 def royalty(price_wei, pct=10):
@@ -131,15 +132,31 @@ WEMBLEY = ("OASIS LIVE '25 at Wembley Stadium, London. Dates, 25 July 2025, "
            "26 July 2025, 30 July 2025, 2 August 2025, 3 August 2025, "
            "27 September 2025, 28 September 2025. "
            "Twickets are the official re-sale partner. Door times 17:00.")
-check('wembley page: no cancel word', scan(WEMBLEY, 'oasis', 'wembley')[0], False)
-check('wembley page: no postpone word', scan(WEMBLEY, 'oasis', 'wembley')[1], False)
-check('wembley page: identity ok', scan(WEMBLEY, 'oasis', 'wembley')[2], True)
+check('original Wembley event listing: no cancel word', scan(WEMBLEY, 'oasis', 'wembley')[0], False)
+check('original Wembley event listing: no postpone word', scan(WEMBLEY, 'oasis', 'wembley')[1], False)
+check('original Wembley event listing: identity ok', scan(WEMBLEY, 'oasis', 'wembley')[2], True)
+check('original Wembley event listing is NOT positive held proof', scan(WEMBLEY, 'oasis', 'wembley')[3], False)
+
+WEMBLEY_OFFICIAL_RETRO = (
+    "Oasis brought the curtain down on a record-breaking concert season at "
+    "Wembley Stadium. The Oasis show was the band's seventh at Wembley this "
+    "summer and their last in the UK this year. It brought an end to an "
+    "incredible run of performances, witnessed by more than half a million fans."
+)
+check('Wembley official retrospective: positive held proof', scan(WEMBLEY_OFFICIAL_RETRO, 'oasis', 'wembley')[3], True)
+check('Wembley official retrospective: identity ok', scan(WEMBLEY_OFFICIAL_RETRO, 'oasis', 'wembley')[2], True)
 
 WEMBLEYPARK = ("Update: Oasis played Wembley Stadium in 2025. "
                "We have kept this guide for reference.")
+check('Wembley Park source: positive held proof', scan(WEMBLEYPARK, 'oasis', 'wembley')[3], True)
 check('wembleypark page: no cancel word', scan(WEMBLEYPARK, 'oasis', 'wembley')[0], False)
 check('wembleypark page: no postpone word', scan(WEMBLEYPARK, 'oasis', 'wembley')[1], False)
 check('wembleypark page: identity ok', scan(WEMBLEYPARK, 'oasis', 'wembley')[2], True)
+check('E1 two independent positive sources authorize EVENT_HELD',
+      verdict_from((True, *scan(WEMBLEY_OFFICIAL_RETRO, 'oasis', 'wembley')),
+                   (True, *scan(WEMBLEYPARK, 'oasis', 'wembley'))), 'EVENT_HELD')
+check('a future scheduled event is not held evidence',
+      scan('Oasis at Wembley Stadium will be held on July 25.', 'oasis', 'wembley')[3], False)
 
 BRIDGESTONE = ("CANCELLED: Future & Metro Boomin - We Trust You Tour. "
                "Future & Metro Boomin - We Trust You Tour at Bridgestone Arena "
@@ -170,9 +187,9 @@ DO615_PTX = ("Pentatonix: Christmas In the City Tour. "
 check('do615 pentatonix page: no cancel word', scan(DO615_PTX, 'pentatonix', 'bridgestone')[0], False)
 check('do615 pentatonix page: no postpone word', scan(DO615_PTX, 'pentatonix', 'bridgestone')[1], False)
 check('do615 pentatonix page: identity ok', scan(DO615_PTX, 'pentatonix', 'bridgestone')[2], True)
-check('E3 pair reads EVENT_HELD under the rule',
+check('E3 scheduled-only pages do not prove the show was held',
       verdict_from((True, *scan(BRIDGESTONE_PTX, 'pentatonix', 'bridgestone')),
-                   (True, *scan(DO615_PTX, 'pentatonix', 'bridgestone'))), 'EVENT_HELD')
+                   (True, *scan(DO615_PTX, 'pentatonix', 'bridgestone'))), 'SOURCES_DISAGREE')
 
 # E4 (postponed event): KATSEYE, Target Center, 2026-11-07.
 TARGETCENTER = ("KATSEYE - POSTPONED | Target Center. KATSEYE brings THE "
@@ -204,7 +221,10 @@ check('postponed page: no cancel word', scan(POSTPONED_PAGE, 'x', 'y')[0], False
 check('canceled (US spelling) counts', scan('This show is canceled.', 'this', 'show')[0], True)
 
 # --- 2. Verdict mapping (with identity) ---
-check('HELD: both clean + identity', verdict_from((True, False, False, True), (True, False, False, True)), 'EVENT_HELD')
+check('no cancellation words alone are insufficient', verdict_from((True, False, False, True), (True, False, False, True)), 'SOURCES_DISAGREE')
+check('HELD: both sources provide positive evidence',
+      verdict_from((True, False, False, True, True),
+                   (True, False, False, True, True)), 'EVENT_HELD')
 check('CANCELLED: both cancel + identity', verdict_from((True, True, False, True), (True, True, False, True)), 'CANCELLED')
 check('POSTPONED: both postpone + identity', verdict_from((True, False, True, True), (True, False, True, True)), 'POSTPONED')
 check('UNREACHABLE: one fetch fails', verdict_from((False, False, False, False), (True, False, False, True)), 'UNREACHABLE')
@@ -215,7 +235,8 @@ check('UNREACHABLE: A postpone word but no identity', verdict_from((True, False,
 check('SOURCES_DISAGREE: only A cancels', verdict_from((True, True, False, True), (True, False, False, True)), 'SOURCES_DISAGREE')
 check('SOURCES_DISAGREE: only B postpones', verdict_from((True, False, False, True), (True, False, True, True)), 'SOURCES_DISAGREE')
 check('SOURCES_DISAGREE: A cancels, B postpones', verdict_from((True, True, False, True), (True, False, True, True)), 'SOURCES_DISAGREE')
-check('CANCELLED beats POSTPONED when both agree cancel', verdict_from((True, True, True, True), (True, True, True, True)), 'CANCELLED')
+check('conflicting cancel and postpone signals fail closed',
+      verdict_from((True, True, True, True), (True, True, True, True)), 'SOURCES_DISAGREE')
 
 # --- 3. Identity: a stray cancel word on a page about another event cannot flip the verdict ---
 STRAY = ("See also: other cancelled shows this season. "
@@ -375,20 +396,20 @@ check('second reschedule to the first new date rejected (not later)',
 FOOTER_NOISE = """<html><head><title>Pentatonix | Bridgestone Arena</title></head><body>
 <main><h1>Pentatonix: Christmas In the City Tour</h1><p>Dec 9, 2026, 7:00pm. Bridgestone Arena, Nashville.</p></main>
 <footer><p>Other cancelled shows this season: see our cancellation policy.</p></footer></body></html>"""
-check('(1) footer cancelled ignored', scan(FOOTER_NOISE, 'pentatonix', 'bridgestone'), (False, False, True))
+check('(1) footer cancelled ignored', scan(FOOTER_NOISE, 'pentatonix', 'bridgestone'), (False, False, True, False))
 # (2) A recommended article about another postponed event must not count.
 RECOMMENDED_NOISE = """<html><head><title>Pentatonix | Bridgestone Arena</title></head><body>
 <main><h1>Pentatonix: Christmas In the City Tour</h1><p>Dec 9, 2026. Bridgestone Arena.</p></main>
 <aside class="recommended"><article><h3>Another band postponed their tour</h3><p>The show has been postponed.</p></article></aside>
 <div class="related-events"><p>See also: postponed shows</p></div></body></html>"""
-check('(2) recommended postponed ignored', scan(RECOMMENDED_NOISE, 'pentatonix', 'bridgestone'), (False, False, True))
+check('(2) recommended postponed ignored', scan(RECOMMENDED_NOISE, 'pentatonix', 'bridgestone'), (False, False, True, False))
 # (3) The target event has no clear status: no flags, identity holds.
 NO_STATUS = """<html><head><title>Pentatonix | Bridgestone Arena</title></head><body>
 <main><h1>Pentatonix: Christmas In the City Tour</h1><p>Dec 9, 2026, 7:00pm. Bridgestone Arena, Nashville. Tickets on sale.</p></main></body></html>"""
-check('(3) no status words on the target page', scan(NO_STATUS, 'pentatonix', 'bridgestone'), (False, False, True))
-check('(3) a no-status pair reads EVENT_HELD only if BOTH sources agree it',
+check('(3) no status words on the target page', scan(NO_STATUS, 'pentatonix', 'bridgestone'), (False, False, True, False))
+check('(3) a no-status pair remains fail-closed',
       verdict_from((True, *scan(NO_STATUS, 'pentatonix', 'bridgestone')),
-                   (True, *scan(NO_STATUS, 'pentatonix', 'bridgestone'))), 'EVENT_HELD')
+                   (True, *scan(NO_STATUS, 'pentatonix', 'bridgestone'))), 'SOURCES_DISAGREE')
 # (4) The two sources conflict: fail-closed, no verdict.
 CONFLICT_A = """<html><head><title>CANCELLED: Future &amp; Metro Boomin | Bridgestone Arena</title></head><body>
 <main><h1>Future &amp; Metro Boomin at Bridgestone Arena</h1><p>This show has been cancelled.</p></main></body></html>"""
@@ -421,12 +442,12 @@ JSONLD = """<html><head><title>KATSEYE | Target Center</title>
 <script type="application/ld+json">{"@type":"Event","name":"KATSEYE","eventStatus":"https://schema.org/EventPostponed","location":{"@type":"Place","name":"Target Center"}}</script>
 </head><body><main><h1>KATSEYE</h1><p>Target Center, Minneapolis.</p></main></body></html>"""
 check('JSON-LD EventPostponed counts as a postpone signal',
-      scan(JSONLD, 'katseye', 'target center'), (False, True, True))
+      scan(JSONLD, 'katseye', 'target center'), (False, True, True, False))
 # A nav bar full of status words about other events must not vote.
 NAV_NOISE = """<html><head><title>Pentatonix | Bridgestone Arena</title></head><body>
 <nav><ul><li>Cancelled shows</li><li>Postponed tours</li></ul></nav>
 <main><h1>Pentatonix: Christmas In the City Tour</h1><p>Dec 9, 2026. Bridgestone Arena.</p></main></body></html>"""
-check('nav bar status words ignored', scan(NAV_NOISE, 'pentatonix', 'bridgestone'), (False, False, True))
+check('nav bar status words ignored', scan(NAV_NOISE, 'pentatonix', 'bridgestone'), (False, False, True, False))
 
 print()
 if FAILURES:
