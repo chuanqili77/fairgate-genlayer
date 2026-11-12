@@ -1,10 +1,23 @@
-# EXPECTED.md — FairGate evidence (pre-registered BEFORE the run)
+# EXPECTED.md — FairGate evidence v1.1 (pre-registered BEFORE the run)
 
-Contract: FairGate, protocol `fairgate-1`, Stable Studionet (61999).
+Contract: FairGate, protocol `fairgate-1.1`, Stable Studionet (61999).
 Face price 10 GEN per ticket; resale cap 11 GEN (110%, cap included);
 artist royalty 10% (price * 10 // 100 in wei, exact for whole-GEN prices).
-Two launch events, fixed in the contract source (see README for why
+Three launch events, fixed in the contract source (see README for why
 they are fixed, and for the probe results behind the verdict rule).
+
+## Why v1.1 (v1 superseded, archived in evidence/v1/)
+
+v1 (fairgate-1, 0x6b42859c…) verified clean (byte parity TRUE, verify
+52/52, ledger 61 in = 61 out, balance 0) but both its events were
+already settled, so the live site had no writable on-chain flow left
+for a new user: buy_ticket needs ON_SALE, list/buy_resale only accept
+ON_SALE/SOLD_OUT/POSTPONED, settle was already done, withdraw credits
+were all 0, and the ticket holders were evidence-run temp accounts
+whose keys were deleted. v1.1 adds a third, live event E3 (Pentatonix,
+2026-12-09, ON_SALE) on a new contract so the site has a real
+buy / list-resale / buy-resale / withdraw flow. v1 history is
+preserved unchanged in evidence/v1/.
 
 ## Events (fixed at deploy)
 
@@ -12,6 +25,7 @@ they are fixed, and for the probe results behind the verdict rule).
 |----|-------|------|---------------------------|------------------------|------------------|
 | E1 | Oasis Live '25, Wembley Stadium, London | 2025-07-25 | http://www.wembleystadium.com/events/2025/OASIS | https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/ ("Oasis played Wembley Stadium in 2025") | EVENT_HELD |
 | E2 | Future & Metro Boomin – We Trust You Tour, Bridgestone Arena, Nashville | 2024-08-06 20:00 | https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour ("CANCELLED: … has been cancelled") | https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets ("Cancelled - …", "Past(08/6/2024)") | CANCELLED |
+| E3 | Pentatonix: Christmas in the City Tour, Bridgestone Arena, Nashville | 2026-12-09 19:00 | https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour | https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets | NOT SETTLED in this run (live event, ON_SALE) |
 
 Verdict rule (deterministic, no LLM): each validator fetches both
 sources and scans the raw body, lowercased. Cancel words:
@@ -26,12 +40,16 @@ SOURCES_DISAGREE (no state change). Equivalence vector is
 fetch_b_ok), exact equality.
 
 Probe results (probe contract, validators fetching live — NOT the
-product evidence): Wembley official 200, 126,071 chars, none of the
-four words anywhere; Wembley Park 200, 154,962 chars, none of the
-four words anywhere; Bridgestone 200, 105,253 chars, cancel words
-only; do615 200, 62,652 chars, cancel words only. Bandsintown
-returned 403 to validators twice and was dropped as a source (see
-README). Widened postpone stems were re-probed before the run.
+product evidence): E1/E2 as in v1 (Wembley official 200, 126,071
+chars, none of the four words anywhere; Wembley Park 200, 154,962
+chars, none of the four words anywhere; Bridgestone 200, 105,253
+chars, cancel words only; do615 200, 62,652 chars, cancel words
+only. Bandsintown returned 403 to validators twice and was dropped
+as a source). E3 (probe contract 0xde24d42A…, 2026-11-12):
+Bridgestone Pentatonix page 200, 101,205 chars, none of the four
+words anywhere (not even the bare "cancel" substring); do615
+Pentatonix page 200, 52,158 chars, none of the four words anywhere.
+Both E3 pages list the show as scheduled for Wed Dec 9, 2026, 7:00 PM.
 
 ## Accounts (temporary, evidence run only)
 
@@ -39,23 +57,26 @@ ORG = organizer payout address, ART = artist payout address,
 B1/B2 = buyers, OUT = stranger (negative caller). ORG/ART are set
 once per event by configure_event before the first ticket sale.
 
-## Evidence flow (30 txs + deploy = 31)
+## Evidence flow (35 txs + deploy = 36)
 
-### A. Launch configuration (2)
+### A. Launch configuration (3)
 | Label | Call | Expected |
 |-------|------|----------|
 | cfg-e1 | ORG configure_event(1, ORG, ART) | ok, parties_set true |
 | cfg-e2 | ORG configure_event(2, ORG, ART) | ok, parties_set true |
+| cfg-e3 | ORG configure_event(3, ORG, ART) | ok, parties_set true |
 
-### B. Primary sales (4) — 10 GEN each, exact price
+### B. Primary sales (6) — 10 GEN each, exact price
 | Label | Call | Expected |
 |-------|------|----------|
 | t1-buy | B1 buy_ticket(1) | ok, ticket 1, owner B1, E1 escrow 10 |
 | t2-buy | B2 buy_ticket(1) | ok, ticket 2, owner B2, E1 escrow 20 |
 | t3-buy | B1 buy_ticket(2) | ok, ticket 3, owner B1, E2 escrow 10 |
 | t4-buy | B2 buy_ticket(2) | ok, ticket 4, owner B2, E2 escrow 20 |
+| t5-buy | B1 buy_ticket(3) | ok, ticket 5, owner B1, E3 escrow 10 |
+| t6-buy | B2 buy_ticket(3) | ok, ticket 6, owner B2, E3 escrow 20 |
 
-### C. Resale happy path (5)
+### C. Resale happy path (7)
 | Label | Call | Expected |
 |-------|------|----------|
 | r1-list | B1 list_resale(1, 11) | ok, ticket 1 LISTED @ 11 GEN (cap boundary, allowed) |
@@ -63,6 +84,8 @@ once per event by configure_event before the first ticket sale.
 | r2-list | B2 list_resale(2, 10) | ok, ticket 2 LISTED @ 10 GEN |
 | r2-buy | B1 buy_resale(2) with 10 GEN | ok, ticket 2 -> B1; B2 credit +9 GEN, ART credit +1 GEN (total 2.1) |
 | r3-list | B1 list_resale(3, 11) | ok, ticket 3 LISTED @ 11 GEN; stays LISTED into the CANCELLED settlement (tests the LISTED-refund path) |
+| r4-list | B1 list_resale(5, 11) | ok, ticket 5 (E3) LISTED @ 11 GEN (cap boundary, allowed) |
+| r4-buy | B2 buy_resale(5) with 11 GEN | ok, ticket 5 -> B2; B1 credit +9.9 GEN, ART credit +1.1 GEN (total 3.2) |
 
 ### D. Resale + purchase negatives (8) — exact error codes, 0 GEN on failed payables
 | Label | Call | Expected error |
@@ -82,6 +105,10 @@ once per event by configure_event before the first ticket sale.
 | s1-settle-e1 | OUT settle_event(1) | ok, verdict EVENT_HELD; E1 status EVENT_HELD; ORG credit +20 GEN; E1 escrow 0. Retry up to 3x on MAJORITY_DISAGREE; a disagreement leaves everything unchanged. |
 | s2-settle-e2 | OUT settle_event(2) | ok, verdict CANCELLED; E2 status CANCELLED; ticket 3 (LISTED, owner B1) REFUNDED +10 GEN; ticket 4 (ACTIVE, owner B2) REFUNDED +10 GEN; E2 escrow 0. Retry up to 3x on MAJORITY_DISAGREE. |
 
+E3 is deliberately NOT settled in this run: its real date (2026-12-09)
+is in the future. It stays ON_SALE with 6 of 8 tickets unsold so the
+live site has a real usable flow (buy / list / buy-resale / withdraw).
+
 ### F. Post-settlement negatives (4)
 | Label | Call | Expected error |
 |-------|------|----------------|
@@ -94,8 +121,8 @@ once per event by configure_event before the first ticket sale.
 | Label | Call | Expected |
 |-------|------|----------|
 | w-org | ORG withdraw() | ok, 20 GEN (E1 escrow) |
-| w-art | ART withdraw() | ok, 2.1 GEN (royalties 1.1 + 1) |
-| w-b1 | B1 withdraw() | ok, 19.9 GEN (resale 9.9 + refund 10) |
+| w-art | ART withdraw() | ok, 3.2 GEN (royalties 1.1 + 1 + 1.1) |
+| w-b1 | B1 withdraw() | ok, 29.8 GEN (resale 9.9 + resale 9.9 + refund 10) |
 | w-b2 | B2 withdraw() | ok, 19 GEN (resale 9 + refund 10) |
 | neg8-double-withdraw | ORG withdraw() again | NO_CREDIT |
 
@@ -103,14 +130,25 @@ once per event by configure_event before the first ticket sale.
 
 - E1: status EVENT_HELD, verdict EVENT_HELD, tickets_sold 2, escrowed 0, organizer_paid true, settle_count 1.
 - E2: status CANCELLED, verdict CANCELLED, tickets_sold 2, escrowed 0, settle_count 1.
-- Tickets: 1 ACTIVE owner B2 (E1); 2 ACTIVE owner B1 (E1); 3 REFUNDED owner B1 (E2); 4 REFUNDED owner B2 (E2).
+- E3: status ON_SALE, verdict '', tickets_sold 2, escrowed 20 GEN, settle_count 0, organizer_paid false.
+- Tickets: 1 ACTIVE owner B2 (E1); 2 ACTIVE owner B1 (E1); 3 REFUNDED owner B1 (E2); 4 REFUNDED owner B2 (E2); 5 ACTIVE owner B2 (E3); 6 ACTIVE owner B2 (E3).
 - Credits after all withdrawals: ORG 0, ART 0, B1 0, B2 0, OUT 0.
-- Counts: event_count 2, ticket_count 4, total_received_wei 61 GEN
-  (primary 40 + resales 21), total_withdrawn_wei 61 GEN,
-  contract_balance_wei 0, escrowed_wei 0, total_royalties_wei 2.1 GEN,
-  total_resale_volume_wei 21 GEN.
-- Ledger: 61 GEN in = 61 GEN out, balance 0 (zero stranded value —
-  every failed-payable negative sent 0 GEN by design).
+- Counts: event_count 3, ticket_count 6, total_received_wei 92 GEN
+  (primary 60 + resales 32), total_withdrawn_wei 72 GEN,
+  contract_balance_wei 20 GEN, escrowed_wei 20 GEN,
+  total_royalties_wei 3.2 GEN, total_resale_volume_wei 32 GEN.
+- Ledger, split in two on purpose:
+  - Settled events (E1+E2): 40 GEN primary in, 21 GEN resales in,
+    61 GEN withdrawn out, balance 0, escrow 0 — fully closed, same
+    shape as v1.
+  - Live event (E3): 20 GEN primary in (tickets 5+6), 11 GEN resale
+    in, 11 GEN of that resale withdrawn as credits (9.9 seller +
+    1.1 royalty), 20 GEN still escrowed in the contract — that is
+    E3's open ticket escrow for a future show, NOT stranded value.
+    The contract balance of 20 GEN is exactly E3's escrowed_wei.
+  - Whole contract: 92 GEN in = 72 GEN withdrawn + 20 GEN live
+    escrow, zero stranded value — every failed-payable negative
+    sent 0 GEN by design.
 
 ## Honest note on failed payables
 
@@ -120,18 +158,22 @@ behavior on Studionet). Every failed-payable negative in this run
 stranded. The verify script re-reads the full state before and
 after each negative and fails the run if anything changed.
 
-## Not covered by on-chain evidence in v1
+## Not covered by on-chain evidence in v1.1
 
 - POSTPONED: no real postponed concert with dual fetchable sources
   was found (Post Malone Tottenham: the Bandsintown archive page
   carries no postponement wording; AR Rahman: sources conflict).
   The branch is implemented in the contract, shown in the frontend,
   and covered by mock tests — but there is no on-chain POSTPONED
-  case in v1. Documented as a known gap, not hidden.
-- BAD_ADDRESS (configure_event validation): both events are
+  case in v1.1. Documented as a known gap, not hidden.
+- BAD_ADDRESS (configure_event validation): all three events are
   configured once at the start of the run, so the error path cannot
   be triggered afterwards. Plain input validation, low risk.
 - UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed
   branches with no state change; they occur only if a source fetch
   fails or the sources disagree, which the probe shows does not
-  happen for these four URLs right now. Covered by mock tests.
+  happen for these six URLs right now. Covered by mock tests.
+- E3 settlement: E3's real date is 2026-12-09, in the future. It is
+  not settled in this run by design; settling it before the show
+  would be a misuse of the demo. Its escrow (20 GEN) stays open
+  until after the real date, when it can be settled like E1/E2.

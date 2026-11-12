@@ -93,24 +93,33 @@ for (const rec of txs.transactions) {
 const read = async (fn, args) => JSON.parse(await reader.readContract({address: ADDRESS, functionName: fn, args, transactionHashVariant: 'latest-final'}));
 const e1 = await read('get_event', [1]);
 const e2 = await read('get_event', [2]);
+const e3 = await read('get_event', [3]);
 ok('E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid',
   e1.status === 'EVENT_HELD' && e1.verdict === 'EVENT_HELD' && e1.tickets_sold === 2
   && e1.escrowed_wei === 0 && e1.organizer_paid === true && e1.settle_count === 1, JSON.stringify(e1));
 ok('E2 readback: CANCELLED, 2 sold, escrow 0',
   e2.status === 'CANCELLED' && e2.verdict === 'CANCELLED' && e2.tickets_sold === 2
   && e2.escrowed_wei === 0 && e2.settle_count === 1, JSON.stringify(e2));
+ok('E3 readback: ON_SALE, 2 sold, escrow 20 GEN, never settled',
+  e3.status === 'ON_SALE' && e3.verdict === '' && e3.tickets_sold === 2
+  && e3.escrowed_wei === 20000000000000000000 && e3.organizer_paid === false && e3.settle_count === 0, JSON.stringify(e3));
 ok('E1 anchors are the probe-verified URLs',
   e1.source_a_url === 'http://www.wembleystadium.com/events/2025/OASIS'
   && e1.source_b_url === 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/', JSON.stringify(e1));
 ok('E2 anchors are the probe-verified URLs',
   e2.source_a_url === 'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour'
   && e2.source_b_url === 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets', JSON.stringify(e2));
+ok('E3 anchors are the probe-verified URLs',
+  e3.source_a_url === 'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour'
+  && e3.source_b_url === 'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets', JSON.stringify(e3));
 const wallets = deployment.wallets;
 const expectTickets = {
   1: {status: 'ACTIVE', owner: wallets.B2},
   2: {status: 'ACTIVE', owner: wallets.B1},
   3: {status: 'REFUNDED', owner: wallets.B1},
   4: {status: 'REFUNDED', owner: wallets.B2},
+  5: {status: 'ACTIVE', owner: wallets.B2},
+  6: {status: 'ACTIVE', owner: wallets.B2},
 };
 for (const [id, e] of Object.entries(expectTickets)) {
   const t = await read('get_ticket', [Number(id)]);
@@ -122,15 +131,15 @@ for (const k of Object.keys(wallets)) {
   ok(`credit ${k} is 0 after withdrawals`, c.credit_wei === 0, JSON.stringify(c));
 }
 const counts = await read('get_counts', []);
-ok('counts: 2 events, 4 tickets',
-  counts.event_count === 2 && counts.ticket_count === 4, JSON.stringify(counts));
-ok('ledger: 61 GEN in = 61 out, balance 0, escrow 0, royalties 2.1 GEN, resale volume 21 GEN',
-  counts.total_received_wei === 61000000000000000000
-  && counts.total_withdrawn_wei === 61000000000000000000
-  && counts.contract_balance_wei === 0 && counts.escrowed_wei === 0
-  && counts.total_royalties_wei === 2100000000000000000
-  && counts.total_resale_volume_wei === 21000000000000000000, JSON.stringify(counts));
-ok('protocol is fairgate-1', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1');
+ok('counts: 3 events, 6 tickets',
+  counts.event_count === 3 && counts.ticket_count === 6, JSON.stringify(counts));
+ok('ledger: 92 GEN in, 72 out, balance 20 GEN (= E3 live escrow, not stranded), escrow 20, royalties 3.2 GEN, resale volume 32 GEN',
+  counts.total_received_wei === 92000000000000000000
+  && counts.total_withdrawn_wei === 72000000000000000000
+  && counts.contract_balance_wei === 20000000000000000000 && counts.escrowed_wei === 20000000000000000000
+  && counts.total_royalties_wei === 3200000000000000000
+  && counts.total_resale_volume_wei === 32000000000000000000, JSON.stringify(counts));
+ok('protocol is fairgate-1.1', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1.1');
 
 console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} txs checked`);
 if (fail > 0) { console.log('failures:', failures.join(', ')); process.exit(1); }

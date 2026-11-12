@@ -1,6 +1,6 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 """FairGate: anti-scalper concert tickets + consensus event-outcome
-settlement on GenLayer Stable Studionet. Protocol fairgate-1.
+settlement on GenLayer Stable Studionet. Protocol fairgate-1.1.
 
 One concert type, one tier, one resale rule. Face price is 10 GEN
 per ticket. Resale is capped at 110% of face value (11 GEN, code
@@ -46,6 +46,25 @@ a source-URL allowlist; v1 does not have one and does not claim one.
      Note: the venue page body writes "August 6" without a year; the
      year 2024 is pinned by the tour copy on the same page (tour
      30 July – 9 September 2024) and by source (b)'s "08/6/2024".
+  E3 LIVE (ON_SALE, settlement pending the real date): Pentatonix —
+     Christmas in the City Tour, Bridgestone Arena, Nashville,
+     2026-12-09 19:00. Added in v1.1 because v1's two events were
+     both already settled, leaving the live site with no writable
+     on-chain flow for a new user.
+     (a) venue official page:
+         https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour
+     (b) do615.com, Nashville independent event calendar (DoStuff
+         network; no affiliation with the venue, promoter or
+         ticketing):
+         https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets
+         Both sources list the show as scheduled for Wed Dec 9, 2026,
+         7:00 PM. Probe-verified before deploy (probe contract):
+         Bridgestone 200, 101,205 chars; do615 200, 52,158 chars;
+         neither page contains any cancel/postpone word. E3 stays
+         ON_SALE with tickets available, so the live site has a real
+         buy / list-resale / buy-resale / withdraw flow. Its escrow
+         stays open until the real event date — that is live money,
+         not stranded value, and the evidence ledger says so.
 
 Verdict rule (deterministic code, no LLM anywhere). Each validator
 fetches both source pages and scans the raw body, lowercased, for
@@ -89,15 +108,22 @@ after that; settle_event is open to anyone because the outcome is
 decided by consensus, not by the caller. No time gates anywhere
 (Studionet has no clock): every transition is an explicit action.
 The contract cannot enforce "settle only after the event date";
-both launch events already happened (2024/2025), so settlement
-timing is not a risk in v1 — see KNOWN_LIMITATIONS in the README.
+both launch events E1/E2 already happened (2024/2025), so settlement
+timing is not a risk for them. E3 is a future event (2026-12-09) and
+is deliberately left unsettled in v1.1 — settling it before the real
+date would be a misuse of the demo, and the evidence run does not
+settle it. See KNOWN_LIMITATIONS in the README.
 
 Known limits (neutral, product-scope):
-  * v1 ships exactly two launch events, fixed at deploy. There is
+  * v1.1 ships exactly three launch events, fixed at deploy. There is
     no organizer listing flow; adding one needs a source-URL
     allowlist so the beneficiary cannot pick its own evidence.
+  * E3 (Pentatonix, 2026-12-09) is ON_SALE and unsettled by design:
+    its escrow stays open until after the real event date, when it
+    can be settled like E1/E2. Its tickets remain buyable and
+    resalable on the live site in the meantime.
   * The POSTPONED branch is fully implemented (contract, frontend,
-    mock tests) but v1 has no on-chain POSTPONED case: no real
+    mock tests) but v1.1 has no on-chain POSTPONED case: no real
     postponed concert with dual fetchable sources was found during
     research (see workdir notes). It activates on the first
     rescheduled launch event.
@@ -299,6 +325,15 @@ class FairGate(gl.Contract):
             'do615 — Nashville independent event calendar')
         e2['event_id'] = 2
         self.events['2'] = packed(e2)
+        e3 = _event(
+            'Pentatonix', 'Bridgestone Arena', 'Nashville',
+            '2026-12-09', '9 December 2026, 7:00 PM',
+            'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour',
+            'Bridgestone Arena — official event page',
+            'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets',
+            'do615 — Nashville independent event calendar')
+        e3['event_id'] = 3
+        self.events['3'] = packed(e3)
 
     def _load_event(self, event_id):
         raw = self.events.get(str(event_id), '')
@@ -488,7 +523,7 @@ class FairGate(gl.Contract):
 
     @gl.public.view
     def get_protocol(self) -> str:
-        return 'fairgate-1'
+        return 'fairgate-1.1'
 
     @gl.public.view
     def get_event(self, event_id: int) -> str:
@@ -497,7 +532,7 @@ class FairGate(gl.Contract):
     @gl.public.view
     def get_all_events(self) -> str:
         out = []
-        for i in (1, 2):
+        for i in (1, 2, 3):
             raw = self.events.get(str(i), '')
             if raw:
                 out.append(json.loads(raw))
@@ -524,12 +559,12 @@ class FairGate(gl.Contract):
     @gl.public.view
     def get_counts(self) -> str:
         escrowed = 0
-        for i in (1, 2):
+        for i in (1, 2, 3):
             raw = self.events.get(str(i), '')
             if raw:
                 escrowed += int(json.loads(raw)['escrowed_wei'])
         return packed({
-            'event_count': 2,
+            'event_count': 3,
             'ticket_count': int(self.next_ticket_id) - 1,
             'total_received_wei': int(self.total_received),
             'total_withdrawn_wei': int(self.total_withdrawn),

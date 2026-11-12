@@ -75,6 +75,22 @@ DO615 = ("Cancelled - Future & Metro Boomin - We Trust You Tour. "
 check('do615 page: cancel word present', scan(DO615)[0], True)
 check('do615 page: no postpone word', scan(DO615)[1], False)
 
+# E3 (v1.1, live event): Pentatonix, Bridgestone Arena, 2026-12-09.
+# Both sources list the show as scheduled; neither contains a keyword,
+# so the rule would read EVENT_HELD if it were settled today. E3 is
+# NOT settled in the v1.1 evidence run (real date in the future).
+BRIDGESTONE_PTX = ("Pentatonix: Christmas In the City Tour. "
+                   "Dec 9, 2026, 7:00pm. Bridgestone Arena, Nashville.")
+check('bridgestone pentatonix page: no cancel word', scan(BRIDGESTONE_PTX)[0], False)
+check('bridgestone pentatonix page: no postpone word', scan(BRIDGESTONE_PTX)[1], False)
+
+DO615_PTX = ("Pentatonix: Christmas In the City Tour. "
+             "Wed Dec 9. 7:00PM. Bridgestone Arena.")
+check('do615 pentatonix page: no cancel word', scan(DO615_PTX)[0], False)
+check('do615 pentatonix page: no postpone word', scan(DO615_PTX)[1], False)
+check('E3 pair reads EVENT_HELD under the rule',
+      verdict_from((True, *scan(BRIDGESTONE_PTX)), (True, *scan(DO615_PTX))), 'EVENT_HELD')
+
 POSTPONED_PAGE = ("We are sorry to announce that, due to planned strikes, "
                   "we have been forced to reschedule the two concerts.")
 check('postponed page: postpone word present', scan(POSTPONED_PAGE)[1], True)

@@ -1,7 +1,11 @@
 // FairGate: full evidence run on Stable Studionet (61999).
 // Pre-registered expectations: EXPECTED.md (written before this run).
-// 2 config + 4 primary sales + 5 resale + 8 negatives + 2 settlements
-// + 4 post-settlement negatives + 5 withdrawals = 30 txs + deploy.
+// 3 config + 6 primary sales + 7 resale + 8 negatives + 2 settlements
+// + 4 post-settlement negatives + 5 withdrawals = 35 txs + deploy.
+// E3 (Pentatonix, 2026-12-09) is deliberately NOT settled: its real
+// date is in the future; it stays ON_SALE with 6 of 8 tickets unsold
+// so the live site has a real usable flow. Its 20 GEN escrow stays
+// open by design (see EXPECTED.md ledger split).
 // Resumable via the checkpoint file. Temp accounts live ONLY in the
 // checkpoint file (workspace, NOT in the repo, mode 0600).
 // Negative checks compare the exact leader-receipt error payload
@@ -101,9 +105,9 @@ const SETTLE_INFO = {
   's1-settle-e1': {verdict: 'EVENT_HELD', caller: 'OUT'},
   's2-settle-e2': {verdict: 'CANCELLED', caller: 'OUT'},
 };
-const LABEL_ORDER = ['cfg-e1', 'cfg-e2',
-  't1-buy', 't2-buy', 't3-buy', 't4-buy',
-  'r1-list', 'r1-buy', 'r2-list', 'r2-buy', 'r3-list',
+const LABEL_ORDER = ['cfg-e1', 'cfg-e2', 'cfg-e3',
+  't1-buy', 't2-buy', 't3-buy', 't4-buy', 't5-buy', 't6-buy',
+  'r1-list', 'r1-buy', 'r2-list', 'r2-buy', 'r3-list', 'r4-list', 'r4-buy',
   'neg3-stranger-list', 'neg4-over-cap', 'neg6-list', 'neg6-self-buy',
   'neg6-cancel', 'neg5-not-listed', 'neg2-wrong-value', 'neg1-unknown-event',
   's1-settle-e1', 's2-settle-e2',
@@ -264,12 +268,15 @@ const art = accounts.ART.address.toLowerCase();
 // A. Launch configuration.
 await writeOk('cfg-e1', 'ORG', 'configure_event', [1, org, art]);
 await writeOk('cfg-e2', 'ORG', 'configure_event', [2, org, art]);
+await writeOk('cfg-e3', 'ORG', 'configure_event', [3, org, art]);
 
 // B. Primary sales (10 GEN each).
 const t1 = await buyTicketFlow('t1-buy', 'B1', 1, 10);
 const t2 = await buyTicketFlow('t2-buy', 'B2', 1, 10);
 const t3 = await buyTicketFlow('t3-buy', 'B1', 2, 10);
 const t4 = await buyTicketFlow('t4-buy', 'B2', 2, 10);
+const t5 = await buyTicketFlow('t5-buy', 'B1', 3, 10);
+const t6 = await buyTicketFlow('t6-buy', 'B2', 3, 10);
 
 // C. Resale happy path.
 await writeOk('r1-list', 'B1', 'list_resale', [t1, 11]);
@@ -277,6 +284,8 @@ await writeOk('r1-buy', 'B2', 'buy_resale', [t1], 11n * GEN);
 await writeOk('r2-list', 'B2', 'list_resale', [t2, 10]);
 await writeOk('r2-buy', 'B1', 'buy_resale', [t2], 10n * GEN);
 await writeOk('r3-list', 'B1', 'list_resale', [t3, 11]);
+await writeOk('r4-list', 'B1', 'list_resale', [t5, 11]);
+await writeOk('r4-buy', 'B2', 'buy_resale', [t5], 11n * GEN);
 
 // D. Resale + purchase negatives (exact errors, 0 GEN on failed payables).
 await writeErr('neg3-stranger-list', 'B2', 'list_resale', [t2, 10], 'NOT_TICKET_OWNER');
@@ -300,43 +309,50 @@ await writeErr('neg7-stranger-withdraw', 'OUT', 'withdraw', [], 'NO_CREDIT');
 
 // G. Withdrawals (exact credits).
 await withdrawFlow('w-org', 'ORG', 20000000000000000000);
-await withdrawFlow('w-art', 'ART', 2100000000000000000);
-await withdrawFlow('w-b1', 'B1', 19900000000000000000);
+await withdrawFlow('w-art', 'ART', 3200000000000000000);
+await withdrawFlow('w-b1', 'B1', 29800000000000000000);
 await withdrawFlow('w-b2', 'B2', 19000000000000000000);
 await writeErr('neg8-double-withdraw', 'ORG', 'withdraw', [], 'NO_CREDIT');
 
 // Final readback vs EXPECTED.md.
 const e1 = await readEvent(1);
 const e2 = await readEvent(2);
+const e3 = await readEvent(3);
 console.log('E1:', JSON.stringify(e1));
 console.log('E2:', JSON.stringify(e2));
+console.log('E3:', JSON.stringify(e3));
 if (e1.status !== 'EVENT_HELD' || e1.verdict !== 'EVENT_HELD' || e1.tickets_sold !== 2 || e1.escrowed_wei !== 0 || e1.organizer_paid !== true || e1.settle_count !== 1) throw new Error('E1 does not match EXPECTED.md');
 if (e2.status !== 'CANCELLED' || e2.verdict !== 'CANCELLED' || e2.tickets_sold !== 2 || e2.escrowed_wei !== 0 || e2.settle_count !== 1) throw new Error('E2 does not match EXPECTED.md');
+if (e3.status !== 'ON_SALE' || e3.verdict !== '' || e3.tickets_sold !== 2 || e3.escrowed_wei !== 20000000000000000000 || e3.organizer_paid !== false || e3.settle_count !== 0) throw new Error('E3 does not match EXPECTED.md');
 const tk1 = await readTicket(t1);
 const tk2 = await readTicket(t2);
 const tk3 = await readTicket(t3);
 const tk4 = await readTicket(t4);
-console.log('tickets:', JSON.stringify([tk1, tk2, tk3, tk4]));
+const tk5 = await readTicket(t5);
+const tk6 = await readTicket(t6);
+console.log('tickets:', JSON.stringify([tk1, tk2, tk3, tk4, tk5, tk6]));
 if (tk1.status !== 'ACTIVE' || tk1.owner !== accounts.B2.address.toLowerCase()) throw new Error('ticket 1 does not match EXPECTED.md');
 if (tk2.status !== 'ACTIVE' || tk2.owner !== accounts.B1.address.toLowerCase()) throw new Error('ticket 2 does not match EXPECTED.md');
 if (tk3.status !== 'REFUNDED' || tk3.owner !== accounts.B1.address.toLowerCase()) throw new Error('ticket 3 does not match EXPECTED.md');
 if (tk4.status !== 'REFUNDED' || tk4.owner !== accounts.B2.address.toLowerCase()) throw new Error('ticket 4 does not match EXPECTED.md');
+if (tk5.status !== 'ACTIVE' || tk5.owner !== accounts.B2.address.toLowerCase()) throw new Error('ticket 5 does not match EXPECTED.md');
+if (tk6.status !== 'ACTIVE' || tk6.owner !== accounts.B2.address.toLowerCase()) throw new Error('ticket 6 does not match EXPECTED.md');
 for (const k of Object.keys(accounts)) {
   const c = await readCredit(accounts[k].address);
   if (c.credit_wei !== 0) throw new Error(k + ' credit is not 0 after withdrawals: ' + c.credit_wei);
 }
 const counts = await readCounts();
 console.log('counts:', JSON.stringify(counts));
-if (counts.event_count !== 2 || counts.ticket_count !== 4
-  || counts.total_received_wei !== 61000000000000000000
-  || counts.total_withdrawn_wei !== 61000000000000000000
-  || counts.contract_balance_wei !== 0 || counts.escrowed_wei !== 0
-  || counts.total_royalties_wei !== 2100000000000000000
-  || counts.total_resale_volume_wei !== 21000000000000000000) {
-  throw new Error('LEDGER MISMATCH: expected 61 GEN in = 61 out, balance 0, escrow 0, royalties 2.1, resale volume 21');
+if (counts.event_count !== 3 || counts.ticket_count !== 6
+  || counts.total_received_wei !== 92000000000000000000
+  || counts.total_withdrawn_wei !== 72000000000000000000
+  || counts.contract_balance_wei !== 20000000000000000000 || counts.escrowed_wei !== 20000000000000000000
+  || counts.total_royalties_wei !== 3200000000000000000
+  || counts.total_resale_volume_wei !== 32000000000000000000) {
+  throw new Error('LEDGER MISMATCH: expected 92 GEN in, 72 out, balance 20 (E3 live escrow), royalties 3.2, resale volume 32');
 }
 
 fs.mkdirSync(path.dirname(TX_PATH), {recursive: true});
 fs.writeFileSync(TX_PATH, JSON.stringify({network: 'Stable Studionet', chain_id: CHAIN_ID, contract_address: ADDRESS, deploy_tx: cp.deploy_tx, complete: true, transactions: records}, null, 2));
 console.log('evidence complete:', records.length, 'txs recorded in', TX_PATH);
-console.log('ALL EXPECTED OUTCOMES MATCH. 61 GEN in = 61 out, balance 0 (zero stranded value), escrow 0, royalties 2.1 GEN.');
+console.log('ALL EXPECTED OUTCOMES MATCH. 92 GEN in = 72 out + 20 GEN live E3 escrow (zero stranded value), royalties 3.2 GEN.');
