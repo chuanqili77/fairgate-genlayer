@@ -6,9 +6,10 @@
       "event_id": 1,
       "source": "a",
       "url": "https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/",
+      "observed_at": "2026-11-12T17:11:47.730862+00:00",
       "http_status": 200,
-      "body_sha256": "fab1bd3c8d62169a13244468190ee0a43a72cd9f040c8c12aa797e64183d85e1",
-      "body_bytes": 83083,
+      "body_sha256": "3c18645e6d3371dfa79dfa62e7d2a57084da1e200452469073cf6f182f14563c",
+      "body_bytes": 83282,
       "cancel": false,
       "postpone": false,
       "identity": true,
@@ -18,8 +19,9 @@
       "event_id": 1,
       "source": "b",
       "url": "https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html",
+      "observed_at": "2026-11-12T17:11:56.199883+00:00",
       "http_status": 200,
-      "body_sha256": "55916998b9274ce0f89a64fb87482d701c382050ccdb3b50b47454e6df5a9ec4",
+      "body_sha256": "ea88aecbdde27b96a066e4fbb8695d5a7332b7fd4e6bee213fbb00d7e40bb182",
       "body_bytes": 315914,
       "cancel": false,
       "postpone": false,
@@ -41,8 +43,15 @@
     {
       "event_id": 2,
       "source": "b",
-      "url": "https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets",
-      "error": "HTTPError: HTTP Error 403: Forbidden"
+      "url": "https://www.jambase.com/show/future-bridgestone-arena-20240806",
+      "observed_at": "2026-11-12T17:21:40.137344+00:00",
+      "http_status": 200,
+      "body_sha256": "e6d212bd39d71063bc8196d413c88ec4c70ffa0fde7b823cf617779daac51841",
+      "body_bytes": 191057,
+      "cancel": true,
+      "postpone": false,
+      "identity": true,
+      "held": false
     },
     {
       "event_id": 3,
@@ -77,8 +86,15 @@
     {
       "event_id": 4,
       "source": "b",
-      "url": "https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm",
-      "error": "HTTPError: HTTP Error 403: Forbidden"
+      "url": "https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/",
+      "observed_at": "2026-11-12T17:20:56.665442+00:00",
+      "http_status": 200,
+      "body_sha256": "c52d85e6f2e8f38f0b22dc302a633376ea44a117e5366b523f7f8e714a9020b4",
+      "body_bytes": 278895,
+      "cancel": false,
+      "postpone": true,
+      "identity": true,
+      "held": false
     }
   ]
 }
