@@ -72,8 +72,7 @@ export interface Counts {
 // viem@x.y.z" is viem's error footer, NOT a version probe. A hung RPC
 // fetch throws nothing, so every read is raced against a 30s timeout
 // and the whole read is retried up to 3 times; a hung read fails fast
-// instead of stalling the page (a real-browser first load once stalled
-// 7+ minutes on a sibling project before this timeout existed).
+// instead of letting a hung RPC read block the page indefinitely.
 const withTimeout = <T,>(p: Promise<T>, ms: number, what: string): Promise<T> =>
   Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error('READ_TIMEOUT: ' + what)), ms))]);
 export async function readAll(): Promise<{ events: EventRec[]; tickets: TicketRec[]; counts: Counts; is_finalized_readback: boolean; at: string }> {
