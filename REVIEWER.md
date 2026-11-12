@@ -1,9 +1,9 @@
-# FairGate release-rule verification
+# FairGate mechanism and evidence
 
-EVENT_HELD requires positive past-tense evidence from two independently fetched sources. The artist, venue, configured date and positive phrase must appear in the same sentence. Negated, conditional and future wording is rejected. A general tour retrospective or a different performance is insufficient. Cancellation, postponement, identity and fetch flags are included in validator equivalence, and the leader result must satisfy the same deterministic verdict mapping.
+Read [README.md](README.md) for the payout rule and [EVIDENCE.md](EVIDENCE.md) for observed results. Canonical source: contracts/fairgate.py. Network: Stable Studionet, 61999.
 
-SOURCES_DISAGREE and UNREACHABLE leave event, tickets, escrow and credits unchanged. EVENT_HELD credits only the exact event escrow once, with pull-payment withdrawals. These behaviors pass local fixture-based state-machine tests but require a new deployment and live consensus verification.
+V1.4 removes the inference that absence of cancellation means an event happened. Positive dated evidence must be reproduced independently from each fixed source. The validator rejects a leader verdict inconsistent with any evidence flag. Unavailable, contradictory or insufficient evidence cannot release funds.
 
-Historical V1.3 evidence is retained under evidence/v1.3/. It proves historical execution only. Current V1.4 has no deployment or successful live payout evidence yet. E1 sources presently do not establish the exact configured date under the corrected rule. E3 remains subject to the future-date timestamp gate; it must never be prematurely settled to obtain an acceptance result.
+The deployed V1.4 contract is 0x58EC3bAE9605e4b138566742Bc163528e5813F7f. E1 has no successful positive settlement: its Lloyds source returned an error page to GenVM, so two finalized agreed calls kept escrow locked. The transaction manifest is incomplete and a complete current-version live acceptance is not claimed. Pages still serves historical V1.3. Historical evidence remains explicitly separated in evidence/v1.3/.
 
-The extractor is a deliberately narrow deterministic English pattern recognizer, not general semantic fact verification. It can lock funds when wording falls outside its accepted patterns. Two independent publications can still be wrong; agreement is not proof of the real-world event.
+Limitations include narrow English extraction, source outages, mutable publisher content, and intentionally unsettled future escrow. Agreement establishes reproduced inputs and deterministic execution, not real-world truth.

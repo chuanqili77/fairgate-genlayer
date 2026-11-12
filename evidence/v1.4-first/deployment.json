@@ -1,0 +1,21 @@
+{
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "contract_address": "0x58EC3bAE9605e4b138566742Bc163528e5813F7f",
+  "deploy_tx": "0x26863639f7306e9a68c62892683e21e03ddb9244c6668bb19eb76c6b5a517d71",
+  "explorer": "https://explorer-studio.genlayer.com/address/0x58EC3bAE9605e4b138566742Bc163528e5813F7f",
+  "source_sha256": "1158a74ac511e4600ba8c822288297bf4530d3f2a2efc7b54ea89c387e0e27c6",
+  "source_bytes": 37695,
+  "source_file": "contracts/fairgate.py",
+  "byte_parity": "BYTE_PARITY_MATCH: TRUE",
+  "wallets": {
+    "P1": "0xf57ff445659008bdb27b416f0cdd9d39f3b969a0",
+    "ORG": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+    "ART": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+    "B1": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+    "B2": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+    "OUT": "0x4f6eabf46dda0399e01af019e6d6c104850c4717"
+  },
+  "note": "Temp accounts generated for this evidence run only."
+}

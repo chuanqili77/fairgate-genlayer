@@ -136,20 +136,20 @@ export function clearPendingTx(hash: string) {
 // here leaves the browser.
 export interface MyTx { hash: string; label: string; savedAt: string; result: string }
 const myTxsKey = () => scopedKey('fairgate-my-txs');
-export function saveMyTx(hash: string, label: string) {
+export function saveMyTx(hash: string, label: string, result?: string) {
   try {
     const list: MyTx[] = JSON.parse(localStorage.getItem(myTxsKey()) || '[]');
     const at = new Date().toISOString();
     const i = list.findIndex((p) => p.hash === hash);
-    if (i >= 0) list[i] = { hash, label, savedAt: list[i].savedAt || at, result: list[i].result || 'ok' };
-    else list.push({ hash, label, savedAt: at, result: 'ok' });
+    if (i >= 0) list[i] = { hash, label, savedAt: list[i].savedAt || at, result: result ?? list[i].result ?? 'pending' };
+    else list.push({ hash, label, savedAt: at, result: result ?? 'pending' });
     localStorage.setItem(myTxsKey(), JSON.stringify(list.slice(-200)));
   } catch { /* storage unavailable: hash is still shown on screen */ }
 }
 export function loadMyTxs(): MyTx[] {
   try {
     return (JSON.parse(localStorage.getItem(myTxsKey()) || '[]') as MyTx[])
-      .map((m) => ({ ...m, result: m.result || 'ok' }));
+      .map((m) => ({ ...m, result: m.result || 'unknown' }));
   } catch { return []; }
 }
 

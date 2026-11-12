@@ -1,15 +1,16 @@
-# FairGate evidence scope
+# FairGate V1.4 observations
 
-The current canonical source is fairgate-1.4 and has not been deployed. Its source hash is recorded in evidence/source-status.json. No V1.4 transaction, consensus result, or finalized payout is asserted.
+Deployment and source identity are recorded in [evidence/deployment.json](evidence/deployment.json). The current [transaction manifest](evidence/transactions.json) is incomplete: 32 scripted steps have their expected outcomes, followed by two unsuccessful E1 settlement attempts. Raw finalized receipts are retained in evidence/receipts/.
 
-The V1.3 contract is 0x8883831222208CcbAf34DAcb8ac08f167edA6c6C, deployed by 0xaaf1e0d5764a083372676cc667eb89bc8ddefa8cd624a80866ab597841e7ef3b. Its original source, expectations, evidence, reviewer notes and transaction manifests are preserved in evidence/v1.3/. Those historical transactions concern the old release rule and cannot validate the corrected positive-evidence rule.
+Both E1 attempts were FINALIZED + MAJORITY_AGREE + leader SUCCESS, but returned changed=false and UNREACHABLE. These are fail-closed observations, not successful EVENT_HELD settlements:
 
-Local validation: npm test executes 140 named checks, including the actual contract state machine and an exhaustive 5120 verdict/boolean-evidence combinations. Fixtures test independent leader/validator fetching, rejection of forged EVENT_HELD, unchanged escrow/tickets/credits for unavailable or contradictory sources, authorized organizer withdrawal and repeat-withdrawal rejection. Mock fixtures are not live consensus.
+- 0x0d3922bd01b6bb92d313843acc55da98c5c2f44a01cc9ec5fb3a3968684d13e5
+- 0xa9fb4c10b554a0c6f5a4b74481bd68a7c946332ff32d357a045167bd08b719db
 
-The revised E1 official retrospective URL is historical, but its text describes the last Wembley show of the season. The second source says Oasis played Wembley in 2025 and separately lists planned dates. These statements do not explicitly bind a completed performance to 25 July 2025. The corrected dated rule must fail closed until both fixed sources supply sufficient evidence; no successful E1 release is claimed.
+An independent no-escrow diagnostic contract, 0x224004a3d05bf08bB688006B6E4dC1AB17DcC056, probed the exact frozen Lloyds URL in transaction 0xaa778d113d5fd127f7c218805661b651076ae759146498e5e2d6f6b345166444. The finalized, agreed successful result reported HTTP 200, 24,064 characters and an error-page scoped text of 392 characters containing Error 1007. Both identity and held flags were false. Ordinary local fetching did not reproduce that error; local availability does not establish validator availability.
 
-The default verifier refuses current-source verification while the deployment manifest still describes old code. The explicit --historical-v13 mode audits old receipts and old state only. New sales and settlement in the revised frontend require fairgate-1.4; existing withdrawals remain available on the historical deployment.
+No E1 organizer payout or complete V1.4 conservation/withdrawal loop is asserted. The prospective EXPECTED.md is retained without changing failed expectations into passes. The initial V1.4 source, manifest and expectations are also preserved in evidence/v1.4-first/.
 
-## Historical V1.3 re-verification
+Historical V1.3 re-verification: 97 PASS, 0 FAIL; 53 scripted and five historical browser transactions. Latest-final ledger was 123 GEN received = 83 withdrawn + 40 escrow/balance. The old source and log are in evidence/v1.3/. This does not validate the old release policy or any V1.4 payout.
 
-Read-only independent verification on 2026-11-13 (Asia/Shanghai): 97 PASS, 0 FAIL, covering 53 scripted and 5 historical browser transactions. Archived canonical source matches the deployed code byte-for-byte. Latest-final ledger is 123 GEN received = 83 GEN withdrawn + 40 GEN balance/escrow (E3 30 GEN, E4 10 GEN). No new transaction was sent. This historical execution result does not establish correctness of the old release policy or prove any V1.4 behavior. Log: evidence/v1.3/verification-2026-11-13.txt.
+Local regression coverage: 156 named Python checks, exhaustive 5120 verdict/flag combinations, and 10 Node transaction-outcome assertions. Fixtures are not chain evidence. TypeScript checking, Python syntax, build and repository hygiene were checked independently from live settlement.

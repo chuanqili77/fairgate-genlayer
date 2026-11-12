@@ -192,6 +192,14 @@ for (const label of Object.keys(done).sort()) {
 for (const [label, hash] of Object.entries(done)) {
   if (/-attempt-\d+$/.test(label) && !records.some(record => record.hash === hash)) records.push({label, hash, result: 'disagreed-retry'});
 }
+// Keep factual result kinds and recovery details across restarts.
+try {
+  const persisted = JSON.parse(fs.readFileSync(TX_PATH, 'utf8'));
+  if (persisted.contract_address?.toLowerCase() === ADDRESS.toLowerCase()) {
+    const byHash = new Map(persisted.transactions.map(record => [record.hash, record]));
+    for (let i = 0; i < records.length; i++) if (byHash.has(records[i].hash)) records[i] = byHash.get(records[i].hash);
+  }
+} catch {}
 if (records.length > 0) console.log('resumed:', records.length, 'txs already recorded from the checkpoint');
 function record(label, hash, result, extra = {}) {
   records.push({label, hash, result, ...extra});
@@ -212,21 +220,32 @@ async function readCounts() {
   return JSON.parse(await reader.readContract({address: ADDRESS, functionName: 'get_counts', args: [], transactionHashVariant: 'latest-final'}));
 }
 async function snapshotState() {
-  const events = await reader.readContract({address: ADDRESS, functionName: 'get_all_events', args: [], transactionHashVariant: 'latest-final'});
-  const tickets = await reader.readContract({address: ADDRESS, functionName: 'get_all_tickets', args: [], transactionHashVariant: 'latest-final'});
-  const counts = await readCounts();
-  const credits = {};
-  for (const k of Object.keys(accounts)) credits[k] = (await readCredit(accounts[k].address)).credit_wei;
+  const names = Object.keys(accounts);
+  const requests = [
+    reader.readContract({address: ADDRESS, functionName: 'get_all_events', args: [], transactionHashVariant: 'latest-final'}),
+    reader.readContract({address: ADDRESS, functionName: 'get_all_tickets', args: [], transactionHashVariant: 'latest-final'}),
+    readCounts(),
+    ...names.map(name => readCredit(accounts[name].address)),
+  ];
+  const results = await Promise.allSettled(requests);
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status === 'rejected') throw new Error('Snapshot read ' + i + ' failed: ' + String(results[i].reason));
+  }
+  const [events, tickets, counts, ...values] = results.map(result => result.value);
+  const credits = Object.fromEntries(names.map((name, i) => [name, values[i].credit_wei]));
   return JSON.stringify({events, tickets, counts, credits});
 }
 async function resolvePending() {
   if (!cp.pending) return;
   const {label, hash} = cp.pending;
+  if (done[label] === hash) { delete cp.pending; saveCheckpoint(cp); return; }
   console.log('resolving pending tx:', label, hash);
   const tx = await reader.waitForTransactionReceipt({hash, status: 'FINALIZED', interval: 5000, retries: 12, fullTransaction: true});
-  if (label.startsWith('neg')) {
+  if (Object.hasOwn(NEG_ERRORS, label)) {
     const code = NEG_ERRORS[label];
     if (!errorObserved(tx, code)) throw new Error('pending ' + label + ' did not show expected error ' + code);
+    if (!cp.pending.before_state) throw new Error('Pending negative has no persisted before-state; inspect the exact receipt and state before resolving: ' + label);
+    if (cp.pending.before_state !== await snapshotState()) throw new Error('Pending negative changed state: ' + label);
     record(label, hash, 'error-observed', {expected_error: code, unchanged_state: true});
   } else if (SETTLE_INFO[label]) {
     if ([5, 'MAJORITY_DISAGREE'].includes(tx.result)) {
@@ -252,9 +271,9 @@ async function writeOk(label, who, fn, args, value = 0n) {
   const hash = await clients[who].writeContract({address: ADDRESS, functionName: fn, args, value, leaderOnly: false});
   cp.pending = {label, hash}; saveCheckpoint(cp);
   const tx = await collect(clients[who], hash, label);
-  delete cp.pending; saveCheckpoint(cp);
   if (!good(tx)) throw new Error(label + ' did not reach FINALIZED+AGREE+SUCCESS: ' + JSON.stringify(tx).slice(0, 400));
   record(label, hash, 'ok');
+  delete cp.pending; saveCheckpoint(cp);
   return hash;
 }
 async function writeErr(label, who, fn, args, code, value = 0n) {
@@ -264,13 +283,13 @@ async function writeErr(label, who, fn, args, code, value = 0n) {
   if (done[label]) { console.log(label, 'resolved as done:', done[label]); return done[label]; }
   const before = await snapshotState();
   const hash = await clients[who].writeContract({address: ADDRESS, functionName: fn, args, value, leaderOnly: false});
-  cp.pending = {label, hash}; saveCheckpoint(cp);
+  cp.pending = {label, hash, before_state: before}; saveCheckpoint(cp);
   const tx = await collect(clients[who], hash, label);
-  delete cp.pending; saveCheckpoint(cp);
   if (!errorObserved(tx, code)) throw new Error(label + ' did not show expected error ' + code + ' (leader payload: ' + leaderError(tx) + '): ' + JSON.stringify(tx).slice(0, 400));
   const after = await snapshotState();
   if (before !== after) throw new Error(label + ' changed state');
   record(label, hash, 'error-observed', {expected_error: code, unchanged_state: true});
+  delete cp.pending; saveCheckpoint(cp);
   return hash;
 }
 async function settleFlow(label, eventId, expectedVerdict, caller = 'OUT') {
@@ -282,18 +301,27 @@ async function settleFlow(label, eventId, expectedVerdict, caller = 'OUT') {
     const hash = await clients[caller].writeContract({address: ADDRESS, functionName: 'settle_event', args: [eventId], value: 0n, leaderOnly: false});
     cp.pending = {label, hash}; saveCheckpoint(cp);
     const tx = await collect(clients[caller], hash, `${label} attempt ${attempt} (caller ${caller})`);
-    delete cp.pending; saveCheckpoint(cp);
     if ([5, 'MAJORITY_DISAGREE'].includes(tx.result)) {
       console.log(label, 'consensus disagreed (attempt', attempt + '), retrying — nothing changed');
       record(`${label}-attempt-${attempt}`, hash, 'disagreed-retry');
+      delete cp.pending; saveCheckpoint(cp);
       continue;
     }
     if (!good(tx)) throw new Error(label + ' settle tx not good: ' + JSON.stringify(tx).slice(0, 400));
     const e = await readEvent(eventId);
     if (e.verdict !== expectedVerdict) {
-      throw new Error(label + ' WRONG VERDICT: expected ' + expectedVerdict + ', got ' + e.verdict + ' — aborting, inspect, never paper over');
+      let value = leaderReceipt(tx)?.result?.payload;
+      if (value && typeof value === 'object' && typeof value.readable === 'string') value = value.readable;
+      for (let i = 0; i < 3 && typeof value === 'string'; i++) { try { value = JSON.parse(value); } catch { break; } }
+      if (value?.changed === false && ['UNREACHABLE', 'SOURCES_DISAGREE'].includes(value.verdict)) {
+        const n = records.filter(record => record.label.startsWith(label + '-fail-closed-')).length + 1;
+        record(label + '-fail-closed-' + n, hash, 'fail-closed', {verdict: value.verdict, event_id: eventId});
+        delete cp.pending; saveCheckpoint(cp);
+      }
+      throw new Error(label + ' did not establish expected ' + expectedVerdict + '; state remains ' + e.status + '. Preserve receipt and diagnose sources before another retry.');
     }
     record(label, hash, 'ok', {verdict: e.verdict, attempts: attempt, caller});
+    delete cp.pending; saveCheckpoint(cp);
     return hash;
   }
   throw new Error(label + ' consensus disagreed 3 times — aborting');
@@ -314,7 +342,6 @@ async function rescheduleFlow(label, rs) {
   const hash = await clients.P1.writeContract({address: ADDRESS, functionName: 'reschedule_event', args: [4, rs.start, rs.settle, rs.offset, rs.date, rs.display, rs.tz], value: 0n, leaderOnly: false});
   cp.pending = {label, hash}; saveCheckpoint(cp);
   const tx = await collect(clients.P1, hash, label);
-  delete cp.pending; saveCheckpoint(cp);
   if (!good(tx)) throw new Error(label + ' reschedule tx not good: ' + JSON.stringify(tx).slice(0, 400));
   const after = await readEvent(4);
   const t7after = await readTicket(7);
@@ -340,7 +367,6 @@ async function withdrawFlow(label, who, expectedWei) {
   const hash = await clients[who].writeContract({address: ADDRESS, functionName: 'withdraw', args: [], value: 0n, leaderOnly: false});
   cp.pending = {label, hash}; saveCheckpoint(cp);
   const tx = await collect(clients[who], hash, label);
-  delete cp.pending; saveCheckpoint(cp);
   if (!good(tx)) throw new Error(label + ' withdraw tx not good: ' + JSON.stringify(tx).slice(0, 400));
   const after = (await readCredit(accounts[who].address)).credit_wei;
   if (after !== 0) throw new Error(label + ' credit after withdraw is ' + after + ', expected 0');

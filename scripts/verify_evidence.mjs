@@ -52,11 +52,26 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const source = fs.readFileSync(path.join(REPO, historical ? evidenceDir : 'contracts', 'fairgate.py'), 'utf8');
 if (!historical && sha(source) !== deployment.source_sha256) throw new Error('SOURCE_NOT_DEPLOYED: current V1.4 source requires a fresh deployment and evidence. Use --historical-v13 only to audit the archived V1.3 deployment.');
 if (historical) console.log('HISTORICAL V1.3 ONLY: these receipts do not verify V1.4 release safety.');
+if (!historical && txs.complete !== true) throw new Error('INCOMPLETE_EVIDENCE: full V1.4 regression has not completed');
 const onChain = await reader.getContractCode(ADDRESS);
 ok('byte parity (deployed code == repo source)', onChain === source);
 ok('source sha matches deployment.json', sha(source) === deployment.source_sha256);
 ok('deploy tx recorded', typeof txs.deploy_tx === 'string' && txs.deploy_tx.startsWith('0x'));
 ok('evidence file names the deployed contract', txs.contract_address === ADDRESS, String(txs.contract_address));
+
+ok('chain id is Stable Studionet 61999', await reader.getChainId() === CHAIN_ID);
+const deployReceipt = await reader.getTransaction({hash: deployment.deploy_tx});
+ok('deployment FINALIZED+AGREE+SUCCESS', [7, 'FINALIZED'].includes(deployReceipt.status)
+  && [6, 'MAJORITY_AGREE'].includes(deployReceipt.result)
+  && leaderReceipt(deployReceipt)?.execution_result === 'SUCCESS');
+function decodedReturn(leader) {
+  let value = leader?.result?.payload;
+  if (value && typeof value === 'object' && typeof value.readable === 'string') value = value.readable;
+  for (let i = 0; i < 3 && typeof value === 'string'; i++) {
+    try { value = JSON.parse(value); } catch { break; }
+  }
+  return value;
+}
 
 // 2. Every recorded transaction, re-read live (scripted + browser).
 const EXPECTED_ERROR = {
@@ -102,20 +117,34 @@ async function checkTxRecord(rec, kind) {
   const finalized = [7, 'FINALIZED'].includes(tx.status);
   const agreed = [6, 'MAJORITY_AGREE'].includes(tx.result);
   const leader = leaderReceipt(tx);
+  const target = String(tx.to_address || tx.to || tx.transaction?.to_address || tx.transaction?.to || '').toLowerCase();
+  ok(`tx ${rec.label} (${kind}) targets this deployment`, target === ADDRESS.toLowerCase(), target);
   if (rec.result === 'ok') {
     ok(`tx ${rec.label} (${kind}) FINALIZED+AGREE+SUCCESS`, finalized && agreed && leader?.execution_result === 'SUCCESS',
       `status=${tx.status} result=${tx.result} leader=${leader?.execution_result}`);
     if (EXPECTED_VERDICT[rec.label]) {
       ok(`tx ${rec.label} verdict recorded as ${EXPECTED_VERDICT[rec.label]}`, rec.verdict === EXPECTED_VERDICT[rec.label], `recorded verdict=${rec.verdict}`);
+      if (!historical) {
+        const result = decodedReturn(leader);
+        ok(`tx ${rec.label} actual returned verdict matches`, result?.verdict === EXPECTED_VERDICT[rec.label], JSON.stringify(result));
+        ok(`tx ${rec.label} independently fetched both identified sources`, result?.fetch_a_ok === true && result?.fetch_b_ok === true && result?.identity_a === true && result?.identity_b === true);
+        if (rec.label === 's1-settle-e1') ok('positive held evidence from both sources', result?.held_a === true && result?.held_b === true && !result.cancel_a && !result.cancel_b && !result.postpone_a && !result.postpone_b);
+      }
     }
   } else if (rec.result === 'error-observed') {
     const payload = leader?.result?.payload || '';
     ok(`tx ${rec.label} (${kind}) FINALIZED+AGREE+ERROR with exact payload ${EXPECTED_ERROR[rec.label]}`,
       finalized && agreed && leader?.execution_result === 'ERROR' && payload === EXPECTED_ERROR[rec.label],
       `status=${tx.status} result=${tx.result} leader=${leader?.execution_result} payload=${payload}`);
+  } else if (rec.result === 'fail-closed') {
+    const value = decodedReturn(leader);
+    if (finalized && agreed && leader?.execution_result === 'SUCCESS' && value?.changed === false
+        && ['UNREACHABLE', 'SOURCES_DISAGREE'].includes(value.verdict) && value.verdict === rec.verdict) {
+      console.log(`INFO tx ${rec.label}: finalized fail-closed ${value.verdict}, not a successful settlement`);
+    } else ok(`tx ${rec.label} actual fail-closed receipt`, false, JSON.stringify(value));
   } else if (rec.result === 'disagreed-retry') {
-    ok(`tx ${rec.label} (${kind}) is a recorded MAJORITY_DISAGREE retry (fail-closed, not a pass)`,
-      [5, 'MAJORITY_DISAGREE'].includes(tx.result));
+    if (finalized && [5, 'MAJORITY_DISAGREE'].includes(tx.result)) console.log(`INFO tx ${rec.label} is a finalized disagreement, not counted as a business PASS`);
+    else ok(`tx ${rec.label} disagreement receipt`, false);
   } else {
     ok(`tx ${rec.label} (${kind}) has a known result kind`, false, rec.result);
   }
