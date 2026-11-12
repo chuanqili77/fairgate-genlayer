@@ -275,13 +275,19 @@ export default function App() {
             {events.map((ev) => {
               const soldOut = ev.tickets_sold >= ev.tickets_total;
               const settled = ev.status === 'HELD' || ev.status === 'CANCELLED' || ev.status === 'POSTPONED';
-              // Date gate, enforced on-chain: the contract refuses any
-              // settlement on or before the event date (TOO_EARLY).
-              // The UI disables settle until the day after the show as
-              // a second layer only — the contract gate is what
-              // enforces it; frontend time is never chain time.
-              const today = new Date().toISOString().slice(0, 10);
-              const tooEarly = ev.date_iso >= today;
+              // Time gate, enforced on-chain with Unix timestamps:
+              // the contract refuses any settlement before
+              // settle_after_ts (first second of the day after the
+              // show, in the event's local time zone). The UI
+              // disables settle until then as a second layer only —
+              // the contract gate is what enforces it; frontend
+              // time is never chain time.
+              const tooEarly = ev.settle_after_ts > 0
+                ? Date.now() < ev.settle_after_ts * 1000
+                : ev.date_iso >= new Date().toISOString().slice(0, 10);
+              const settleOpens = ev.settle_after_ts > 0
+                ? new Date(ev.settle_after_ts * 1000).toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
+                : '';
               const band = ev.event_id === 1 ? 'band-oasis' : ev.event_id === 4 ? 'band-katseye' : 'band-future';
               return (
                 <article className="poster" key={ev.event_id}>
@@ -328,7 +334,7 @@ export default function App() {
                         >
                           {busy['settle-' + ev.event_id] ? tr('app.settling') : tr('app.settle')}
                         </button>
-                        <p className="small dim">{tooEarly ? tr('app.settleFuture') : tr('app.settleNote')}</p>
+                        <p className="small dim">{tooEarly ? (settleOpens ? tr('app.settleFuture').replace('{time}', settleOpens) : tr('app.settleFutureNoTime')) : tr('app.settleNote')}</p>
                         {ev.verdict && ev.verdict !== 'NOT_SETTLED' ? (
                           <div className="verdict-block">
                             <div className={'stamp ' + stampClass(ev.verdict)}>{ev.verdict}</div>

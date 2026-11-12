@@ -37,6 +37,8 @@ export const reader = createClient({ chain: studionet });
 export interface EventRec {
   event_id: number; artist: string; venue: string; city: string;
   date_iso: string; date_display: string;
+  event_start_ts: number; settle_after_ts: number;
+  tz_offset_min: number; tz_name: string;
   source_a_url: string; source_a_label: string;
   source_b_url: string; source_b_label: string;
   face_price_gen: number; face_price_wei: number;

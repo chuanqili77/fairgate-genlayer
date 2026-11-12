@@ -1,6 +1,6 @@
 // FairGate: deploy contracts/fairgate.py on Stable Studionet (61999).
 // Temp accounts live ONLY in the local state file:
-//   ~/workspace/build-p6/.fairgate-checkpoint.json
+//   a local checkpoint file outside the repo (mode 0600).
 // (workspace, NOT in the repo, mode 0600). The file is kept after the
 // flow: the organizer key in it is needed to withdraw E3's organizer
 // credit after E3 settles after 2026-12-09, and is deleted after that
@@ -21,7 +21,7 @@ const opt = (name, def) => {
   const i = args.indexOf(name);
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 };
-const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint.json'));
+const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.3.json'));
 const CONTRACT_PATH = path.join(REPO, 'contracts', 'fairgate.py');
 const DEPLOYMENT_PATH = path.join(REPO, 'evidence', 'deployment.json');
 

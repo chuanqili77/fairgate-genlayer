@@ -21,7 +21,7 @@ contract is written:
    vote on its outcome.
 
 The probe is not part of the evidence pack; only its results
-(recorded in the workdir notes) inform the v1.2 rule.
+(recorded separately) inform the v1.2 rule.
 """
 from genlayer import *
 import json

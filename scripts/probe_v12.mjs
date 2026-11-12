@@ -1,7 +1,7 @@
 // FairGate v1.2 probe runner: deploy contracts/probe2.py, check the
 // GenVM clock, then probe all eight anchor URLs (six v1.1 anchors +
 // two new KATSEYE postponement sources) with identity tokens.
-// Temp account lives ONLY in ~/workspace/build-p6/.fairgate-probe2-checkpoint.json
+// Temp account lives ONLY in a local checkpoint file outside the repo (mode 0600).
 // (0600, deleted when the probe is done). The probe deployment is NOT
 // part of the product evidence pack.
 // Usage: node scripts/probe_v12.mjs

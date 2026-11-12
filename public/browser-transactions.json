@@ -1,0 +1,6 @@
+{
+  "chain_id": 61999,
+  "contract_address": "0x8883831222208CcbAf34DAcb8ac08f167edA6c6C",
+  "note": "Browser write loop on the live site with in-browser temporary test accounts (testnet GEN only, no real wallet). To be recorded after the loop runs: buy / list resale / buy-resale / seller withdraw / artist withdraw.",
+  "transactions": []
+}

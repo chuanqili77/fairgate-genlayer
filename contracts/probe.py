@@ -5,7 +5,7 @@ Deployed once to answer a single question before the real contract
 is written: can GenLayer validators fetch each anchor URL, and does
 the raw fetched body contain the words the settlement rule would
 look for? The probe is not part of the evidence pack; only its
-results (recorded in the workdir notes) inform the rule.
+results (recorded separately) inform the rule.
 
 For each URL it reports: HTTP status, fetch success, body length,
 and whether the words cancelled/canceled/postponed/rescheduled

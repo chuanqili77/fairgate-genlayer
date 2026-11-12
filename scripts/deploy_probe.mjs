@@ -1,5 +1,5 @@
 // FairGate fetch probe: deploy contracts/probe.py on Stable Studionet.
-// Temp account lives ONLY in ~/workspace/build-p6/.fairgate-probe-checkpoint.json
+// Temp account lives ONLY in a local checkpoint file outside the repo (mode 0600).
 // (0600, deleted when the probe is done). The probe deployment is NOT
 // part of the product evidence pack.
 // Usage: node scripts/deploy_probe.mjs

@@ -1,6 +1,6 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 """FairGate: anti-scalper concert tickets + consensus event-outcome
-settlement on GenLayer Stable Studionet. Protocol fairgate-1.2.
+settlement on GenLayer Stable Studionet. Protocol fairgate-1.3.
 
 One concert type, one tier, one resale rule. Face price is 10 GEN
 per ticket. Resale is capped at 110% of face value (11 GEN, code
@@ -80,23 +80,29 @@ a source-URL allowlist; v1 does not have one and does not claim one.
          Minneapolis listing site was unreachable and the
          ticket-aggregator page returned 403 to validators), so
          the second source is an independent news report rather
-         than a listing; that is disclosed, not hidden. E4 is
-         configured but sells no tickets in the evidence run
-         (escrow 0): it exists to prove the POSTPONED branch
-         on-chain with no money at risk.
+         than a listing; that is disclosed, not hidden. E4 sells
+         one ticket in the evidence run (10 GEN escrow) so that
+         rescheduling can be proven to preserve a real ticket,
+         its holder and the escrow. A postponed event can be
+         rescheduled (reschedule_event): the new date is stored
+         with a new settlement timestamp, tickets and escrow are
+         untouched, and no money is released by rescheduling.
 
 Verdict rule (deterministic code, no LLM anywhere). Each validator
-fetches both source pages and scans the raw body, lowercased, for
-two word sets: cancel words ("cancelled", "canceled") and postpone
-words (stems "postpone", "reschedule", which also match "postponed",
-"postponement", "rescheduled", "rescheduling"). Before any keyword
-counts, each page must also prove it is the right event: the page
-must contain the artist token AND the venue token for that event
-(identity check, exact substrings, lowercased). A page that fails
-the identity check cannot vote: its keywords are ignored and the
-verdict is UNREACHABLE. The equivalence vector is (verdict,
-cancel_a, cancel_b, postpone_a, postpone_b, fetch_a_ok, fetch_b_ok,
-identity_a, identity_b) — exact equality, no tolerance. The rule:
+fetches both source pages and reads ONLY the scoped text: the page
+title, the meta content (description / keywords), any JSON-LD
+structured event data, and the visible body text after removing
+navigation, footers, asides, scripts, styles and recommended /
+related / sidebar sections. Keywords found in a footer, a nav bar
+or a recommended article about another event do not count. Before
+any keyword counts, each page must also prove it is the right
+event: the page must contain the artist token AND the venue token
+for that event (identity check, exact substrings, lowercased) in
+the scoped text. A page that fails the identity check cannot vote:
+its keywords are ignored and the verdict is UNREACHABLE. The
+equivalence vector is (verdict, cancel_a, cancel_b, postpone_a,
+postpone_b, fetch_a_ok, fetch_b_ok, identity_a, identity_b) —
+exact equality, no tolerance. The rule:
   - either source fails to fetch (non-200 or request error) or
     fails the identity check -> UNREACHABLE (no state change,
     retryable)
@@ -113,19 +119,44 @@ verdict, because only the keyword flags and the identity tokens are
 examined — and a page that does not mention the event at all cannot
 contribute a keyword.
 
-Settlement date gate (on-chain, not frontend time). settle_event
-refuses to run before the day after the event date: the contract
-reads the transaction datetime (GenLayer-native, deterministic —
-every validator re-executing the transaction sees the same pinned
-datetime) and requires today > date_iso. A settlement attempt
-before that date fails with TOO_EARLY and changes nothing. The
-frontend also disables the settle button until the day after the
-show as a second layer, but the contract gate is what enforces it:
-frontend time is never treated as chain time. The gate uses the
-transaction datetime, which is fixed when the transaction is
-accepted — not any validator's wall clock — so a transaction
-submitted before the date cannot settle, and one submitted after
-the date can.
+Settlement time gate (on-chain, Unix timestamps, not frontend
+time). Each event stores an explicit UTC event start timestamp
+(event_start_ts) and an explicit UTC settlement timestamp
+(settle_after_ts). settle_after_ts is the first second of the day
+after the show, in the event's own local time zone: the contract
+derives it from event_start_ts and the local UTC offset (minutes)
+supplied at configuration and refuses any other value, so the
+caller cannot smuggle in an early timestamp. settle_event reads
+the transaction datetime (GenLayer-native, deterministic — every
+validator re-executing the transaction sees the same pinned
+datetime), converts it to a Unix timestamp and requires it to be
+>= settle_after_ts; an earlier attempt fails with TOO_EARLY and
+changes nothing. No UTC date strings are compared anywhere. The
+local date and time-zone name are kept only for display. Example:
+E3 (Pentatonix, 2026-12-09 19:00 Nashville, CST = UTC-6) has
+event_start_ts 1796864400 (2026-12-10T01:00:00Z) and
+settle_after_ts 1796882400 (2026-12-10T06:00:00Z, which is
+2026-12-10 00:00 Nashville). The frontend also disables the
+settle button until the settlement timestamp as a second layer,
+but the contract gate is what enforces it: frontend time is never
+treated as chain time. The gate uses the transaction datetime,
+which is fixed when the transaction is accepted — not any
+validator's wall clock — so a transaction submitted before the
+timestamp cannot settle, and one submitted at or after it can.
+
+Reschedule (reschedule_event, creator only). A POSTPONED event
+can be moved to a later date: the caller supplies a new start
+timestamp, a new settlement timestamp, the new local UTC offset
+and the new display date; the contract re-derives the settlement
+timestamp from the new start and offset and refuses any other
+value, requires the new start to be later than the old start, and
+requires the new settlement timestamp to be later than the new
+start. The event stays POSTPONED — rescheduling never reopens
+ticket sales — and tickets, holders and escrow are untouched: no
+money is released to the organizer or the artist by rescheduling.
+A rescheduled event can be rescheduled again. An event that is
+already finally settled (EVENT_HELD / CANCELLED) or still ON_SALE
+cannot be rescheduled.
 
 A failed payable call KEEPS its value in the contract (platform
 behavior on Studionet). The frontend only ever submits the exact
@@ -152,18 +183,20 @@ outcome is decided by consensus, not by the caller — but the date
 gate above still applies to every caller.
 
 Known limits (neutral, product-scope):
-  * v1.2 ships exactly four launch events, fixed at deploy. There is
+  * v1.3 ships exactly four launch events, fixed at deploy. There is
     no organizer listing flow; adding one needs a source-URL
     allowlist so the beneficiary cannot pick its own evidence.
   * E3 (Pentatonix, 2026-12-09) is ON_SALE and unsettled by design:
-    its escrow stays open until after the real event date, when it
-    can be settled like E1/E2. Its tickets remain buyable and
-    resalable on the live site in the meantime. The date gate
-    refuses any settlement attempt before 2026-12-10.
+    its escrow stays open until its settlement timestamp
+    (2026-12-10T06:00:00Z), when it can be settled like E1/E2. Its
+    tickets remain buyable and resalable on the live site in the
+    meantime. The timestamp gate refuses any settlement attempt
+    before 2026-12-10T06:00:00Z.
   * E4 (KATSEYE, 2026-11-07) is POSTPONED: its funds stay locked
-    and it can be re-settled when a new date is announced. Its
-    second source is an independent news report, not an event
-    listing (see E4 note above).
+    and it can be rescheduled (reschedule_event) and re-settled
+    when a new date is announced. Its second source is an
+    independent news report, not an event listing (see E4 note
+    above).
   * The verdict reads the live pages at settlement time. If a
     source page is rewritten, the verdict follows the new text.
   * An event has no delist action; a POSTPONED event keeps selling
@@ -192,9 +225,180 @@ def packed(x):
     return json.dumps(x, sort_keys=True, separators=(',', ':'))
 
 
-def _scan(text, id_a, id_b):
-    """Keyword flags + identity check on one fetched page body
-    (lowercased).
+_REMOVE_CLASS = ('recommend', 'related', 'sidebar', 'more-events',
+                 'upcoming', 'you-may-also', 'also-like', 'trending',
+                 'newsletter', 'other-events', 'similar', 'footer',
+                 'site-footer', 'page-footer')
+_SKIP_TAGS = ('nav', 'footer', 'aside', 'script', 'style')
+
+
+def _strip_tags(fragment):
+    """Visible text of an HTML fragment: tags removed, whitespace
+    collapsed. Pure str operations only."""
+    out = []
+    i = 0
+    n = len(fragment)
+    while i < n:
+        c = fragment[i]
+        if c == '<':
+            j = fragment.find('>', i)
+            if j == -1:
+                break
+            out.append(' ')
+            i = j + 1
+        else:
+            out.append(c)
+            i += 1
+    return ' '.join(''.join(out).split())
+
+
+def _ld_strings(raw):
+    """All string values of a JSON-LD block, joined. A block that
+    does not parse is returned raw: its text may still carry a
+    structured status such as EventPostponed."""
+    try:
+        data = json.loads(raw)
+    except Exception:
+        return raw
+    parts = []
+
+    def walk(x):
+        if isinstance(x, str):
+            parts.append(x)
+        elif isinstance(x, dict):
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+
+    walk(data)
+    return ' '.join(parts)
+
+
+def _meta_text(html):
+    """content="..." values of <meta> tags (title, description,
+    keywords): the page's own structured summary of what it is
+    about. Meta keywords on the Wembley Oasis page, for example,
+    read "OASIS LIVE '25 WEMBLEY STADIUM" — both identity tokens
+    for a page whose visible body is rendered by JavaScript."""
+    low = html.lower()
+    parts = []
+    pos = 0
+    while True:
+        mi = low.find('<meta', pos)
+        if mi == -1:
+            break
+        gt = low.find('>', mi)
+        if gt == -1:
+            break
+        tag = html[mi:gt + 1]
+        ci = tag.lower().find('content=')
+        if ci != -1:
+            q = tag[ci + 8:ci + 9]
+            if q in ('"', "'"):
+                end = tag.find(q, ci + 9)
+                if end != -1:
+                    parts.append(tag[ci + 9:end])
+        pos = gt + 1
+    return ' '.join(parts)
+
+
+def _remove_unwanted(html):
+    """Remove navigation, footers, asides, scripts, styles and
+    recommended / related / sidebar sections from the raw page,
+    keeping the rest. Balanced-block removal with same-tag nesting
+    tracked, so a recommended block that contains inner divs is
+    removed whole. Pure str operations only."""
+    low = html.lower()
+    n = len(html)
+    out = []
+    i = 0
+    skip = []
+    while i < n:
+        lt = html.find('<', i)
+        if lt == -1:
+            if not skip:
+                out.append(html[i:])
+            break
+        if not skip:
+            out.append(html[i:lt])
+        if html.startswith('<!--', lt):
+            end = html.find('-->', lt + 4)
+            i = n if end == -1 else end + 3
+            continue
+        gt = html.find('>', lt)
+        if gt == -1:
+            break
+        inner = html[lt + 1:gt].strip()
+        if inner.startswith('/'):
+            name = inner[1:].split()[0].lower() \
+                if inner[1:].split() else ''
+            if skip and skip[-1] == name:
+                skip.pop()
+            i = gt + 1
+            continue
+        parts = inner.split()
+        name = parts[0].lower().rstrip('/') if parts else ''
+        self_close = inner.endswith('/')
+        if skip:
+            if name == skip[-1] and not self_close:
+                skip.append(name)
+            i = gt + 1
+            continue
+        if name in _SKIP_TAGS:
+            if not self_close:
+                skip.append(name)
+            i = gt + 1
+            continue
+        attrs = low[lt:gt + 1]
+        if any(k in attrs for k in _REMOVE_CLASS):
+            if not self_close:
+                skip.append(name)
+            i = gt + 1
+            continue
+        out.append(html[lt:gt + 1])
+        i = gt + 1
+    return ''.join(out)
+
+
+def _scoped_text(html):
+    """The text a verdict may be based on: page title + meta
+    content + JSON-LD structured event data + visible body text
+    after unwanted sections are removed. Everything else on the
+    page (nav, footer, recommended articles, scripts) is excluded
+    before any keyword is counted."""
+    low = html.lower()
+    title = ''
+    ti = low.find('<title')
+    if ti != -1:
+        gt = low.find('>', ti)
+        te = low.find('</title>', gt) if gt != -1 else -1
+        if gt != -1 and te != -1:
+            title = _strip_tags(html[gt + 1:te])
+    ld_texts = []
+    pos = 0
+    while True:
+        si = low.find('<script', pos)
+        if si == -1:
+            break
+        gt = low.find('>', si)
+        if gt == -1:
+            break
+        tag_head = low[si:gt + 1]
+        se = low.find('</script>', gt)
+        if se == -1:
+            break
+        if 'application/ld+json' in tag_head:
+            ld_texts.append(_ld_strings(html[gt + 1:se]))
+        pos = se + len('</script>')
+    body_text = _strip_tags(_remove_unwanted(html))
+    return ' '.join([title, _meta_text(html)] + ld_texts + [body_text])
+
+
+def _scan(html, id_a, id_b):
+    """Keyword flags + identity check on the SCOPED page text
+    (lowercased), never on the raw body.
 
     Cancel words are the two past-tense spellings ("cancelled",
     "canceled") — the forms real cancellation notices use. Postpone
@@ -203,11 +407,12 @@ def _scan(text, id_a, id_b):
     The bare stem "cancel" is deliberately NOT a keyword: it appears
     in boilerplate ("cancellation policy") and would false-positive.
     Identity requires the artist token AND the venue token for the
-    event to appear on the page: a page that does not mention the
-    event cannot vote on its outcome, however many keywords it
+    event to appear in the scoped text: a page that does not mention
+    the event cannot vote on its outcome, however many keywords it
     happens to contain.
     """
-    low = text.lower()
+    scoped = _scoped_text(html)
+    low = scoped.lower()
     cancel = ('cancelled' in low) or ('canceled' in low)
     postpone = ('postpone' in low) or ('reschedule' in low)
     identity = (id_a.lower() in low) and (id_b.lower() in low)
@@ -335,6 +540,8 @@ def _event(artist, venue, city, date_iso, date_display,
     return {
         'event_id': 0, 'artist': artist, 'venue': venue, 'city': city,
         'date_iso': date_iso, 'date_display': date_display,
+        'event_start_ts': 0, 'settle_after_ts': 0,
+        'tz_offset_min': 0, 'tz_name': '',
         'source_a_url': source_a_url, 'source_a_label': source_a_label,
         'source_b_url': source_b_url, 'source_b_label': source_b_label,
         'id_a': id_a, 'id_b': id_b,
@@ -346,6 +553,27 @@ def _event(artist, venue, city, date_iso, date_display,
         'escrowed_wei': 0, 'organizer': '', 'artist_address': '',
         'parties_set': False, 'organizer_paid': False,
     }
+
+
+def _derive_settle_after(event_start_ts, tz_offset_min):
+    """The first second of the day after the show, in the event's
+    own local time zone, as a UTC Unix timestamp. The offset is
+    minutes east of UTC (Nashville in December, CST: -360). The
+    caller supplies the offset; the contract derives the timestamp
+    itself and refuses any other value, so an early settlement
+    timestamp cannot be smuggled in. Offset range is UTC-12 to
+    UTC+14. Integer arithmetic only; // floors, which is what the
+    local-day computation needs."""
+    if not isinstance(event_start_ts, int) \
+            or isinstance(event_start_ts, bool) \
+            or event_start_ts <= 0:
+        fail('BAD_START_TS')
+    if not isinstance(tz_offset_min, int) \
+            or isinstance(tz_offset_min, bool) \
+            or tz_offset_min < -720 or tz_offset_min > 840:
+        fail('BAD_TZ_OFFSET')
+    local_day = (event_start_ts + tz_offset_min * 60) // 86400
+    return (local_day + 1) * 86400 - tz_offset_min * 60
 
 
 class FairGate(gl.Contract):
@@ -439,7 +667,9 @@ class FairGate(gl.Contract):
 
     @gl.public.write
     def configure_event(self, event_id: int, organizer: str,
-                        artist_address: str) -> str:
+                        artist_address: str, event_start_ts: int,
+                        settle_after_ts: int, tz_offset_min: int,
+                        tz_name: str) -> str:
         sender = str(gl.message.sender_address).lower()
         if sender != self.creator:
             fail('NOT_CREATOR')
@@ -455,9 +685,75 @@ class FairGate(gl.Contract):
                 or len(artist_address) != 42 \
                 or not artist_address.startswith('0x'):
             fail('BAD_ADDRESS')
+        if not isinstance(settle_after_ts, int) \
+                or isinstance(settle_after_ts, bool):
+            fail('BAD_SETTLE_AFTER_TS')
+        # The contract derives the settlement timestamp from the
+        # start timestamp and the local offset and refuses any
+        # other value: the caller cannot choose an early gate.
+        expected = _derive_settle_after(event_start_ts, tz_offset_min)
+        if int(settle_after_ts) != expected:
+            fail('BAD_SETTLE_AFTER_TS')
+        if not isinstance(tz_name, str) or not 1 <= len(tz_name) <= 64:
+            fail('BAD_TZ_NAME')
         e['organizer'] = organizer.lower()
         e['artist_address'] = artist_address.lower()
+        e['event_start_ts'] = int(event_start_ts)
+        e['settle_after_ts'] = int(settle_after_ts)
+        e['tz_offset_min'] = int(tz_offset_min)
+        e['tz_name'] = tz_name
         e['parties_set'] = True
+        return self._save_event(e)
+
+    @gl.public.write
+    def reschedule_event(self, event_id: int, new_start_ts: int,
+                         new_settle_after_ts: int,
+                         new_tz_offset_min: int, new_date_iso: str,
+                         new_date_display: str, new_tz_name: str) -> str:
+        """Move a POSTPONED event to a later date. Creator only.
+        The event stays POSTPONED (ticket sales never reopen) and
+        tickets, holders and escrow are untouched: no money is
+        released by rescheduling. The new settlement timestamp is
+        re-derived from the new start and offset and refused unless
+        it matches; the new start must be later than the old start.
+        A rescheduled event can be rescheduled again. Settled or
+        still-selling events cannot be rescheduled."""
+        sender = str(gl.message.sender_address).lower()
+        if sender != self.creator:
+            fail('NOT_CREATOR')
+        e = self._load_event(event_id)
+        if not e['parties_set']:
+            fail('EVENT_NOT_CONFIGURED')
+        if e['status'] != 'POSTPONED':
+            fail('NOT_POSTPONED')
+        if not isinstance(new_start_ts, int) \
+                or isinstance(new_start_ts, bool) \
+                or int(new_start_ts) <= int(e['event_start_ts']):
+            fail('DATE_NOT_LATER')
+        if not isinstance(new_settle_after_ts, int) \
+                or isinstance(new_settle_after_ts, bool):
+            fail('BAD_SETTLE_AFTER_TS')
+        expected = _derive_settle_after(new_start_ts,
+                                        new_tz_offset_min)
+        if int(new_settle_after_ts) != expected:
+            fail('BAD_SETTLE_AFTER_TS')
+        if int(new_settle_after_ts) <= int(new_start_ts):
+            fail('BAD_SETTLE_AFTER_TS')
+        if not isinstance(new_date_iso, str) \
+                or len(new_date_iso) != 10:
+            fail('BAD_DATE')
+        if not isinstance(new_date_display, str) \
+                or not 1 <= len(new_date_display) <= 64:
+            fail('BAD_DATE')
+        if not isinstance(new_tz_name, str) \
+                or not 1 <= len(new_tz_name) <= 64:
+            fail('BAD_TZ_NAME')
+        e['event_start_ts'] = int(new_start_ts)
+        e['settle_after_ts'] = int(new_settle_after_ts)
+        e['tz_offset_min'] = int(new_tz_offset_min)
+        e['tz_name'] = new_tz_name
+        e['date_iso'] = new_date_iso
+        e['date_display'] = new_date_display
         return self._save_event(e)
 
     @gl.public.write.payable
@@ -553,13 +849,17 @@ class FairGate(gl.Contract):
         e = self._load_event(event_id)
         if e['status'] in ('EVENT_HELD', 'CANCELLED'):
             fail('EVENT_ALREADY_SETTLED')
-        # Date gate, enforced on-chain: settlement is refused before
-        # the day after the event date. The clock is the transaction
-        # datetime — deterministic across validators, fixed when the
-        # transaction is accepted. String comparison works because
-        # both sides are ISO dates (YYYY-MM-DD).
-        today = datetime.now(timezone.utc).date().isoformat()
-        if today <= e['date_iso']:
+        # Time gate, enforced on-chain with Unix timestamps: the
+        # transaction datetime (GenLayer-native, deterministic —
+        # every validator re-executing the transaction sees the
+        # same pinned datetime) must be at or after the event's
+        # settlement timestamp. No UTC date strings are compared.
+        # An unconfigured event has no settlement timestamp and
+        # cannot settle.
+        if not e['parties_set'] or int(e['settle_after_ts']) <= 0:
+            fail('EVENT_NOT_CONFIGURED')
+        tx_ts = int(datetime.now(timezone.utc).timestamp())
+        if tx_ts < int(e['settle_after_ts']):
             fail('TOO_EARLY')
         checked = _run_check(e['source_a_url'], e['source_b_url'],
                              e['id_a'], e['id_b'])
@@ -612,7 +912,7 @@ class FairGate(gl.Contract):
 
     @gl.public.view
     def get_protocol(self) -> str:
-        return 'fairgate-1.2'
+        return 'fairgate-1.3'
 
     @gl.public.view
     def get_creator(self) -> str:
