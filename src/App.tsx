@@ -77,11 +77,9 @@ export default function App() {
   const refresh = useCallback(async () => {
     try {
       const r = await readAll();
-      // The contract reports a held event as EVENT_HELD; the UI's status
-      // vocabulary is HELD. Normalize once here so every status check,
-      // stamp and gloss below agrees — an unmapped status would leave the
-      // buy button enabled on a settled event and print a raw i18n key.
-      setEvents(r.events.map((e) => ({ ...e, status: e.status === 'EVENT_HELD' ? 'HELD' : e.status })));
+      // Preserve canonical values for machine-readable readback and export.
+      // Poster labels are mapped only at the point of rendering below.
+      setEvents(r.events);
       setTickets(r.tickets);
       setCounts(r.counts);
       setReadback(r.is_finalized_readback ? 'ok' : 'failed');
@@ -326,8 +324,9 @@ export default function App() {
           <p className="section-sub">{tr('app.postersSub')}</p>
           <div className="poster-wall">
             {events.map((ev) => {
+              const status = ev.status === 'EVENT_HELD' ? 'HELD' : ev.status;
               const soldOut = ev.tickets_sold >= ev.tickets_total;
-              const settled = ev.status === 'HELD' || ev.status === 'CANCELLED' || ev.status === 'POSTPONED';
+              const settled = status === 'HELD' || status === 'CANCELLED' || status === 'POSTPONED';
               // Time gate, enforced on-chain with Unix timestamps:
               // the contract refuses any settlement before
               // settle_after_ts (first second of the day after the
@@ -348,10 +347,10 @@ export default function App() {
                     <div className="poster-artist">{ev.artist}</div>
                     <div className="poster-venue">{ev.venue} · {ev.city}</div>
                     <div className="poster-date mono">{ev.date_display}</div>
-                    <div className={'status-stamp ' + (ev.status === 'HELD' ? 'stamp-held' : ev.status === 'CANCELLED' ? 'stamp-cancelled' : ev.status === 'POSTPONED' ? 'stamp-postponed' : 'stamp-neutral')}>
-                      {ev.status}
+                    <div className={'status-stamp ' + (status === 'HELD' ? 'stamp-held' : status === 'CANCELLED' ? 'stamp-cancelled' : status === 'POSTPONED' ? 'stamp-postponed' : 'stamp-neutral')}>
+                      {status}
                     </div>
-                    <div className="status-gloss small">{tr('app.status_' + ev.status)}</div>
+                    <div className="status-gloss small">{tr('app.status_' + status)}</div>
                     {settled && <div className="small dim">{tr('app.historicalTag')}</div>}
                   </div>
                   <div className="poster-body">

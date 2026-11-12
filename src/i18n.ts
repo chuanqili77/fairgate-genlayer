@@ -142,7 +142,7 @@ export const STRINGS: Record<Lang, Record<string, string>> = {
   },
   zh: {
     'app.tagline': '防黄牛票务，按真实演出结果结算。',
-    'app.intro': '一个票档，一条转售规则。面值 10 GEN，转售上限 11 GEN，每次转售的 10% 归艺人。演出结束后，独立验证者读取场馆官方页与独立来源——托管的票款按裁决流向。',
+    'app.intro': '一个票档，一条转售规则。面值 10 GEN，转售上限 11 GEN，每次转售的 10% 归艺人。演出结束后，独立验证者读取两个固定公布的来源——托管的票款按裁决流向。',
     'app.connect': '连接钱包',
     'app.tempAccount': '使用临时测试账号',
     'app.disconnect': '断开连接',
