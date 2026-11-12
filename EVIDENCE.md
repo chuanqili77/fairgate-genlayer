@@ -79,7 +79,7 @@
 - No on-chain POSTPONED case (no real postponed concert with dual fetchable sources was found); branch implemented + mock-covered.
 - UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed, mock-covered only.
 - BAD_ADDRESS configure guard: all three events configured once at run start, error path unreachable afterwards.
-- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. Its 20 GEN escrow stays open until after the real date.
+- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. Its 20 GEN escrow stays open until after the real date. Studionet has no clock, so the contract cannot refuse an early settle: the keyword rule would return EVENT_HELD and pay the organizer. The site disables the settle button until after the show date; the contract itself stays permissionless.
 
 ## Browser write loop
 

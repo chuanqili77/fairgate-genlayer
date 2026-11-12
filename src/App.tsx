@@ -74,7 +74,11 @@ export default function App() {
   const refresh = useCallback(async () => {
     try {
       const r = await readAll();
-      setEvents(r.events);
+      // The contract reports a held event as EVENT_HELD; the UI's status
+      // vocabulary is HELD. Normalize once here so every status check,
+      // stamp and gloss below agrees — an unmapped status would leave the
+      // buy button enabled on a settled event and print a raw i18n key.
+      setEvents(r.events.map((e) => ({ ...e, status: e.status === 'EVENT_HELD' ? 'HELD' : e.status })));
       setTickets(r.tickets);
       setCounts(r.counts);
       setReadback(r.is_finalized_readback ? 'ok' : 'failed');
@@ -248,6 +252,10 @@ export default function App() {
             {events.map((ev) => {
               const soldOut = ev.tickets_sold >= ev.tickets_total;
               const settled = ev.status === 'HELD' || ev.status === 'CANCELLED' || ev.status === 'POSTPONED';
+              // No clock on Studionet: the contract cannot refuse an early
+              // settle, and the keyword rule would return EVENT_HELD before
+              // the show. The UI disables settle until after the event date.
+              const future = ev.date_iso > new Date().toISOString().slice(0, 10);
               const band = ev.event_id === 1 ? 'band-oasis' : 'band-future';
               return (
                 <article className="poster" key={ev.event_id}>
@@ -288,12 +296,12 @@ export default function App() {
                         <p className="small dim">{tr('app.verdictRule')}</p>
                         <button
                           className="btn btn-warn btn-block"
-                          disabled={!finalized || settled || !!busy['settle-' + ev.event_id]}
+                          disabled={!finalized || settled || future || !!busy['settle-' + ev.event_id]}
                           onClick={() => doWrite('settle_event ' + ev.event_id, 'settle-' + ev.event_id, 'settle_event', [ev.event_id], 0n, false)}
                         >
                           {busy['settle-' + ev.event_id] ? tr('app.settling') : tr('app.settle')}
                         </button>
-                        <p className="small dim">{tr('app.settleNote')}</p>
+                        <p className="small dim">{future ? tr('app.settleFuture') : tr('app.settleNote')}</p>
                         {ev.verdict && ev.verdict !== 'NOT_SETTLED' ? (
                           <div className="verdict-block">
                             <div className={'stamp ' + stampClass(ev.verdict)}>{ev.verdict}</div>

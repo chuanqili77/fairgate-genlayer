@@ -175,5 +175,33 @@ after each negative and fails the run if anything changed.
   happen for these six URLs right now. Covered by mock tests.
 - E3 settlement: E3's real date is 2026-12-09, in the future. It is
   not settled in this run by design; settling it before the show
-  would be a misuse of the demo. Its escrow (20 GEN) stays open
-  until after the real date, when it can be settled like E1/E2.
+  would be a misuse of the demo. Studionet has no clock, so the
+  contract cannot refuse an early settle: the keyword rule would
+  return EVENT_HELD (neither source says cancelled or postponed)
+  and pay the organizer. The site disables the settle button until
+  after the show date; the contract itself stays permissionless.
+  Its escrow (20 GEN) stays open until after the real date, when
+  it can be settled like E1/E2.
+
+## Browser write loop (pre-registered before the browser run, 2026-11-12)
+
+Two tabs, two in-browser temporary test accounts (each tab keeps its
+own session key). Do NOT press settle on any event: E1/E2 are already
+settled, and E3's settle button is disabled until after its show date
+(2026-12-09) — settling E3 early would return EVENT_HELD by the
+keyword rule. No real wallet is used.
+
+| Step | Expected |
+|------|----------|
+| Cold start, no wallet | Page renders in English by default; before any FINALIZED readback the values are dashes + UNCONFIRMED and export is disabled; contract address is exactly 0x1001588861d740A600497523C56Fe96fd425A620. E1's poster shows HELD (never the raw text EVENT_HELD and never a raw key like app.status_EVENT_HELD); its Buy button is disabled. E3's settle button is disabled with the note that settlement opens after the show date. After readback: 3 events, 6 tickets, 20 GEN escrow. |
+| Tab 1, temp account A buys 1 E3 ticket | 10 GEN escrowed, ticket #7, ACTIVE, owner A, FINALIZED. |
+| Tab 1, A lists ticket #7 for resale at 11 GEN | LISTED at 11 GEN (the cap, included), FINALIZED. |
+| Tab 2, temp account B buys the resale | 11 GEN paid, ticket #7 owner B, ACTIVE; A seller credit 9.9 GEN; artist credit 1.1 GEN; FINALIZED. |
+| Tab 1, A withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; ticket #7 shows Withdrawn for the seller credit. |
+| Artist royalty 1.1 GEN | Stays credited: the artist address belongs to the evidence run (key deleted under the checkpoint rule), same disclosure pattern as CallSettle's C6. Not withdrawn in this run; withdrawal of a royalty credit is proven by the evidence run's withdrawals. |
+
+Ledger after the browser loop (exact):
+- GEN in: 92 + 10 + 11 = 113 GEN
+- GEN withdrawn on-chain: 72 + 9.9 = 81.9 GEN
+- Contract balance 31.1 GEN = E3 escrow 30 GEN (3 tickets x 10) + artist royalty credit 1.1 GEN (unwithdrawn, see above); escrowed 30 GEN
+- Tickets: 7, E3 sold 3/8; resale volume 32 + 11 = 43 GEN; royalties 3.2 + 1.1 = 4.3 GEN
