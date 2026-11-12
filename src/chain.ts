@@ -284,6 +284,10 @@ export function destroyTemporaryAccount() {
 export async function sendWriteOnly(wallet: Wallet, functionName: string, args: any[], value = 0n) {
   if (!wallet?.client) throw new Error('NO_SIGNER');
   await ensureInjectedChain(wallet);
+  if (functionName !== 'withdraw') {
+    const protocol = await reader.readContract({address: contractAddress() as `0x${string}`, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final' as any});
+    if (protocol !== 'fairgate-1.4') throw new Error('DEPLOYMENT_UPDATE_REQUIRED: fairgate-1.4 required before new sales or settlement; existing withdrawals remain available.');
+  }
   const hash = await wallet.client.writeContract({ address: contractAddress() as `0x${string}`, functionName, args, value, leaderOnly: false });
   return hash as string;
 }

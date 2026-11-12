@@ -48,7 +48,7 @@ const opt = (name, def) => {
   const i = args.indexOf(name);
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 };
-const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.3.json'));
+const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.4.json'));
 const TX_PATH = path.join(REPO, 'evidence', 'transactions.json');
 const GEN = 1000000000000000000n;
 

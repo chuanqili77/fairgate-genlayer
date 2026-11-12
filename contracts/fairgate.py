@@ -35,10 +35,10 @@ a source-URL allowlist; v1 does not have one and does not claim one.
      (b) Wembley Park district guide (independent operator, Quintain;
          not the venue, not the artist, not the promoter):
          https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/
-         It states: "Oasis played Wembley Stadium in 2025." Both
-         sources therefore contain positive, past-tense evidence that
-         this event took place; the original event listing alone did
-         not establish that it had happened.
+         It states: "Oasis played Wembley Stadium in 2025." These sources establish general performance history, but do
+         not explicitly tie a completed show to 25 July 2025. The
+         V1.4 exact-date rule therefore does not authorize E1 payment
+         from this text. A scheduled listing alone is also insufficient.
   E2 CANCELLED: Future & Metro Boomin – We Trust You Tour,
      Bridgestone Arena, Nashville, 2024-08-06 20:00.
      (a) venue official page:
@@ -114,7 +114,8 @@ exact equality, no tolerance. The rule:
   - both sources contain a cancel word -> CANCELLED
   - both sources contain a postpone word -> POSTPONED
   - both sources contain explicit past-tense evidence that the
-    identified event was performed / took place, and neither source
+    identified event was performed / took place on its exact configured
+    date in the same sentence as the act and venue, and neither source
     contains a cancel or postpone word -> EVENT_HELD
   - absence of cancel/postpone words is NOT proof of an event being
     held; without positive held evidence from both sources the result
@@ -407,7 +408,7 @@ def _scoped_text(html):
     return ' '.join([title, _meta_text(html)] + ld_texts + [body_text])
 
 
-def _scan(html, id_a, id_b):
+def _scan(html, id_a, id_b, event_date=""):
     """Outcome flags + identity check on scoped page text only.
 
     HELD is positive evidence, not the absence of a cancellation word.
@@ -433,12 +434,35 @@ def _scan(html, id_a, id_b):
         r'\bwere staged\b',
         r'\bbrought the curtain down\b',
     )
-    held = any(re.search(pattern, low) for pattern in held_patterns)
+    # Evidence must describe the identified act at the identified venue
+    # in the same sentence. A different performance elsewhere on a page
+    # does not authorize release. Negated, conditional and future copy
+    # is deliberately rejected even if a past-tense token is present.
+    held = False
+    for sentence in re.split(r'[.!?;]+', low):
+        if id_a.lower() not in sentence or id_b.lower() not in sentence:
+            continue
+        if re.search(r'\b(?:not|never|no|neither|nor|if|unless|would|could|might|will)\b', sentence):
+            continue
+        if event_date:
+            year, month, day = event_date.split('-')
+            names = ('january', 'february', 'march', 'april', 'may', 'june',
+                     'july', 'august', 'september', 'october', 'november', 'december')
+            name = names[int(month) - 1]
+            d = str(int(day))
+            date_patterns = (re.escape(event_date),
+                r'\b' + d + r'(?:st|nd|rd|th)?\s+' + name + r'\s+' + year + r'\b',
+                r'\b' + name + r'\s+' + d + r'(?:st|nd|rd|th)?[,]?\s+' + year + r'\b')
+            if not any(re.search(pattern, sentence) for pattern in date_patterns):
+                continue
+        if any(re.search(pattern, sentence) for pattern in held_patterns):
+            held = True
+            break
     identity = (id_a.lower() in low) and (id_b.lower() in low)
     return cancel, postpone, identity, held
 
 
-def _fetch_once(url, id_a, id_b):
+def _fetch_once(url, id_a, id_b, event_date=""):
     """One validator's independent fetch + scan. Never raises: a
     fetch failure is reported as ok=False."""
     try:
@@ -461,7 +485,7 @@ def _fetch_once(url, id_a, id_b):
     else:
         return {'ok': False, 'cancel': False, 'postpone': False,
                 'held': False, 'identity': False}
-    cancel, postpone, identity, held = _scan(text, id_a, id_b)
+    cancel, postpone, identity, held = _scan(text, id_a, id_b, event_date)
     return {'ok': True, 'cancel': cancel, 'postpone': postpone,
             'held': held, 'identity': identity}
 
@@ -498,41 +522,22 @@ def _validate_check(res):
               'identity_a', 'identity_b'):
         if not isinstance(res.get(k), bool):
             fail('CHECK_FLAG')
-    ca, cb = res['cancel_a'], res['cancel_b']
-    pa, pb = res['postpone_a'], res['postpone_b']
-    ha, hb = res['held_a'], res['held_b']
-    fa, fb = res['fetch_a_ok'], res['fetch_b_ok']
-    ia, ib = res['identity_a'], res['identity_b']
-    if verdict == 'CANCELLED' and not (ca and cb and ia and ib
-                                        and not ha and not hb
-                                        and not pa and not pb):
-        fail('CHECK_CANCELLED')
-    if verdict == 'POSTPONED' and not (pa and pb and ia and ib
-                                        and not ha and not hb
-                                        and not ca and not cb):
-        fail('CHECK_POSTPONED')
-    if verdict == 'EVENT_HELD' and (not ha or not hb or ca or cb or pa or pb
-                                    or not fa or not fb
-                                    or not ia or not ib):
-        fail('CHECK_HELD')
-    if verdict == 'UNREACHABLE' and (fa and fb and ia and ib):
-        fail('CHECK_UNREACHABLE')
-    if verdict == 'SOURCES_DISAGREE' and (not fa or not fb
-                                          or not ia or not ib):
-        fail('CHECK_DISAGREE')
-    if verdict == 'SOURCES_DISAGREE':
-        agreed = ((ca and cb and not (ha or hb or pa or pb))
-                  or (pa and pb and not (ha or hb or ca or cb))
-                  or (ha and hb and not (ca or cb or pa or pb)))
-        if agreed:
-            fail('CHECK_DISAGREE')
+    a = {
+        'ok': res['fetch_a_ok'], 'identity': res['identity_a'],
+        'cancel': res['cancel_a'], 'postpone': res['postpone_a'],
+        'held': res['held_a']}
+    b = {'ok': res['fetch_b_ok'], 'identity': res['identity_b'],
+         'cancel': res['cancel_b'], 'postpone': res['postpone_b'],
+         'held': res['held_b']}
+    if verdict != _verdict_from(a, b):
+        fail('CHECK_' + verdict.replace('EVENT_', ''))
     return res
 
 
-def _run_check(url_a, url_b, id_a, id_b):
+def _run_check(url_a, url_b, id_a, id_b, event_date=""):
     def leader_fn():
-        a = _fetch_once(url_a, id_a, id_b)
-        b = _fetch_once(url_b, id_a, id_b)
+        a = _fetch_once(url_a, id_a, id_b, event_date)
+        b = _fetch_once(url_b, id_a, id_b, event_date)
         return _validate_check({
             'verdict': _verdict_from(a, b),
             'cancel_a': a['cancel'], 'cancel_b': b['cancel'],
@@ -553,8 +558,9 @@ def _run_check(url_a, url_b, id_a, id_b):
             mine = leader_fn()
         except Exception:
             return False
-        leader = result.calldata
-        if not isinstance(leader, dict):
+        try:
+            leader = _validate_check(result.calldata)
+        except Exception:
             return False
         return all(leader.get(k) == mine.get(k) for k in
                    ('verdict', 'cancel_a', 'cancel_b', 'postpone_a',
@@ -565,7 +571,7 @@ def _run_check(url_a, url_b, id_a, id_b):
     return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
 
-@gl.evm.contract_interface@gl.evm.contract_interface
+@gl.evm.contract_interface
 class _Recipient:
     class View:
         pass
@@ -640,8 +646,8 @@ class FairGate(gl.Contract):
         e1 = _event(
             'Oasis', 'Wembley Stadium', 'London',
             '2025-07-25', '25 July 2025',
-            'http://www.wembleystadium.com/events/2025/OASIS',
-            'Wembley Stadium — official event page',
+            'https://www.wembleystadium.com/news/2025/09/30/12/23/OASIS-BRING-THE-CURTAIN-DOWN-ON-RECORD-BREAKING-CONCERT-SEASON-AT-WEMBLEY-STADIUM',
+            'Wembley Stadium — official retrospective',
             'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/',
             'Wembley Park — district guide ("Oasis played Wembley Stadium in 2025")',
             'oasis', 'wembley')
@@ -902,7 +908,7 @@ class FairGate(gl.Contract):
         if tx_ts < int(e['settle_after_ts']):
             fail('TOO_EARLY')
         checked = _run_check(e['source_a_url'], e['source_b_url'],
-                             e['id_a'], e['id_b'])
+                             e['id_a'], e['id_b'], e['date_iso'])
         verdict = checked['verdict']
         if verdict in ('UNREACHABLE', 'SOURCES_DISAGREE'):
             # Fail-closed: literally no state change. Settlement can
@@ -952,7 +958,7 @@ class FairGate(gl.Contract):
 
     @gl.public.view
     def get_protocol(self) -> str:
-        return 'fairgate-1.3'
+        return 'fairgate-1.4'
 
     @gl.public.view
     def get_creator(self) -> str:

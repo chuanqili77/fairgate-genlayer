@@ -1,5 +1,11 @@
 # FairGate — anti-scalper concert tickets with consensus event-outcome settlement
 
+Current source: **fairgate-1.4 (not deployed)**. The published deployment manifest and Pages may still reference historical V1.3. Historical receipts do not validate the revised payout rule. See [EVIDENCE.md](EVIDENCE.md) and [evidence/source-status.json](evidence/source-status.json).
+
+V1.4 requires each independent source to identify artist, venue and the exact configured date in an explicit past-tense performance sentence. Scheduled listings, negation, conditional copy and tour-wide retrospectives do not authorize organizer release. Insufficient or contradictory evidence leaves funds locked. The E1 fixed sources currently lack exact-date confirmation under this stricter rule. Local tests and build pass; new deployment and live acceptance are outstanding.
+
+The sections below describe the historical V1.3 deployment unless explicitly labeled V1.4. Original V1.3 documentation is preserved byte-for-byte in evidence/v1.3/.
+
 Live site: https://chuanqili77.github.io/fairgate-genlayer/
 
 FairGate sells concert tickets as on-chain stubs with a hard resale

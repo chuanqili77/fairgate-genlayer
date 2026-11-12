@@ -1,0 +1,9 @@
+{
+  "protocol": "fairgate-1.4",
+  "source_file": "contracts/fairgate.py",
+  "source_sha256": "468698567c09b902a8be9a27250d60ea93993cb7af4f9f7a9d0d89b6aeecd6f6",
+  "deployed": false,
+  "historical_protocol": "fairgate-1.3",
+  "historical_contract": "0x8883831222208CcbAf34DAcb8ac08f167edA6c6C",
+  "note": "Historical V1.3 receipts do not prove the V1.4 positive-evidence release rule."
+}

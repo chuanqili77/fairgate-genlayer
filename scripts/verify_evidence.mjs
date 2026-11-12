@@ -22,11 +22,13 @@ const RPC_URL = 'https://studio.genlayer.com/api';
 const CHAIN_ID = 61999;
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const reader = createClient({chain: studionet});
-const deployment = JSON.parse(fs.readFileSync(path.join(REPO, 'evidence', 'deployment.json'), 'utf8'));
-const txs = JSON.parse(fs.readFileSync(path.join(REPO, 'evidence', 'transactions.json'), 'utf8'));
+const historical = process.argv.includes('--historical-v13');
+const evidenceDir = historical ? 'evidence/v1.3' : 'evidence';
+const deployment = JSON.parse(fs.readFileSync(path.join(REPO, evidenceDir, 'deployment.json'), 'utf8'));
+const txs = JSON.parse(fs.readFileSync(path.join(REPO, evidenceDir, 'transactions.json'), 'utf8'));
 let browser = null;
 try {
-  browser = JSON.parse(fs.readFileSync(path.join(REPO, 'docs', 'browser-transactions.json'), 'utf8'));
+  browser = JSON.parse(fs.readFileSync(path.join(REPO, historical ? evidenceDir : 'docs', 'browser-transactions.json'), 'utf8'));
 } catch { browser = null; }
 const browserTxs = Array.isArray(browser?.transactions) ? browser.transactions : [];
 const ADDRESS = deployment.contract_address;
@@ -47,7 +49,9 @@ function leaderReceipt(tx) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // 1. Byte parity: deployed code == repo source, byte for byte.
-const source = fs.readFileSync(path.join(REPO, 'contracts', 'fairgate.py'), 'utf8');
+const source = fs.readFileSync(path.join(REPO, historical ? evidenceDir : 'contracts', 'fairgate.py'), 'utf8');
+if (!historical && sha(source) !== deployment.source_sha256) throw new Error('SOURCE_NOT_DEPLOYED: current V1.4 source requires a fresh deployment and evidence. Use --historical-v13 only to audit the archived V1.3 deployment.');
+if (historical) console.log('HISTORICAL V1.3 ONLY: these receipts do not verify V1.4 release safety.');
 const onChain = await reader.getContractCode(ADDRESS);
 ok('byte parity (deployed code == repo source)', onChain === source);
 ok('source sha matches deployment.json', sha(source) === deployment.source_sha256);

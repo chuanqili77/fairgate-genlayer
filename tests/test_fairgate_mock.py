@@ -449,6 +449,121 @@ NAV_NOISE = """<html><head><title>Pentatonix | Bridgestone Arena</title></head><
 <main><h1>Pentatonix: Christmas In the City Tour</h1><p>Dec 9, 2026. Bridgestone Arena.</p></main></body></html>"""
 check('nav bar status words ignored', scan(NAV_NOISE, 'pentatonix', 'bridgestone'), (False, False, True, False))
 
+# Full contract execution with fixture web responses. This is a Mock harness,
+# not live consensus, and executes the shipped state machine and validator.
+import json
+import itertools
+
+def identity_decorator(fn):
+    return fn
+identity_decorator.payable = identity_decorator
+_GL.public = types.SimpleNamespace(write=identity_decorator, view=identity_decorator)
+class MockContract:
+    @property
+    def balance(self):
+        return self.total_received - self.total_withdrawn
+_GL.Contract = MockContract
+_GL.message = types.SimpleNamespace(sender_address='0x' + '11' * 20, value=0)
+_NS.update(TreeMap=dict, u32=int, u256=int, Address=str)
+exec(compile(_SRC.replace('from genlayer import *', ''), 'fairgate.py (full mock)', 'exec'), _NS)
+
+class Return:
+    def __init__(self, calldata):
+        self.calldata = calldata
+_GL.vm.Return = Return
+fetches = []
+pages = []
+last_validator = None
+last_leader = None
+
+def web_request(url, method):
+    fetches.append(url)
+    value = pages.pop(0)
+    if isinstance(value, Exception):
+        raise value
+    return types.SimpleNamespace(status=200, body=value)
+_GL.nondet = types.SimpleNamespace(web=types.SimpleNamespace(request=web_request))
+
+def consensus(leader_fn, validator_fn):
+    global last_validator, last_leader
+    result = leader_fn()
+    last_validator, last_leader = validator_fn, result
+    if not validator_fn(Return(result)):
+        raise _UserError('MOCK_CONSENSUS_DISAGREE')
+    return result
+_GL.vm.run_nondet_unsafe = consensus
+creator = '0x' + '11' * 20
+organizer = '0x' + '22' * 20
+buyer = '0x' + '33' * 20
+artist = '0x' + '44' * 20
+fee = 10 * 10**18
+held = 'Oasis performed at Wembley Stadium on 25 July 2025.'
+scheduled = 'Oasis will play Wembley Stadium on 25 July 2025.'
+for text in ['Oasis did not perform at Wembley on 25 July 2025.',
+             'Oasis never played Wembley on 25 July 2025.',
+             'Oasis at Wembley on 25 July 2025. Another band performed in London.',
+             'If Oasis performed at Wembley on 25 July 2025, payments would be released.',
+             'Oasis played Wembley on 12 July 2009.',
+             'Oasis performed at Wembley on 26 July 2025.']:
+    check('not proof of target dated performance: ' + text,
+          _NS['_scan'](text, 'oasis', 'wembley', '2025-07-25')[3], False)
+check('dated positive performance evidence', _NS['_scan'](held, 'oasis', 'wembley', '2025-07-25')[3], True)
+check('year-only retrospective cannot establish exact event date',
+      _NS['_scan'](WEMBLEYPARK, 'oasis', 'wembley', '2025-07-25')[3], False)
+# Exhaustive boolean evidence combinations: validator shape is equivalent
+# to the deterministic verdict, including failed-fetch CANCELLED forgery.
+for flags in itertools.product([False, True], repeat=10):
+    keys = ['fetch_a_ok', 'fetch_b_ok', 'identity_a', 'identity_b',
+            'cancel_a', 'cancel_b', 'postpone_a', 'postpone_b', 'held_a', 'held_b']
+    evidence = dict(zip(keys, flags))
+    a = dict(ok=flags[0], identity=flags[2], cancel=flags[4], postpone=flags[6], held=flags[8])
+    b = dict(ok=flags[1], identity=flags[3], cancel=flags[5], postpone=flags[7], held=flags[9])
+    want = _NS['_verdict_from'](a, b)
+    for verdict in _NS['VERDICTS']:
+        try:
+            _NS['_validate_check'](dict(evidence, verdict=verdict))
+            accepted = True
+        except _UserError:
+            accepted = False
+        if accepted != (verdict == want):
+            raise AssertionError((evidence, verdict, want))
+check('all 5120 verdict/evidence combinations checked', True, True)
+for a, b in [(scheduled, scheduled), (held, scheduled), (held, RuntimeError('source offline'))]:
+    _GL.message.sender_address, _GL.message.value = creator, 0
+    c = _NS['FairGate']()
+    start = 1753462800
+    c.configure_event(1, organizer, artist, start, _NS['_derive_settle_after'](start, 60), 60, 'Europe/London')
+    _GL.message.sender_address, _GL.message.value = buyer, fee
+    c.buy_ticket(1)
+    before = (c.get_event(1), c.get_all_tickets(), c.get_counts(), dict(c.credits))
+    pages[:] = [a, b, a, b]
+    fetches.clear()
+    result = json.loads(c.settle_event(1))
+    check('insufficient/contradictory/offline evidence changes nothing', result['changed'], False)
+    check('escrow, tickets and credits unchanged',
+          (c.get_event(1), c.get_all_tickets(), c.get_counts(), dict(c.credits)), before)
+    check('leader and validator independently fetched both sources', len(fetches), 4)
+# A forged leader HELD result is rejected when validator sees listings only.
+pages[:] = [scheduled, scheduled]
+forged = dict(last_leader, verdict='EVENT_HELD', held_a=True, held_b=True,
+              fetch_a_ok=True, fetch_b_ok=True, identity_a=True, identity_b=True)
+check('validator rejects fabricated EVENT_HELD', last_validator(Return(forged)), False)
+# Correctly identified, dated dual positive proof credits organizer once.
+pages[:] = [held] * 4
+result = json.loads(c.settle_event(1))
+check('dual dated positive proof releases escrow', result['verdict'], 'EVENT_HELD')
+check('organizer credit equals exact escrow', c._credit(organizer), fee)
+check('event escrow zero after credit', json.loads(c.get_event(1))['escrowed_wei'], 0)
+check_raises('settled event cannot credit twice', lambda: c.settle_event(1))
+_NS['_Recipient'].emit_transfer = lambda self, **kwargs: None
+_NS['_Recipient'].__init__ = lambda self, *args: None
+_GL.message.sender_address = buyer
+check_raises('buyer cannot withdraw organizer credit', c.withdraw)
+_GL.message.sender_address = organizer
+c.withdraw()
+check_raises('organizer cannot withdraw twice', c.withdraw)
+check('full state-machine ledger conserved', json.loads(c.get_counts())['contract_balance_wei'], 0)
+
 print()
 if FAILURES:
     print(f"{len(FAILURES)} FAILURES")
