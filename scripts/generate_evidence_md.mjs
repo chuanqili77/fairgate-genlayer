@@ -19,6 +19,8 @@ try {
   browserFile = JSON.parse(fs.readFileSync(path.join(REPO, 'docs', 'browser-transactions.json'), 'utf8'));
 } catch { browserFile = null; }
 const browserTxs = Array.isArray(browserFile?.transactions) ? browserFile.transactions : [];
+const txLink = (h) => `[${h.slice(0, 10)}…](${EXPLORER}/tx/${h})`;
+const addrLink = (a) => `[${a}](${EXPLORER}/address/${a})`;
 const browserRows = browserTxs.map((t) => `| ${t.label} | ${txLink(t.hash)} | ${t.result ?? 'ok'} |`).join('\n');
 const browserSection = browserTxs.length === 0
   ? `## Browser write loop
@@ -40,9 +42,6 @@ ${browserRows}
 `;
 const src = fs.readFileSync(path.join(REPO, 'contracts', 'fairgate.py'));
 const sha = createHash('sha256').update(src).digest('hex');
-
-const txLink = (h) => `[${h.slice(0, 10)}…](${EXPLORER}/tx/${h})`;
-const addrLink = (a) => `[${a}](${EXPLORER}/address/${a})`;
 
 const { execSync } = await import('node:child_process');
 const verifyOut = execSync('node scripts/verify_evidence.mjs', { cwd: REPO, encoding: 'utf8' });

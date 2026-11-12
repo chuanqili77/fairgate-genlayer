@@ -114,10 +114,17 @@
 
 ## Browser write loop
 
-To be recorded on the live site (buy / list / buy-resale /
-seller withdraw / artist withdraw with transaction hashes) in
-docs/browser-transactions.json; this file is re-generated after
-the loop runs.
+Run on the live site with in-browser temporary test accounts
+(testnet GEN only, no real wallet). All transactions re-read
+live: FINALIZED + MAJORITY_AGREE + leader SUCCESS.
+
+| Step | Transaction | Result |
+|------|-------------|--------|
+| b-buy | [0x79ad79a2…](https://explorer-studio.genlayer.com/tx/0x79ad79a26e7d70c0e2cb2364fadc2edfe9efac72916c0b3a5fff7d04ea6584a6) | ok |
+| b-list | [0xfb77fdd9…](https://explorer-studio.genlayer.com/tx/0xfb77fdd9183e8270d9a9c7a948ff1cf726556c8f8e49b40943fa8f84bb1de7b5) | ok |
+| b-buy-resale | [0x3d11ae5c…](https://explorer-studio.genlayer.com/tx/0x3d11ae5c2c393e11107683b67f04073e1add231157dd720dd9040342847a4384) | ok |
+| b-withdraw-seller | [0x492e5c5e…](https://explorer-studio.genlayer.com/tx/0x492e5c5e673c76facaa61685b9d9377f1cb9e17fe7813689e1cb4de5bd01cc86) | ok |
+| b-withdraw-artist | [0x9672dd17…](https://explorer-studio.genlayer.com/tx/0x9672dd173edbd61f03615636296ee7fc0899c981ce45074796fb926d2f67d79c) | ok |
 
 
 ## Verify output
@@ -184,7 +191,13 @@ PASS tx w-b1 (scripted) FINALIZED+AGREE+SUCCESS
 PASS tx w-b2 (scripted) FINALIZED+AGREE+SUCCESS
 PASS tx neg8-double-withdraw (scripted) FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
 
-browser write loop: not yet run — scripted checks above are the complete result for now
+browser write loop: 5 txs recorded, verifying live
+PASS browser file names the same contract
+PASS tx b-buy (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-list (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-buy-resale (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-withdraw-seller (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-withdraw-artist (browser) FINALIZED+AGREE+SUCCESS
 PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid, timestamps stored
 PASS E2 readback: CANCELLED, 2 sold, escrow 0, timestamps stored
 PASS E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, settle_count 1
@@ -211,11 +224,12 @@ PASS credit ART is 0 after withdrawals
 PASS credit B1 is 0 after withdrawals
 PASS credit B2 is 0 after withdrawals
 PASS credit OUT is 0 after withdrawals
-PASS E3 readback (scripted): ON_SALE, 2 sold, escrow 20 GEN, never settled
-PASS counts (scripted): 4 events, 7 tickets
-PASS ledger (scripted): 102 GEN in, 72 out, balance 30 GEN (= E3 20 + E4 10 escrow), escrow 30, royalties 3.2 GEN, resale volume 32 GEN
+PASS E3 readback (post-browser): ON_SALE, 3 sold, escrow 30 GEN, never settled
+PASS ticket 8 (browser buy) readback: ACTIVE, owned by the browser buyer
+PASS counts (post-browser): 4 events, 8 tickets
+PASS ledger (post-browser): 123 GEN in, 83 out, balance 40 GEN (= E3 30 + E4 10 escrow), escrow 40, royalties 4.3 GEN, resale volume 43 GEN
 PASS protocol is fairgate-1.3
 
-verify: 90 PASS, 0 FAIL, 53 scripted txs + 0 browser txs checked
+verify: 97 PASS, 0 FAIL, 53 scripted txs + 5 browser txs checked
 INDEPENDENT VERIFICATION PASS
 ```
