@@ -256,6 +256,17 @@ export function rotateTemporaryAccount() {
   try { sessionStorage.removeItem(TEMP_KEY); sessionStorage.removeItem(TEMP_ACK); } catch { /* ignore */ }
   return temporaryAccount();
 }
+// Restore a temporary account from a key the user saved earlier
+// (pre-payment backup, or the disconnect dialog's last-chance copy).
+// Without this, a reload or a disconnect permanently loses the tab's
+// account — and any unwithdrawn credits under it. Throws BAD_TEMP_KEY
+// on anything that is not a 0x private key (64 hex characters).
+export async function restoreTemporaryAccount(pk: string): Promise<Wallet> {
+  const key = pk.trim();
+  if (!/^0x[0-9a-fA-F]{64}$/.test(key)) throw new Error('BAD_TEMP_KEY');
+  try { sessionStorage.setItem(TEMP_KEY, key); } catch { /* ignore */ }
+  return temporaryAccount();
+}
 export function destroyTemporaryAccount() {
   try { sessionStorage.removeItem(TEMP_KEY); sessionStorage.removeItem(TEMP_ACK); } catch { /* ignore */ }
 }

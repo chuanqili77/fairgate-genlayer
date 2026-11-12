@@ -205,3 +205,34 @@ Ledger after the browser loop (exact):
 - GEN withdrawn on-chain: 72 + 9.9 = 81.9 GEN
 - Contract balance 31.1 GEN = E3 escrow 30 GEN (3 tickets x 10) + artist royalty credit 1.1 GEN (unwithdrawn, see above); escrowed 30 GEN
 - Tickets: 7, E3 sold 3/8; resale volume 32 + 11 = 43 GEN; royalties 3.2 + 1.1 = 4.3 GEN
+
+## Browser write loop, pass 2 (pre-registered before the browser run, 2026-11-12)
+
+Pass 1 proved buy / list / buy-resale in the browser but the seller
+withdrawal failed: tab 1 was reloaded to refresh its readback and the
+reload destroyed temp account A's in-memory session key; the site had
+no key-restore flow. Two fixes shipped since (frontend only, no
+contract change): a Refresh button in the readback strip (refresh
+without reloading) and a restore-temporary-account flow (paste a saved
+0x key), plus a last-chance key copy in the disconnect dialog and the
+missing `app.stubOwner` label. Pass 2 re-runs the loop on a fresh
+ticket and must NOT reload any tab.
+
+Two tabs, two new in-browser temporary test accounts (C in tab 1, D
+in tab 2). Do NOT press settle on any event. Do NOT reload either tab.
+
+| Step | Expected |
+|------|----------|
+| Cold start re-check, no wallet | E1's poster shows HELD (never EVENT_HELD, never a raw key); its Buy button is disabled. Ticket stubs show "Owner: 0x…" (never "app.stubOwner"). The readback strip has a Refresh button. E3's settle button is disabled with the after-show-date note. |
+| Tab 1, temp account C buys 1 E3 ticket | 10 GEN escrowed, ticket #8, ACTIVE, owner C, FINALIZED. |
+| Tab 1, C lists ticket #8 for resale at 11 GEN | LISTED at 11 GEN, FINALIZED. |
+| Tab 2, temp account D buys the resale | 11 GEN paid, ticket #8 owner D, ACTIVE; C seller credit 9.9 GEN; artist credit +1.1 GEN; FINALIZED. |
+| Tab 1, C clicks Refresh (NOT reload) | The readback refreshes in place; C's withdrawable credit shows 9.9 GEN; C's session key survives (no reload happened). |
+| Tab 1, C withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
+| Optional restore check | After the withdrawal, disconnect C (copy the key from the disconnect dialog first), then restore the same key with the restore field: the same address returns. If the restore UI is missing or fails, report it as a defect instead of working around it. |
+
+Ledger after pass 2 (exact):
+- GEN in: 113 + 10 + 11 = 134 GEN
+- GEN withdrawn on-chain: 72 + 9.9 = 81.9 GEN
+- Contract balance 52.1 GEN = E3 escrow 40 GEN (4 tickets x 10) + pass-1 seller credit 9.9 GEN to A (key lost on reload in pass 1, unwithdrawn, disclosed) + artist royalty credits 2.2 GEN (1.1 + 1.1, unwithdrawn, disclosed); escrowed 40 GEN
+- Tickets: 8, E3 sold 4/8; resale volume 43 + 11 = 54 GEN; royalties 4.3 + 1.1 = 5.4 GEN

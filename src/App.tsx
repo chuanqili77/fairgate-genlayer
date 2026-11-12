@@ -16,7 +16,7 @@ import {
   waitFinalized, sendWriteOnly,
   injectedProvider, walletKind, connectInjected,
   tempPrivateKey, isTempKeyAcked, ackTempKey,
-  temporaryAccount, rotateTemporaryAccount, destroyTemporaryAccount,
+  temporaryAccount, rotateTemporaryAccount, restoreTemporaryAccount, destroyTemporaryAccount,
   shortAddr, gen, fmtReadbackTime,
 } from './chain';
 import type { EventRec, TicketRec, Counts, Wallet, PendingTx, MyTx } from './chain';
@@ -64,6 +64,7 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
   const [resalePrice, setResalePrice] = useState<Record<number, string>>({});
+  const [restoreKey, setRestoreKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -231,16 +232,38 @@ export default function App() {
           </span>
           {readback === 'ok' && <span className="mono small">{tr('app.readbackTime')}: {fmtReadbackTime(readbackAt)}</span>}
           {readback === 'failed' && <button className="btn btn-small" onClick={refresh}>{tr('app.retryReadback')}</button>}
+          {readback === 'ok' && <button className="btn btn-small" onClick={async () => { await refresh(); await refreshCredit(wallet); }}>{tr('app.refresh')}</button>}
           {wallet && <span className="mono small">{wallet.mode === 'temporary' ? 'TEMP · ' : walletKind() + ' · '}{shortAddr(wallet.address)}</span>}
         </div>
         <p className="intro">{tr('app.intro')}</p>
         {err && <p className="alert alert-err" role="alert">{err}</p>}
         {notice && <p className="alert alert-ok">{notice}</p>}
         {!wallet && (
-          <p className="temp-row">
-            <button className="btn btn-ghost" onClick={useTempAccount}>{tr('app.tempAccount')}</button>
-            <span className="small dim">{tr('app.tempNote')}</span>
-          </p>
+          <>
+            <p className="temp-row">
+              <button className="btn btn-ghost" onClick={useTempAccount}>{tr('app.tempAccount')}</button>
+              <span className="small dim">{tr('app.tempNote')}</span>
+            </p>
+            <p className="temp-row">
+              <input
+                type="password"
+                value={restoreKey}
+                onChange={(e) => setRestoreKey(e.target.value)}
+                placeholder={tr('app.restorePlaceholder')}
+                aria-label={tr('app.restorePlaceholder')}
+                autoComplete="off"
+              />
+              <button
+                className="btn btn-ghost"
+                disabled={!restoreKey.trim()}
+                onClick={async () => {
+                  setErr('');
+                  try { setWallet(await restoreTemporaryAccount(restoreKey)); setRestoreKey(''); }
+                  catch { setErr(tr('app.restoreBadKey')); }
+                }}
+              >{tr('app.restoreBtn')}</button>
+            </p>
+          </>
         )}
       </header>
 
@@ -530,6 +553,15 @@ export default function App() {
           <div className="modal">
             <h3>{tr('app.disconnectTitle')}</h3>
             <p>{tr('app.disconnectBody')}</p>
+            {wallet?.mode === 'temporary' && (
+              <>
+                <p className="small dim">{tr('app.disconnectKeyNote')}</p>
+                <p className="mono key-box">{tempPrivateKey() ?? '—'}</p>
+                <div className="modal-actions">
+                  <button className="btn btn-ghost" onClick={() => { try { navigator.clipboard.writeText(tempPrivateKey() ?? ''); setNotice(tr('app.copied')); } catch { /* ignore */ } }}>{tr('app.copyKey')}</button>
+                </div>
+              </>
+            )}
             <div className="modal-actions">
               <button className="btn btn-warn" onClick={disconnect}>{tr('app.disconnectConfirm')}</button>
               <button className="btn btn-ghost" onClick={() => setShowDisconnect(false)}>{tr('app.cancel')}</button>
