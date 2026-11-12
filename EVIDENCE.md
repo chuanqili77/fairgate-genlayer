@@ -130,8 +130,16 @@ account now also triggers a readback + credit refresh (the credit
 previously showed a dash until a manual REFRESH). Rebuilt and pushed;
 re-verified by a fresh browser cold start (see below).
 
-Re-check after the fix: pending a fresh browser cold start (to be
-recorded here once done).
+Re-check after the fix (fresh browser cold start, 2026-11-12 15:30–15:35
+CST, two fresh tabs, no wallet, no transactions sent): the stale v1.1
+records are gone. The "TRANSACTIONS FROM THIS BROWSER" section does
+not render at all on a fresh browser — by design it renders only when
+this browser holds transactions for this contract (myTxs.length > 0),
+and the page text contains no stale entries. Readback still exact
+(113 in, 83 out, 30 balance, 7 tickets, E3 3/8). Note: the first
+cold-start readback took 90+ seconds (Studionet RPC slowness; it
+completed after a refresh, second tab ~60s) — the 30s-timeout + retry
+path works, but a cold start can be slow when the RPC is slow.
 
 ## Verify output
 
