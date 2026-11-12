@@ -47,16 +47,17 @@
 | 34 | w-b2 | [0xd7f9523d…](https://explorer-studio.genlayer.com/tx/0xd7f9523d5e7c76922711dfe3f874f07c4684cc6516d45e724bb49268706ea8ce) | ok |
 | 35 | neg8-double-withdraw | [0x30df9657…](https://explorer-studio.genlayer.com/tx/0x30df9657cdb6137dba88c16eb7a04fd83883312f15b68442249961a5f3a347d3) | error-observed |
 
-## Final ledger (pre-registered in EXPECTED.md, confirmed by verify_evidence.mjs)
+## Final ledger (pre-registered in EXPECTED.md, confirmed by verify_evidence.mjs — post-browser state)
 
-- 92 GEN in = 72 GEN withdrawn + 20 GEN live E3 escrow, contract balance 20 GEN
-- Artist royalties paid: 3.2 GEN
-- Resale volume: 32 GEN
+- 134 GEN in = 72 GEN withdrawn + 62 GEN contract balance, every GEN accounted for
+- Contract balance 62 GEN = E3 escrow 40 GEN (4 tickets x 10) + seller credits 9.9 + 9.9 GEN (browser passes 1–2, keys lost, disclosed) + artist royalties 2.2 GEN (unwithdrawn, disclosed)
+- Artist royalties: 5.4 GEN total (3.2 withdrawn in the evidence run + 2.2 credited in the browser passes)
+- Resale volume: 54 GEN
 - E1 Oasis Live '25: EVENT_HELD, 2 tickets sold, organizer paid 20 GEN
 - E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded 10 GEN each
-- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026: ON_SALE, 2 tickets sold, 20 GEN escrowed, NOT settled (real date in the future — the 20 GEN balance is live ticket escrow, not stranded value)
-- Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3)
-- All wallet credits 0 after final withdrawals
+- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026: ON_SALE, 4 tickets sold, 40 GEN escrowed, NOT settled (real date in the future — the 40 GEN balance is live ticket escrow, not stranded value)
+- Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3), #7 ACTIVE (0x55b3…3c41, E3, browser pass 1), #8 ACTIVE (0xd4bb…4337, E3, browser pass 2)
+- Evidence-run wallet credits 0 after final withdrawals; browser credits (A 9.9, C 9.9, artist 2.2) remain credited on-chain and disclosed
 
 ## Adversarial cases (all on-chain)
 
@@ -79,12 +80,39 @@
 - No on-chain POSTPONED case (no real postponed concert with dual fetchable sources was found); branch implemented + mock-covered.
 - UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed, mock-covered only.
 - BAD_ADDRESS configure guard: all three events configured once at run start, error path unreachable afterwards.
-- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. Its 20 GEN escrow stays open until after the real date. Studionet has no clock, so the contract cannot refuse an early settle: the keyword rule would return EVENT_HELD and pay the organizer. The site disables the settle button until after the show date; the contract itself stays permissionless.
+- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. Its 40 GEN escrow stays open until after the real date. Studionet has no clock, so the contract cannot refuse an early settle: the keyword rule would return EVENT_HELD and pay the organizer. The site disables the settle button until after the show date; the contract itself stays permissionless.
 
-## Browser write loop
+## Browser write loop (live site, 2026-11-12)
 
-To be recorded by the reviewer pass on the live site (buy / list /
-buy-resale / settle / withdraw with transaction hashes).
+Pass 1 (ticket #7) and pass 2 (ticket #8) each proved buy / list /
+buy-resale in a real browser; cold start passed both times (English
+default, E1 HELD with Buy disabled, E3 settle disabled with the
+after-show-date note). No settle was pressed in either pass.
+
+| # | Step | Transaction | Result |
+|---|------|-------------|--------|
+| B1 | pass 1: A buys E3 ticket #7, 10 GEN | [0xbd288cc9…](https://explorer-studio.genlayer.com/tx/0xbd288cc94e48d26f65962c10fc32826497a84c93f582f10f8fb0cf5ee2319cb7) | ok, ticket #7 ACTIVE, owner A |
+| B2 | pass 1: A lists #7 at 11 GEN | [0x4fd8c113…](https://explorer-studio.genlayer.com/tx/0x4fd8c1138098d84743c67275f98c94425de26e785d36c0a03776220632d21c33) | ok, LISTED at cap |
+| B3 | pass 1: B buys the resale, 11 GEN | [0x33182f2e…](https://explorer-studio.genlayer.com/tx/0x33182f2e3c1e0a5d45d9fd43a2f52ed99606b1ba905ba12a7d61837e50f219ae) | ok, ticket #7 owner B, A credit 9.9 GEN, artist +1.1 GEN |
+| B4 | pass 2: C buys E3 ticket #8, 10 GEN | [0xa5a4b51a…](https://explorer-studio.genlayer.com/tx/0xa5a4b51a69bfa3d4f3256381f6ca07047c893408eef1b02091e42f9a57431f7b) | ok, ticket #8 ACTIVE, owner C |
+| B5 | pass 2: C lists #8 at 11 GEN | [0x0f0b97a6…](https://explorer-studio.genlayer.com/tx/0x0f0b97a65cf0949abe851773c3f174f88bf4c3c5db8a119f144b675f0e23d495) | ok, LISTED at cap |
+| B6 | pass 2: D buys the resale, 11 GEN | [0x017dc8bd…](https://explorer-studio.genlayer.com/tx/0x017dc8bd2d31914bf55cf330144c9e3e7e45cce48caf1d9e7a21df1d0d667dd1) | ok, ticket #8 owner D, C credit 9.9 GEN, artist +1.1 GEN |
+
+Seller withdrawal was NOT proven in the browser in either pass:
+pass 1 lost A's key on a tab reload (no restore flow existed then);
+pass 2's fixes (Refresh button, restore field, disconnect key copy)
+were proven working in a continuation run — Refresh re-read the
+ledger in place, and the restore flow returned account E
+(0xbc78…0f44) end to end — but C's key existed only in the browser
+clipboard, which had been overwritten, and the browser tools cannot
+paste from the clipboard, so C's 9.9 GEN could not be withdrawn from
+that browser. This is an automation limit, not a site defect; a human
+user with the saved key can paste it into the restore field and
+withdraw. Withdrawal itself is proven by the evidence run's five
+withdrawals. The ticket-owner label fix is in the live bundle
+(grep-verified: `stubOwner":"Owner"`) but was not live-rendered in a
+browser run, because no stub existed under the new bundle. All six
+browser transactions above were re-read live and are FINALIZED.
 
 ## Verify output
 
@@ -131,7 +159,7 @@ PASS tx w-b2 FINALIZED+AGREE+SUCCESS
 PASS tx neg8-double-withdraw FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
 PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid
 PASS E2 readback: CANCELLED, 2 sold, escrow 0
-PASS E3 readback: ON_SALE, 2 sold, escrow 20 GEN, never settled
+PASS E3 readback: ON_SALE, 4 sold, escrow 40 GEN, never settled
 PASS E1 anchors are the probe-verified URLs
 PASS E2 anchors are the probe-verified URLs
 PASS E3 anchors are the probe-verified URLs
@@ -141,16 +169,20 @@ PASS ticket 3 readback == EXPECTED.md (REFUNDED, owner 0xf4fc…)
 PASS ticket 4 readback == EXPECTED.md (REFUNDED, owner 0x1cbd…)
 PASS ticket 5 readback == EXPECTED.md (ACTIVE, owner 0x1cbd…)
 PASS ticket 6 readback == EXPECTED.md (ACTIVE, owner 0x1cbd…)
+PASS ticket 7 readback == EXPECTED.md (ACTIVE, owner 0x55b3…)
+PASS ticket 8 readback == EXPECTED.md (ACTIVE, owner 0xd4bb…)
 PASS credit P1 is 0 after withdrawals
 PASS credit ORG is 0 after withdrawals
-PASS credit ART is 0 after withdrawals
 PASS credit B1 is 0 after withdrawals
 PASS credit B2 is 0 after withdrawals
 PASS credit OUT is 0 after withdrawals
-PASS counts: 3 events, 6 tickets
-PASS ledger: 92 GEN in, 72 out, balance 20 GEN (= E3 live escrow, not stranded), escrow 20, royalties 3.2 GEN, resale volume 32 GEN
+PASS credit pass-1 seller A (0xc2a0…c033) is 9.9 GEN, unwithdrawn (disclosed)
+PASS credit pass-2 seller C (0xb340…5008) is 9.9 GEN, unwithdrawn (disclosed)
+PASS credit artist royalties (1.1 + 1.1) is 2.2 GEN, unwithdrawn (disclosed)
+PASS counts: 3 events, 8 tickets
+PASS ledger: 134 GEN in, 72 out, balance 62 GEN (= E3 escrow 40 + seller credits 9.9 + 9.9 + artist 2.2, all disclosed), escrow 40, royalties 5.4 GEN, resale volume 54 GEN
 PASS protocol is fairgate-1.1
 
-verify: 61 PASS, 0 FAIL, 35 txs checked
+verify: 65 PASS, 0 FAIL, 35 txs checked
 INDEPENDENT VERIFICATION PASS
 ```

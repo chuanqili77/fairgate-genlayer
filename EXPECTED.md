@@ -106,8 +106,9 @@ once per event by configure_event before the first ticket sale.
 | s2-settle-e2 | OUT settle_event(2) | ok, verdict CANCELLED; E2 status CANCELLED; ticket 3 (LISTED, owner B1) REFUNDED +10 GEN; ticket 4 (ACTIVE, owner B2) REFUNDED +10 GEN; E2 escrow 0. Retry up to 3x on MAJORITY_DISAGREE. |
 
 E3 is deliberately NOT settled in this run: its real date (2026-12-09)
-is in the future. It stays ON_SALE with 6 of 8 tickets unsold so the
-live site has a real usable flow (buy / list / buy-resale / withdraw).
+is in the future. It stays ON_SALE with 4 of 8 tickets unsold after
+the browser passes, so the live site keeps a real usable flow
+(buy / list / buy-resale / withdraw).
 
 ### F. Post-settlement negatives (4)
 | Label | Call | Expected error |
@@ -126,29 +127,32 @@ live site has a real usable flow (buy / list / buy-resale / withdraw).
 | w-b2 | B2 withdraw() | ok, 19 GEN (resale 9 + refund 10) |
 | neg8-double-withdraw | ORG withdraw() again | NO_CREDIT |
 
-## Final readback (exact)
+## Final readback (exact — post-browser state, 2026-11-12)
 
 - E1: status EVENT_HELD, verdict EVENT_HELD, tickets_sold 2, escrowed 0, organizer_paid true, settle_count 1.
 - E2: status CANCELLED, verdict CANCELLED, tickets_sold 2, escrowed 0, settle_count 1.
-- E3: status ON_SALE, verdict '', tickets_sold 2, escrowed 20 GEN, settle_count 0, organizer_paid false.
-- Tickets: 1 ACTIVE owner B2 (E1); 2 ACTIVE owner B1 (E1); 3 REFUNDED owner B1 (E2); 4 REFUNDED owner B2 (E2); 5 ACTIVE owner B2 (E3); 6 ACTIVE owner B2 (E3).
-- Credits after all withdrawals: ORG 0, ART 0, B1 0, B2 0, OUT 0.
-- Counts: event_count 3, ticket_count 6, total_received_wei 92 GEN
-  (primary 60 + resales 32), total_withdrawn_wei 72 GEN,
-  contract_balance_wei 20 GEN, escrowed_wei 20 GEN,
-  total_royalties_wei 3.2 GEN, total_resale_volume_wei 32 GEN.
+- E3: status ON_SALE, verdict '', tickets_sold 4, escrowed 40 GEN, settle_count 0, organizer_paid false.
+- Tickets: 1 ACTIVE owner B2 (E1); 2 ACTIVE owner B1 (E1); 3 REFUNDED owner B1 (E2); 4 REFUNDED owner B2 (E2); 5 ACTIVE owner B2 (E3); 6 ACTIVE owner B2 (E3); 7 ACTIVE owner 0x55b3…3c41 (E3, browser pass 1); 8 ACTIVE owner 0xd4bb…4337 (E3, browser pass 2).
+- Credits after all withdrawals: ORG 0, B1 0, B2 0, OUT 0; ART 2.2 GEN, pass-1 seller A 9.9 GEN, pass-2 seller C 9.9 GEN — all three unwithdrawn, disclosed below (browser temp keys lost; the restore flow was proven with a different account, see the browser-loop results).
+- Counts: event_count 3, ticket_count 8, total_received_wei 134 GEN
+  (primary 80 = 60 scripted + 20 browser; resales 54 = 32 scripted
+  + 22 browser), total_withdrawn_wei 72 GEN, contract_balance_wei 62 GEN,
+  escrowed_wei 40 GEN, total_royalties_wei 5.4 GEN,
+  total_resale_volume_wei 54 GEN.
 - Ledger, split in two on purpose:
   - Settled events (E1+E2): 40 GEN primary in, 21 GEN resales in,
     61 GEN withdrawn out, balance 0, escrow 0 — fully closed, same
     shape as v1.
-  - Live event (E3): 20 GEN primary in (tickets 5+6), 11 GEN resale
-    in, 11 GEN of that resale withdrawn as credits (9.9 seller +
-    1.1 royalty), 20 GEN still escrowed in the contract — that is
-    E3's open ticket escrow for a future show, NOT stranded value.
-    The contract balance of 20 GEN is exactly E3's escrowed_wei.
-  - Whole contract: 92 GEN in = 72 GEN withdrawn + 20 GEN live
-    escrow, zero stranded value — every failed-payable negative
-    sent 0 GEN by design.
+  - Live event (E3): 40 GEN primary in (tickets 5+6+7+8), 33 GEN
+    resale in, 11 GEN of the scripted resale withdrawn as credits
+    (9.9 seller + 1.1 royalty), 40 GEN still escrowed in the
+    contract — that is E3's open ticket escrow for a future show,
+    NOT stranded value. The remaining balance is 22 GEN of
+    unwithdrawn browser credits: seller A 9.9 + seller C 9.9 +
+    artist royalties 2.2 (see browser-loop results for why).
+  - Whole contract: 134 GEN in = 72 GEN withdrawn + 62 GEN balance
+    (40 escrow + 22 credited, every GEN accounted for) — every
+    failed-payable negative sent 0 GEN by design.
 
 ## Honest note on failed payables
 
@@ -197,13 +201,14 @@ keyword rule. No real wallet is used.
 | Tab 1, temp account A buys 1 E3 ticket | 10 GEN escrowed, ticket #7, ACTIVE, owner A, FINALIZED. |
 | Tab 1, A lists ticket #7 for resale at 11 GEN | LISTED at 11 GEN (the cap, included), FINALIZED. |
 | Tab 2, temp account B buys the resale | 11 GEN paid, ticket #7 owner B, ACTIVE; A seller credit 9.9 GEN; artist credit 1.1 GEN; FINALIZED. |
-| Tab 1, A withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; ticket #7 shows Withdrawn for the seller credit. |
+| Tab 1, A withdraws the seller credit in-browser | NOT DONE — tab 1 was reloaded to refresh its readback and the reload destroyed A's in-memory session key; the site then had no key-restore flow, so A's 9.9 GEN seller credit stayed credited (recorded on-chain, disclosed). Withdrawal itself is proven by the evidence run's five withdrawals. |
 | Artist royalty 1.1 GEN | Stays credited: the artist address belongs to the evidence run (key deleted under the checkpoint rule), same disclosure pattern as CallSettle's C6. Not withdrawn in this run; withdrawal of a royalty credit is proven by the evidence run's withdrawals. |
 
-Ledger after the browser loop (exact):
+Ledger after the browser loop, pass 1 (actual, not the pre-registered
+expectation — the withdrawal did not happen):
 - GEN in: 92 + 10 + 11 = 113 GEN
-- GEN withdrawn on-chain: 72 + 9.9 = 81.9 GEN
-- Contract balance 31.1 GEN = E3 escrow 30 GEN (3 tickets x 10) + artist royalty credit 1.1 GEN (unwithdrawn, see above); escrowed 30 GEN
+- GEN withdrawn on-chain: 72 GEN (unchanged)
+- Contract balance 41 GEN = E3 escrow 30 GEN (3 tickets x 10) + seller credit 9.9 GEN to A (unwithdrawn, key lost on reload, disclosed) + artist royalty credit 1.1 GEN (unwithdrawn, disclosed); escrowed 30 GEN
 - Tickets: 7, E3 sold 3/8; resale volume 32 + 11 = 43 GEN; royalties 3.2 + 1.1 = 4.3 GEN
 
 ## Browser write loop, pass 2 (pre-registered before the browser run, 2026-11-12)
@@ -231,8 +236,56 @@ in tab 2). Do NOT press settle on any event. Do NOT reload either tab.
 | Tab 1, C withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
 | Optional restore check | After the withdrawal, disconnect C (copy the key from the disconnect dialog first), then restore the same key with the restore field: the same address returns. If the restore UI is missing or fails, report it as a defect instead of working around it. |
 
-Ledger after pass 2 (exact):
+## Browser write loop, pass 2 — results (2026-11-12)
+
+Steps (a)–(c) DONE, all FINALIZED (re-read live by the reviewer):
+- (a) C = 0xb340…5008 bought E3 ticket #8, 10 GEN, tx 0xa5a4b51a69bfa3d4f3256381f6ca07047c893408eef1b02091e42f9a57431f7b.
+- (b) C listed #8 at 11 GEN, tx 0x0f0b97a65cf0949abe851773c3f174f88bf4c3c5db8a119f144b675f0e23d495.
+- (c) D = 0xd4bb…4337 bought the resale, 11 GEN, tx 0x017dc8bd2d31914bf55cf330144c9e3e7e45cce48caf1d9e7a21df1d0d667dd1; ticket #8 ACTIVE, owner D.
+- Cold start re-check PASS: English default, E1 HELD with Buy disabled, E3 settle disabled with the after-show-date note, meters 3 events / 7 tickets / 30 GEN escrow before the loop.
+
+The three fixes were pushed ~1 minute before the browser run and had
+not reached the live Pages deployment when the run started (the
+80e735f fixes had 10 minutes to propagate and were live; the 899fe2a
+fixes were not — the live index.html was still serving the old
+bundle). So the run's first verdicts were: no Refresh button, no
+restore field, stub still "app.stubOwner". Lesson, same as A1/A3:
+after pushing a frontend fix, curl the live index.html and confirm
+the new bundle is serving before starting a browser task.
+
+Continuation run (same browser window, after confirming the new
+bundle index-BN3m_w4O.js ?v=20b23570d1e1 was serving; old bundle
+404):
+- Refresh button: PRESENT and FUNCTIONAL — clicked, the readback
+  timestamp moved 10:07:07 → 10:09:02 in place, no reload; ledger
+  re-read as received 134, withdrawn 72, balance 62, escrowed 40,
+  royalties 5.4, resale 54, events 3, tickets 8.
+- Restore field: PRESENT and FUNCTIONAL — proven end to end with
+  account E (0xbc78…0f44): the new disconnect dialog showed E's key
+  with a COPY PRIVATE KEY control, E disconnected, the same key was
+  typed into the restore field, and E's address returned. Also
+  learned: "USE A TEMPORARY TEST ACCOUNT" after a reload returned
+  the same address E — the temp account persists in browser storage
+  and is re-derived on demand, so a plain reload does not lose it
+  (pass 1's loss was the tab being replaced, not a reload).
+- Owner label: shipped in the new bundle (grep-verified in the live
+  bundle: `stubOwner":"Owner"` / `stubOwner":"持票人"`, rendered via
+  tr('app.stubOwner')) but NOT live-rendered in a browser: tab 2
+  still ran the old bundle (never reloaded, to protect D's session)
+  and tab 1 had no stub to render. Recorded as bundle-verified, not
+  live-rendered.
+- C's withdrawal: NOT DONE. C's key existed only in the browser
+  clipboard, which was overwritten when D's key was copied and
+  again when E's key was copied, and the browser tools cannot paste
+  from the clipboard (fill needs the exact text; Ctrl+V unavailable).
+  This is an automation limit, not a site defect — a human user with
+  C's saved key can paste it into the restore field and withdraw.
+  C's 9.9 GEN seller credit stays recorded on-chain, disclosed.
+  Withdrawal itself remains proven by the evidence run's five
+  withdrawals and by CallSettle's in-browser withdrawal.
+
+Ledger after pass 2 (actual, exact):
 - GEN in: 113 + 10 + 11 = 134 GEN
-- GEN withdrawn on-chain: 72 + 9.9 = 81.9 GEN
-- Contract balance 52.1 GEN = E3 escrow 40 GEN (4 tickets x 10) + pass-1 seller credit 9.9 GEN to A (key lost on reload in pass 1, unwithdrawn, disclosed) + artist royalty credits 2.2 GEN (1.1 + 1.1, unwithdrawn, disclosed); escrowed 40 GEN
+- GEN withdrawn on-chain: 72 GEN (unchanged — no browser withdrawal happened in either pass)
+- Contract balance 62 GEN = E3 escrow 40 GEN (4 tickets x 10) + pass-1 seller credit 9.9 GEN to A (unwithdrawn, key lost, disclosed) + pass-2 seller credit 9.9 GEN to C (unwithdrawn, key unrecoverable from this browser, disclosed) + artist royalty credits 2.2 GEN (unwithdrawn, disclosed); escrowed 40 GEN
 - Tickets: 8, E3 sold 4/8; resale volume 43 + 11 = 54 GEN; royalties 4.3 + 1.1 = 5.4 GEN

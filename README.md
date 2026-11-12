@@ -84,9 +84,11 @@ cannot change the verdict.
   entitled party withdraws with `withdraw()`. A failed payable
   call keeps its value on Studionet, so the evidence run sends
   0 GEN on every failed-payable negative. The settled events
-  close to zero escrow; the 20 GEN contract balance is exactly
-  E3's open ticket escrow for a future show — live money, not
-  stranded value.
+  close to zero escrow; the 62 GEN contract balance is exactly
+  E3's open ticket escrow (40 GEN, live money for a future show)
+  plus 22 GEN of unwithdrawn browser-loop credits (seller A 9.9,
+  seller C 9.9, artist royalties 2.2 — disclosed in EXPECTED.md),
+  not stranded value.
 - On CANCELLED, every current ticket holder (including a ticket
   sitting on a resale listing) is refunded the full 10 GEN face
   price. On POSTPONED, funds stay locked and the event can be
@@ -109,9 +111,10 @@ cannot change the verdict.
   rule tests (keyword scan, verdict mapping, royalty, cap,
   injection).
 
-Final ledger: 92 GEN in = 72 GEN withdrawn + 20 GEN live E3 escrow,
-contract balance 20 GEN (= E3 escrowed_wei), royalties 3.2 GEN,
-resale volume 32 GEN. Settled events (E1+E2) close at 61 GEN in =
+Final ledger (post-browser state): 134 GEN in = 72 GEN withdrawn +
+62 GEN contract balance (40 GEN live E3 escrow + 22 GEN unwithdrawn
+browser-loop credits, disclosed in EXPECTED.md), royalties 5.4 GEN,
+resale volume 54 GEN. Settled events (E1+E2) close at 61 GEN in =
 61 GEN out, balance 0.
 
 ## Usage
@@ -164,4 +167,4 @@ Contract entry points: `configure_event`, `buy_ticket`,
   E3 (Pentatonix, Bridgestone Arena, 9 Dec 2026, ON_SALE), whose
   two sources were probe-verified before deploy (both 200, no
   cancel/postpone words). E3 stays unsettled until after its real
-  date; its 20 GEN escrow is live money, disclosed in EXPECTED.md.
+  date; its 40 GEN escrow is live money, disclosed in EXPECTED.md.

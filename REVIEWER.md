@@ -21,7 +21,7 @@ Bridgestone Arena, Nashville, 9 Dec 2026 (ON_SALE — live, unsettled).
 
 1. `node scripts/byte_parity.mjs` — deployed code matches `contracts/fairgate.py`.
 2. `node scripts/verify_evidence.mjs` — re-reads every evidence transaction live and re-checks the final readback against EXPECTED.md.
-3. Open the live site and wait for the FINALIZED readback: the two settled posters show their verdicts, the Pentatonix poster shows ON_SALE with tickets to buy, and the ledger shows 92 GEN in, 72 GEN out, 20 GEN live E3 escrow.
+3. Open the live site and wait for the FINALIZED readback: the two settled posters show their verdicts, the Pentatonix poster shows ON_SALE with tickets to buy, and the ledger shows 134 GEN in, 72 GEN out, 62 GEN balance (40 GEN live E3 escrow + 22 GEN disclosed browser credits).
 
 ## Anchors (the verdict reads these pages)
 
@@ -81,8 +81,10 @@ Both contain a cancel word → CANCELLED. Both contain a postpone word
 See EVIDENCE.md: 11 negatives, all with exact on-chain error codes
 (incl. PRICE_CAP at 12 GEN, SELF_PURCHASE, EVENT_ALREADY_SETTLED,
 TICKET_NOT_ACTIVE, NO_CREDIT on double withdrawal). Failed payables
-were sent with 0 GEN; the 20 GEN contract balance is exactly E3's
-live ticket escrow, not stranded value.
+were sent with 0 GEN; the 62 GEN contract balance is E3's live
+ticket escrow (40 GEN) plus 22 GEN of disclosed unwithdrawn
+browser-loop credits (seller A 9.9, seller C 9.9, artist 2.2),
+not stranded value.
 
 ## What this project does not prove
 
