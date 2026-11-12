@@ -21,7 +21,7 @@ const opt = (name, def) => {
   const i = args.indexOf(name);
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 };
-const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.4.json'));
+const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.5.json'));
 const CONTRACT_PATH = path.join(REPO, 'contracts', 'fairgate.py');
 const DEPLOYMENT_PATH = path.join(REPO, 'evidence', 'deployment.json');
 

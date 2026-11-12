@@ -1,4 +1,4 @@
-// FairGate: full evidence run on Stable Studionet (61999), v1.4.
+// FairGate: full evidence run on Stable Studionet (61999), v1.5.
 // Pre-registered expectations: EXPECTED.md (written before this run).
 // 5 pre-configure negatives (incl. BAD_SETTLE_AFTER_TS on a wrong
 // settlement timestamp and BAD_TZ_OFFSET on an out-of-range offset)
@@ -48,7 +48,7 @@ const opt = (name, def) => {
   const i = args.indexOf(name);
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 };
-const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.4.json'));
+const CHECKPOINT = opt('--checkpoint', path.resolve(REPO, '..', '.fairgate-checkpoint-v1.5.json'));
 const TX_PATH = path.join(REPO, 'evidence', 'transactions.json');
 const GEN = 1000000000000000000n;
 
@@ -123,7 +123,7 @@ console.log('contract:', ADDRESS);
 for (const k of Object.keys(accounts)) console.log(k, ':', accounts[k].address);
 
 const liveProtocol = await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'});
-if (liveProtocol !== 'fairgate-1.4') throw new Error('WRONG_PROTOCOL: ' + liveProtocol);
+if (liveProtocol !== 'fairgate-1.5') throw new Error('WRONG_PROTOCOL: ' + liveProtocol);
 const ev = cp.evidence || (cp.evidence = {done: {}, tickets: {}});
 const done = ev.done;
 const records = [];

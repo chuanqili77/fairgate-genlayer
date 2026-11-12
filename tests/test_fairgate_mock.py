@@ -606,6 +606,24 @@ check('two explicit target-venue cancellations refund', verdict_from((True, *sca
 check('another city cancellation cannot cancel the target venue', scan(other_city, 'katseye', 'target center')[0], False)
 check('two target-venue postponements keep escrow', verdict_from((True, *scan(linked_postpone, 'katseye', 'target center')), (True, *scan(other_city, 'katseye', 'target center'))), 'POSTPONED')
 
+# Original publication date + matching weekday are required for relative news.
+weeknight = '<meta property="article:published_time" content="2025-07-25T22:55:55.000Z"><p>Oasis performed at Wembley on Friday night, marking their first appearance since 2009.</p>'
+for label, page, expected in [
+    ('original same-day weekday performance', weeknight, True),
+    ('modified date cannot resolve a weekday', weeknight.replace('published_time', 'modified_time'), False),
+    ('different original date cannot resolve weekday', weeknight.replace('2025-07-25T', '2025-07-26T'), False),
+    ('wrong weekday', weeknight.replace('Friday', 'Saturday'), False),
+    ('earlier performance', weeknight.replace('performed', 'previously performed earlier'), False),
+    ('last Friday is not this Friday', weeknight.replace('on Friday', 'on last Friday'), False),
+    ('future weekday listing', weeknight.replace('performed', 'will perform'), False),
+    ('conditional weekday performance', weeknight.replace('Oasis performed', 'If Oasis performed'), False),
+    ('different explicit year', weeknight.replace('night,', 'night in 2024,'), False),
+    ('weekday ticket listing', weeknight.replace('performed', 'tickets on sale'), False),
+    ('other performer', weeknight.replace('Oasis performed', 'Blur performed'), False),
+    ('other venue', weeknight.replace('Wembley', 'Cardiff'), False),
+]:
+    check(label, _NS['_scan'](page, 'oasis', 'wembley', '2025-07-25')[3], expected)
+
 print()
 if FAILURES:
     print(f"{len(FAILURES)} FAILURES")

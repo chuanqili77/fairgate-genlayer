@@ -1,16 +1,16 @@
-# FairGate V1.4 prospective chain test plan
+# FairGate V1.5 prospective chain test plan
 
-Published before V1.4 deployment and transactions. This is a new run, not a correction of the original V1.3 registration archived unchanged in evidence/v1.3/EXPECTED.md. Exact current source SHA is in evidence/source-status.json. No new contract address or result is asserted in advance.
+This V1.5 plan supersedes the unsuccessful V1.4 run, without rewriting its expectations or outcomes; its unchanged registration is archived in evidence/v1.4-first/EXPECTED.md. V1.4 returned UNREACHABLE because GenVM received a Lloyds error page. V1.5 changes the frozen second E1 URL to The Independent and adds original-publication-date resolution for a matching weekday-night past performance. The source was diagnostic-probed before product deployment; those diagnostic transactions are not prospectively registered product tests. This plan is published before V1.5 product deployment and transactions. This is a new run, not a correction of the original V1.3 registration archived unchanged in evidence/v1.3/EXPECTED.md. Exact current source SHA is in evidence/source-status.json. No new contract address or result is asserted in advance.
 
 Face price 10 GEN; resale cap 11 GEN; artist royalty 10%, rounded down in wei. Creator P1 configures organizer ORG and artist ART; B1/B2 are buyers and OUT tests permission rejection. Keys remain outside the repository. E3/E4 open escrow and its entitlement accounts must be retained until eventual settlement.
 
 Frozen source anchors:
-- E1 (2025-07-25): Radio X original same-day first-night report and Lloyds dated completed-gig spending record. Both must independently produce held=true.
+- E1 (2025-07-25): Radio X original same-day first-night report and The Independent original same-day weekday-night performance report. Both must independently produce held=true.
 - E2 (2024-08-06): Bridgestone Arena cancellation and JamBase specific dated cancelled concert record.
 - E3 (2026-12-09): venue and do615 schedule; no early settlement, irrespective of source availability.
 - E4 (2026-11-07): Target Center and iHeart venue-linked postponement report. Another city's cancellation cannot decide this show.
 
-Every validator independently fetches both sources, confirms identity and reproduces all flags including held_a/held_b. Lack of cancellation is never held proof. Unsupported wording, failed fetch or disagreement leaves state and escrow unchanged. Supported positive modes are specified in EXPECTED_V14.md and canonical source. Mock tests are not chain evidence.
+Every validator independently fetches both sources, confirms identity and reproduces all flags including held_a/held_b. Lack of cancellation is never held proof. Unsupported wording, failed fetch or disagreement leaves state and escrow unchanged. Supported positive modes are specified in EXPECTED_V15.md and canonical source. Mock tests are not chain evidence.
 
 Event timestamps, configuration and resale operations below are deterministic prospective inputs. All successful transactions require FINALIZED + MAJORITY_AGREE + leader SUCCESS; negatives additionally require exact expected ERROR and unchanged state. Any wrong result aborts and must be retained, never edited into a pass.
 
@@ -182,7 +182,7 @@ timestamp is 2027-02-21T06:00:00Z).
 
 | Step | Expected |
 |------|----------|
-| Cold start, no wallet | Page renders in English by default; before any FINALIZED readback the values are dashes + UNCONFIRMED and export is disabled; contract address exactly matches the new V1.4 deployment manifest. E1's poster shows HELD (never the raw text EVENT_HELD and never a raw key like app.status_EVENT_HELD); its Buy button is disabled; E1/E2/E4 carry a settled-historical-demo tag. E3's settle button is disabled with the note that settlement opens 2026-12-10 06:00 UTC. After readback: 4 events, 7 tickets, 30 GEN escrow. |
+| Cold start, no wallet | Page renders in English by default; before any FINALIZED readback the values are dashes + UNCONFIRMED and export is disabled; contract address exactly matches the new V1.5 deployment manifest. E1's poster shows HELD (never the raw text EVENT_HELD and never a raw key like app.status_EVENT_HELD); its Buy button is disabled; E1/E2/E4 carry a settled-historical-demo tag. E3's settle button is disabled with the note that settlement opens 2026-12-10 06:00 UTC. After readback: 4 events, 7 tickets, 30 GEN escrow. |
 | Temp account buys 1 E3 ticket | 10 GEN escrowed, ticket #8, ACTIVE, FINALIZED. |
 | Same account lists ticket #8 for resale at 11 GEN | LISTED at 11 GEN (the cap, included), FINALIZED. |
 | Second temp account buys the resale | 11 GEN paid, ticket #8 owner changes, ACTIVE; seller credit 9.9 GEN; artist credit 1.1 GEN; FINALIZED. |

@@ -4,9 +4,11 @@ Live site: https://chuanqili77.github.io/fairgate-genlayer/
 
 FairGate combines fixed-price concert tickets, capped resale and event-outcome settlement on GenLayer Stable Studionet (61999). Tickets cost 10 GEN; resale is capped at 11 GEN with a 10% artist royalty rounded down in wei. Settlement records pull-payment credits for the organizer or current holders.
 
+Current canonical source: **fairgate-1.5, awaiting a matching product deployment and live evidence**. The V1.4 observations below concern the previous source and address. V1.5 fixes the inaccessible second E1 source; see [EXPECTED_V15.md](EXPECTED_V15.md).
+
 ## Positive-evidence settlement
 
-Protocol `fairgate-1.4` requires two independently fetched, fixed publications to identify the act and venue and provide positive evidence of the configured dated performance. Merely finding no cancellation or postponement is insufficient. Supported records are explicit dated past-tense performance prose, an original same-day first-night retrospective, or a dated completed-gig measured-spending record. Planned listings, conditional or negated prose, another act's date, and update timestamps cannot authorize a payout.
+Protocol `fairgate-1.5` requires two independently fetched, fixed publications to identify the act and venue and provide positive evidence of the configured dated performance. Merely finding no cancellation or postponement is insufficient. Supported records are explicit dated past-tense performance prose, an original same-day first-night retrospective, or a dated completed-gig measured-spending record. Planned listings, conditional or negated prose, another act's date, and update timestamps cannot authorize a payout.
 
 Validators independently fetch both URLs and reproduce every verdict, fetch, identity, cancellation, postponement and held flag. The leader's verdict must satisfy the deterministic mapping before equivalence comparison. Unavailable or insufficient evidence returns `UNREACHABLE`; conflicting evidence returns `SOURCES_DISAGREE`. Both preserve all contract state and escrow. Venue-linked cancellation refunds current holders at face value; postponement keeps escrow locked. Only a dual positive `EVENT_HELD` credits the exact event escrow to the organizer, once.
 

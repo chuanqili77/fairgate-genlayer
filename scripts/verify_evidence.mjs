@@ -50,9 +50,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // 1. Byte parity: deployed code == repo source, byte for byte.
 const source = fs.readFileSync(path.join(REPO, historical ? evidenceDir : 'contracts', 'fairgate.py'), 'utf8');
-if (!historical && sha(source) !== deployment.source_sha256) throw new Error('SOURCE_NOT_DEPLOYED: current V1.4 source requires a fresh deployment and evidence. Use --historical-v13 only to audit the archived V1.3 deployment.');
-if (historical) console.log('HISTORICAL V1.3 ONLY: these receipts do not verify V1.4 release safety.');
-if (!historical && txs.complete !== true) throw new Error('INCOMPLETE_EVIDENCE: full V1.4 regression has not completed');
+if (!historical && sha(source) !== deployment.source_sha256) throw new Error('SOURCE_NOT_DEPLOYED: current V1.5 source requires a fresh deployment and evidence. Use --historical-v13 only to audit the archived V1.3 deployment.');
+if (historical) console.log('HISTORICAL V1.3 ONLY: these receipts do not verify V1.5 release safety.');
+if (!historical && txs.complete !== true) throw new Error('INCOMPLETE_EVIDENCE: full V1.5 regression has not completed');
 const onChain = await reader.getContractCode(ADDRESS);
 ok('byte parity (deployed code == repo source)', onChain === source);
 ok('source sha matches deployment.json', sha(source) === deployment.source_sha256);
@@ -179,7 +179,7 @@ ok('E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, se
   && e4.date_iso === '2027-02-20', JSON.stringify(e4));
 ok('E1 anchors are the probe-verified URLs',
   e1.source_a_url === (historical ? 'http://www.wembleystadium.com/events/2025/OASIS' : 'https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/')
-  && e1.source_b_url === (historical ? 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/' : 'https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html'), JSON.stringify(e1));
+  && e1.source_b_url === (historical ? 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/' : 'https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html'), JSON.stringify(e1));
 ok('E2 anchors are the probe-verified URLs',
   e2.source_a_url === 'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour'
   && e2.source_b_url === (historical ? 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets' : 'https://www.jambase.com/show/future-bridgestone-arena-20240806'), JSON.stringify(e2));
@@ -244,7 +244,7 @@ if (browserTxs.length === 0) {
     && counts.total_royalties_wei === 4300000000000000000
     && counts.total_resale_volume_wei === 43000000000000000000, JSON.stringify(counts));
 }
-ok('protocol matches evidence scope', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === (historical ? 'fairgate-1.3' : 'fairgate-1.4'));
+ok('protocol matches evidence scope', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === (historical ? 'fairgate-1.3' : 'fairgate-1.5'));
 
 console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} scripted txs + ${browserTxs.length} browser txs checked`);
 if (fail > 0) { console.log('failures:', failures.join(', ')); process.exit(1); }

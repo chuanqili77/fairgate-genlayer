@@ -1,15 +1,15 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 """FairGate: bounded concert ticket resale and event-outcome settlement.
 
-Protocol fairgate-1.4 on Stable Studionet (61999). A primary ticket
+Protocol fairgate-1.5 on Stable Studionet (61999). A primary ticket
 costs 10 GEN; resale is capped at 11 GEN with a floor-rounded 10%
 artist royalty. All movements create deterministic pull-payment
 credits; the entitled address withdraws exactly once per credit.
 
 Four fixed launch events and two fixed sources per event:
 - E1: Oasis at Wembley, 25 July 2025. Radio X's same-day first-night
-  report (Global) and Lloyds Banking Group's independently measured,
-  explicitly dated gig-spending retrospective establish positive proof.
+  report (Global) and The Independent's original same-day performance
+  report (PA) supply independent positive proof of the first Wembley night.
 - E2: Future & Metro Boomin at Bridgestone Arena, 6 August 2024.
   The venue and JamBase's dated concert record report cancellation.
 - E3: Pentatonix at Bridgestone Arena, 9 December 2026. The venue and
@@ -24,7 +24,8 @@ venue-linked status flags without contradictory status or held proof.
 EVENT_HELD requires positive proof from each source, never merely the
 absence of cancellation. Supported positive records are a dated past
 performance sentence; a same-day first-night report with the original
-publication timestamp and explicit retrospective prose; or a dated
+publication timestamp and explicit retrospective prose; a same-day original
+weekday-night performance report; or a dated
 artist/gig table linked to measured past spending inside that venue.
 Planned listings, forecasts, update timestamps, unrelated acts, other
 dates, and negated/conditional/future prose are insufficient.
@@ -324,7 +325,15 @@ def _scan(html, id_a, id_b, event_date=""):
                 + r'(?=[^>]*content=[\"\']' + re.escape(event_date) + r't)[^>]*>', html.lower())
             dated_report = article_day and 'first of seven' in sentence \
                 and re.search(r'\bfinally brought\b.{0,100}\breunion tour\b', sentence)
-            if not dated_sentence and not dated_report:
+            # A same-day news report can bind an explicit past performance
+            # "on Friday night" to its ORIGINAL publication date. Require the
+            # configured day's weekday, exact publication day, and no relative
+            # reference to an earlier week. An updated timestamp is insufficient.
+            weekday = datetime.strptime(event_date, '%Y-%m-%d').strftime('%A').lower()
+            dated_weeknight = article_day and re.search(
+                r'\bon ' + weekday + r' night(?:,|$)', sentence) and not re.search(
+                r'\b(?:last|previous|earlier|ago|before)\b', sentence)
+            if not dated_sentence and not dated_report and not dated_weeknight:
                 continue
         if any(re.search(pattern, sentence) for pattern in held_patterns):
             held = True
@@ -539,8 +548,8 @@ class FairGate(gl.Contract):
             '2025-07-25', '25 July 2025',
             'https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/',
             'Radio X — same-day first-night report',
-            'https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html',
-            'Lloyds Bank — measured spending for the 25 July gig',
+            'https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html',
+            'The Independent / PA — original same-day performance report',
             'oasis', 'wembley')
         e1['event_id'] = 1
         self.events['1'] = packed(e1)
@@ -849,7 +858,7 @@ class FairGate(gl.Contract):
 
     @gl.public.view
     def get_protocol(self) -> str:
-        return 'fairgate-1.4'
+        return 'fairgate-1.5'
 
     @gl.public.view
     def get_creator(self) -> str:

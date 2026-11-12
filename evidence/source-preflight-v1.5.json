@@ -1,0 +1,21 @@
+{
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "scope": "No-escrow diagnostic; not product settlement acceptance",
+  "diagnostic_contract": "0x77a5067329d295865c5Fe5a759f598bcfA45A3aD",
+  "deploy_tx": "0x9ee3421bf3f5efc6cacd1ef2ef3eb527fa79acaa58553240994fd3d0634914f2",
+  "observations": [
+    {
+      "url": "https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html",
+      "tx": "0xac1e5e80f772c0a26a30933b25c034d58086039731cc8b03f5f44c33fdf66d4c",
+      "status": 200,
+      "flags": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "response_chars": 334307
+    }
+  ]
+}
