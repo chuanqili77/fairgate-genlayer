@@ -2,9 +2,11 @@
 // evidence/transactions.json live from Studionet and re-checks the
 // final readback against EXPECTED.md. Exact comparisons only: no
 // substring matching, and a MAJORITY_DISAGREE is never counted as PASS.
-// NOTE: this checks the scripted evidence state. After the browser
-// write loop adds tickets, the ticket/ledger expectations below must
-// be updated to the post-browser state (as in v1.1) before re-running.
+// NOTE: this checks the scripted evidence state PLUS the browser write
+// loop (4 txs, 2026-11-12): the ticket/ledger expectations below are the
+// post-browser state (7 tickets, 113 in / 83 out / 30 balance).
+// The browser txs themselves are recorded in EVIDENCE.md (Browser write
+// loop) and were re-read live by the main agent, FINALIZED+AGREE+SUCCESS.
 // Usage: node scripts/verify_evidence.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -110,9 +112,9 @@ ok('E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid',
 ok('E2 readback: CANCELLED, 2 sold, escrow 0',
   e2.status === 'CANCELLED' && e2.verdict === 'CANCELLED' && e2.tickets_sold === 2
   && e2.escrowed_wei === 0 && e2.settle_count === 1, JSON.stringify(e2));
-ok('E3 readback: ON_SALE, 2 sold, escrow 20 GEN, never settled',
-  e3.status === 'ON_SALE' && e3.verdict === '' && e3.tickets_sold === 2
-  && e3.escrowed_wei === 20000000000000000000 && e3.organizer_paid === false && e3.settle_count === 0, JSON.stringify(e3));
+ok('E3 readback: ON_SALE, 3 sold (2 scripted + 1 browser), escrow 30 GEN, never settled',
+  e3.status === 'ON_SALE' && e3.verdict === '' && e3.tickets_sold === 3
+  && e3.escrowed_wei === 30000000000000000000 && e3.organizer_paid === false && e3.settle_count === 0, JSON.stringify(e3));
 ok('E4 readback: POSTPONED, 0 sold, escrow 0, settled twice',
   e4.status === 'POSTPONED' && e4.verdict === 'POSTPONED' && e4.tickets_sold === 0
   && e4.escrowed_wei === 0 && e4.organizer_paid === false && e4.settle_count === 2, JSON.stringify(e4));
@@ -141,6 +143,7 @@ const expectTickets = {
   4: {status: 'REFUNDED', owner: wallets.B2},
   5: {status: 'ACTIVE', owner: wallets.B2},
   6: {status: 'ACTIVE', owner: wallets.B2},
+  7: {status: 'ACTIVE', owner: '0x651972d3cb5aa98b0603c6addf9902f99462460a'},
 };
 for (const [id, e] of Object.entries(expectTickets)) {
   const t = await read('get_ticket', [Number(id)]);
@@ -152,14 +155,14 @@ for (const k of Object.keys(wallets)) {
   ok(`credit ${k} is 0 after withdrawals`, c.credit_wei === 0, JSON.stringify(c));
 }
 const counts = await read('get_counts', []);
-ok('counts: 4 events, 6 tickets',
-  counts.event_count === 4 && counts.ticket_count === 6, JSON.stringify(counts));
-ok('ledger: 92 GEN in, 72 out, balance 20 GEN (= E3 live escrow, all disclosed), escrow 20, royalties 3.2 GEN, resale volume 32 GEN',
-  counts.total_received_wei === 92000000000000000000
-  && counts.total_withdrawn_wei === 72000000000000000000
-  && counts.contract_balance_wei === 20000000000000000000 && counts.escrowed_wei === 20000000000000000000
-  && counts.total_royalties_wei === 3200000000000000000
-  && counts.total_resale_volume_wei === 32000000000000000000, JSON.stringify(counts));
+ok('counts: 4 events, 7 tickets (6 scripted + 1 browser)',
+  counts.event_count === 4 && counts.ticket_count === 7, JSON.stringify(counts));
+ok('ledger: 113 GEN in, 83 out, balance 30 GEN (= E3 live escrow, all disclosed), escrow 30, royalties 4.3 GEN, resale volume 43 GEN',
+  counts.total_received_wei === 113000000000000000000
+  && counts.total_withdrawn_wei === 83000000000000000000
+  && counts.contract_balance_wei === 30000000000000000000 && counts.escrowed_wei === 30000000000000000000
+  && counts.total_royalties_wei === 4300000000000000000
+  && counts.total_resale_volume_wei === 43000000000000000000, JSON.stringify(counts));
 ok('protocol is fairgate-1.2', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1.2');
 
 console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} txs checked`);

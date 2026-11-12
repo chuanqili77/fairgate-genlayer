@@ -99,7 +99,7 @@ export default function App() {
   useEffect(() => {
     const p = checkParity();
     if (p.missing.length || p.extra.length) console.warn('i18n parity', p);
-    loadDeployment().then(setDeployment).catch((e) => setErr(String(e?.message || e)));
+    loadDeployment().then((d) => { setDeployment(d); setPending(loadPendingTxs()); setMyTxs(loadMyTxs()); }).catch((e) => setErr(String(e?.message || e)));
     refresh();
     fetch('./transactions.json', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
@@ -258,7 +258,7 @@ export default function App() {
                 disabled={!restoreKey.trim()}
                 onClick={async () => {
                   setErr('');
-                  try { setWallet(await restoreTemporaryAccount(restoreKey)); setRestoreKey(''); }
+                  try { const w = await restoreTemporaryAccount(restoreKey); setWallet(w); setRestoreKey(''); await refresh(); await refreshCredit(w); }
                   catch { setErr(tr('app.restoreBadKey')); }
                 }}
               >{tr('app.restoreBtn')}</button>

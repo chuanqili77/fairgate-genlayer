@@ -94,8 +94,44 @@
 
 ## Browser write loop
 
-To be recorded by the reviewer pass on the live site (buy / list /
-buy-resale / settle / withdraw with transaction hashes).
+Run on the live site 2026-11-12 15:13–15:22 CST with in-browser
+temporary test accounts (testnet GEN only, no real wallet). All four
+transactions re-read live by the main agent: FINALIZED + MAJORITY_AGREE
++ leader SUCCESS.
+
+| Step | Transaction | Outcome |
+|------|-------------|---------|
+| Temp account A (0x0e45…ebf3) buys 1 E3 ticket (10 GEN) | 0x2faacd425628126f9bc27b32694be5ff7a181ef1df805eedf12f725355d1ce5a | Ticket #7, ACTIVE; E3 sold 2/8 → 3/8; received 92 → 102 GEN |
+| A lists ticket #7 for resale at 11 GEN | 0x658a1050c22b018fa57927167b082892f929fb1d162e1e5961887764daea72f7 | LISTED at 11 GEN (the cap); seller credit 9.9 GEN, artist credit 1.1 GEN; self-purchase button disabled |
+| Temp account B (0x6519…460a) buys the resale | 0x2d9366ea3caeb3456033268696f0bde21b015541371678c7a43594989fbb2b79 | Ticket #7 owner → B, ACTIVE; resale board empty; received 102 → 113 GEN; royalties 3.2 → 4.3 GEN; resale volume 32 → 43 GEN |
+| A withdraws the seller credit (9.9 GEN) | 0x0abf83648acb6544b9b25736be4db2d1606c47455878678e11cc68836e6ba145 | Withdrawn, FINALIZED; A's credit then 0; withdrawn 72 → 81.9 GEN; balance 41 → 31.1 GEN |
+
+Follow-up (scripted, same day): the browser resale left a 1.1 GEN
+artist royalty credit on the scripted-run artist account; it was
+withdrawn by that account
+(0x4a296ef1561b1bff58e3f9539af434073430b724910a5c2bd9e50164fceac7f7,
+FINALIZED + SUCCESS). Final ledger: **113 GEN in = 83 GEN out + 30 GEN
+balance (E3 live escrow only), all credits 0.**
+
+Cold start passed: English default, dashes + UNCONFIRMED before the
+readback, numbers exact after it, E1/E2/E4 tagged "Settled ·
+historical demo", E3 ON_SALE and buyable, Contract field exactly the
+v1.2 address.
+
+Defect found in the browser pass and fixed (frontend only, no contract
+change): the "TRANSACTIONS FROM THIS BROWSER" list showed 6 stale
+records from the superseded v1.1 deployment (ticket 7/8 entries that
+did not exist on the v1.2 contract) because the history key in
+localStorage was not scoped to the contract. Fixed by scoping the
+pending/history keys to the deployed contract address
+(`fairgate-pending-txs:<address>`, `fairgate-my-txs:<address>`) and
+re-loading the lists after the deployment loads; restoring a temporary
+account now also triggers a readback + credit refresh (the credit
+previously showed a dash until a manual REFRESH). Rebuilt and pushed;
+re-verified by a fresh browser cold start (see below).
+
+Re-check after the fix: pending a fresh browser cold start (to be
+recorded here once done).
 
 ## Verify output
 
@@ -151,7 +187,7 @@ PASS tx w-b2 FINALIZED+AGREE+SUCCESS
 PASS tx neg8-double-withdraw FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
 PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid
 PASS E2 readback: CANCELLED, 2 sold, escrow 0
-PASS E3 readback: ON_SALE, 2 sold, escrow 20 GEN, never settled
+PASS E3 readback: ON_SALE, 3 sold (2 scripted + 1 browser), escrow 30 GEN, never settled
 PASS E4 readback: POSTPONED, 0 sold, escrow 0, settled twice
 PASS E1 anchors are the probe-verified URLs
 PASS E2 anchors are the probe-verified URLs
@@ -168,16 +204,17 @@ PASS ticket 3 readback == EXPECTED.md (REFUNDED, owner 0xb18a…)
 PASS ticket 4 readback == EXPECTED.md (REFUNDED, owner 0x5681…)
 PASS ticket 5 readback == EXPECTED.md (ACTIVE, owner 0x5681…)
 PASS ticket 6 readback == EXPECTED.md (ACTIVE, owner 0x5681…)
+PASS ticket 7 readback == EXPECTED.md (ACTIVE, owner 0x6519…)
 PASS credit P1 is 0 after withdrawals
 PASS credit ORG is 0 after withdrawals
 PASS credit ART is 0 after withdrawals
 PASS credit B1 is 0 after withdrawals
 PASS credit B2 is 0 after withdrawals
 PASS credit OUT is 0 after withdrawals
-PASS counts: 4 events, 6 tickets
-PASS ledger: 92 GEN in, 72 out, balance 20 GEN (= E3 live escrow, all disclosed), escrow 20, royalties 3.2 GEN, resale volume 32 GEN
+PASS counts: 4 events, 7 tickets (6 scripted + 1 browser)
+PASS ledger: 113 GEN in, 83 out, balance 30 GEN (= E3 live escrow, all disclosed), escrow 30, royalties 4.3 GEN, resale volume 43 GEN
 PASS protocol is fairgate-1.2
 
-verify: 77 PASS, 0 FAIL, 42 txs checked
+verify: 78 PASS, 0 FAIL, 42 txs checked
 INDEPENDENT VERIFICATION PASS
 ```

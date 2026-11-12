@@ -255,3 +255,19 @@ announced).
 | Same account lists ticket #7 for resale at 11 GEN | LISTED at 11 GEN (the cap, included), FINALIZED. |
 | Second temp account buys the resale | 11 GEN paid, ticket #7 owner changes, ACTIVE; seller credit 9.9 GEN; artist credit 1.1 GEN; FINALIZED. |
 | Seller withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
+
+## Browser write loop — actual (2026-11-12 15:13–15:22 CST)
+
+All pre-registered expectations met. Buy 0x2faacd425628126f9bc27b32694be5ff7a181ef1df805eedf12f725355d1ce5a;
+list 0x658a1050c22b018fa57927167b082892f929fb1d162e1e5961887764daea72f7;
+resale buy 0x2d9366ea3caeb3456033268696f0bde21b015541371678c7a43594989fbb2b79;
+seller withdraw 0x0abf83648acb6544b9b25736be4db2d1606c47455878678e11cc68836e6ba145
+(all FINALIZED). Final readback after the loop: 113 GEN in, 81.9 out,
+31.1 balance, 30 escrow, 4.3 royalties, 43 resale, 7 tickets, E3 3/8.
+The 1.1 GEN artist royalty was then withdrawn by the artist account
+(0x4a296ef1561b1bff58e3f9539af434073430b724910a5c2bd9e50164fceac7f7,
+FINALIZED): final ledger 113 in = 83 out + 30 balance (E3 escrow only),
+all credits 0. Defect found: the browser history list showed stale
+records from the superseded v1.1 deployment; fixed by scoping the
+history keys to the contract address (frontend-only fix, rebuilt and
+pushed; re-checked by a fresh cold start).
