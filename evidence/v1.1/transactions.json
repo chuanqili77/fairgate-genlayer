@@ -1,0 +1,216 @@
+{
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "contract_address": "0x1001588861d740A600497523C56Fe96fd425A620",
+  "deploy_tx": "0xf26a96cf2c6c2963a31f57d92a45156a649d650305b3027bd11b5d2c5e65bee0",
+  "complete": true,
+  "transactions": [
+    {
+      "label": "cfg-e1",
+      "hash": "0x338cddfa7124f4d919f37965bc720b526fe3c6dd9ab1d3b4eeb77ba33a6e91c9",
+      "result": "ok"
+    },
+    {
+      "label": "cfg-e2",
+      "hash": "0xd26bb3a2dbaa6ee86221df8e92abf9b3d6b807e1a295a7a8ad1363abc0262277",
+      "result": "ok"
+    },
+    {
+      "label": "cfg-e3",
+      "hash": "0x783fa2fad3f063ab70a34b54a861ff19db470cdf222a2d06ba9b4bc0cbeb4b32",
+      "result": "ok"
+    },
+    {
+      "label": "t1-buy",
+      "hash": "0xebb5332620e299b7aa8c966508b8b71aa889106b409da6314cd590028cd41d95",
+      "result": "ok"
+    },
+    {
+      "label": "t2-buy",
+      "hash": "0xe1c40eb8d4a000d4f74a243cfcef5e7f99e264c6377db7fafee1455ac8749497",
+      "result": "ok"
+    },
+    {
+      "label": "t3-buy",
+      "hash": "0xd3a5425741f2ac72879f8ac0fbcfc759f38c18c25ea4ffeb7bb358eb81faf680",
+      "result": "ok"
+    },
+    {
+      "label": "t4-buy",
+      "hash": "0x00b8839a0c6145d5f3e148f8e18aed86e350e96029df446fa1251ebb70644f92",
+      "result": "ok"
+    },
+    {
+      "label": "t5-buy",
+      "hash": "0x762dbca216b15dc340e2a8585124e5cae12f15ecc5ddf233ac744f5dda5d9356",
+      "result": "ok"
+    },
+    {
+      "label": "t6-buy",
+      "hash": "0xc58eb26ebb0f9dbdfc62c6653289282f4ef7d378c758a6550d2cf564612dab44",
+      "result": "ok"
+    },
+    {
+      "label": "r1-list",
+      "hash": "0xab125a180824a1f057c85d77682aa6a4c89cd2d1d17e0f50821745aa6a8d688a",
+      "result": "ok"
+    },
+    {
+      "label": "r1-buy",
+      "hash": "0xb0a0b5464e35d94aac4fd96065c1fd2002cbca294cea8147fba383dd80dc2be0",
+      "result": "ok"
+    },
+    {
+      "label": "r2-list",
+      "hash": "0xcb57e69e6bd441afed1019f17f583ad8d334daeaf613ddb7d85a2f9e8efa4bec",
+      "result": "ok"
+    },
+    {
+      "label": "r2-buy",
+      "hash": "0xb9fa2e5334030ac22323f6552f60c7b5e369bf5d9ec65b2b67ece8370764f851",
+      "result": "ok"
+    },
+    {
+      "label": "r3-list",
+      "hash": "0x97af3a2fcd0c8fb215739053f7841379c7d9bd61d3b81dc0e306a68354b5a702",
+      "result": "ok"
+    },
+    {
+      "label": "r4-list",
+      "hash": "0x8c587c2e37bb822d9db658bea63384472701c157a5d9f896b7291e589da2efd3",
+      "result": "ok"
+    },
+    {
+      "label": "r4-buy",
+      "hash": "0x6048869bed809358da0fad57787b42b264dd4cab6ea6cdb97806fac6fd151d88",
+      "result": "ok"
+    },
+    {
+      "label": "neg3-stranger-list",
+      "hash": "0x55067eb975caa88664592c042389b26fbd51c773d7202ca8608b5e8c198ade7e",
+      "result": "error-observed",
+      "expected_error": "NOT_TICKET_OWNER",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg4-over-cap",
+      "hash": "0x0781ef015f1bf43b80cbccf04c49f8f6c3694fda2a60b2771a5f091fb4a5b17e",
+      "result": "error-observed",
+      "expected_error": "PRICE_CAP",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg6-list",
+      "hash": "0xeacd8d0cb3b294bc294b88565056307c4d6fa76051ffb08ffb05774ed734e2be",
+      "result": "ok"
+    },
+    {
+      "label": "neg6-self-buy",
+      "hash": "0xf90d70026922d49b43e0b5ef562bdca2dd92b8889ab3d94fb24a28d4b3720281",
+      "result": "error-observed",
+      "expected_error": "SELF_PURCHASE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg6-cancel",
+      "hash": "0x3e8723e3483967cb001eb1bc73fb5927513a618338eb6879e6daf2dd2c0f46bf",
+      "result": "ok"
+    },
+    {
+      "label": "neg5-not-listed",
+      "hash": "0x0f25ad034cbf8e2660ff8adc69bd2a254e74ad538dfa8f2ea282e2ab64b347d6",
+      "result": "error-observed",
+      "expected_error": "TICKET_NOT_LISTED",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg2-wrong-value",
+      "hash": "0x0b82106093b523132e52e6776a471f3a5013d7a03cd0f241927ad06ae3f85ef2",
+      "result": "error-observed",
+      "expected_error": "VALUE_MUST_EQUAL_PRICE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg1-unknown-event",
+      "hash": "0xad56468872db25d27d58fb7a4138563e9c376dc7d7989039c65b19e5a7fdc499",
+      "result": "error-observed",
+      "expected_error": "EVENT_NOT_FOUND",
+      "unchanged_state": true
+    },
+    {
+      "label": "s1-settle-e1",
+      "hash": "0x7a78f1d5a2b2a92fea9496aca18a0d345a5d3e086fa778b1000f02565b546596",
+      "result": "ok",
+      "verdict": "EVENT_HELD",
+      "attempts": 1,
+      "caller": "OUT"
+    },
+    {
+      "label": "s2-settle-e2",
+      "hash": "0x2f88a746483e3404e3a9b25c66f7f93d69f3bf2ce7b38891072495c84f27a35f",
+      "result": "ok",
+      "verdict": "CANCELLED",
+      "attempts": 1,
+      "caller": "OUT"
+    },
+    {
+      "label": "neg9-double-settle",
+      "hash": "0xbb12611fef4a59d0ded065425e24010ee0621a7dfb88c716a86f6dabc8aaeb07",
+      "result": "error-observed",
+      "expected_error": "EVENT_ALREADY_SETTLED",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg11-buy-held",
+      "hash": "0x80a7703ef65e9c82be77aabd503abb77f3ef3700fe22a7ebd7d182f10ee2100d",
+      "result": "error-observed",
+      "expected_error": "EVENT_NOT_ON_SALE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg10-list-refunded",
+      "hash": "0xa8c9c4cea33e2d70cede2f86596ad27a8c6ab2c56dcb38d1a7e2371604b28e4d",
+      "result": "error-observed",
+      "expected_error": "TICKET_NOT_ACTIVE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg7-stranger-withdraw",
+      "hash": "0x4d83bb85e4610f70007949758265bd70e3198f30317b29aaf190d5c33342580d",
+      "result": "error-observed",
+      "expected_error": "NO_CREDIT",
+      "unchanged_state": true
+    },
+    {
+      "label": "w-org",
+      "hash": "0x1148ae807b1f4ea626ffd2bd1e2cc771790d75b210a4613f18569619a24769d6",
+      "result": "ok",
+      "withdrawn_wei": 20000000000000000000
+    },
+    {
+      "label": "w-art",
+      "hash": "0x6ef86ca4704c8dec737c80ca479738b9f0dcec1826f9e78bf451f0716a82d9af",
+      "result": "ok",
+      "withdrawn_wei": 3200000000000000000
+    },
+    {
+      "label": "w-b1",
+      "hash": "0xe21b89ef48c019a54c9fc9503e8e216f1e658db0daa0dff005ee08f15a583d07",
+      "result": "ok",
+      "withdrawn_wei": 29800000000000000000
+    },
+    {
+      "label": "w-b2",
+      "hash": "0xd7f9523d5e7c76922711dfe3f874f07c4684cc6516d45e724bb49268706ea8ce",
+      "result": "ok",
+      "withdrawn_wei": 19000000000000000000
+    },
+    {
+      "label": "neg8-double-withdraw",
+      "hash": "0x30df9657cdb6137dba88c16eb7a04fd83883312f15b68442249961a5f3a347d3",
+      "result": "error-observed",
+      "expected_error": "NO_CREDIT",
+      "unchanged_state": true
+    }
+  ]
+}

@@ -2,20 +2,20 @@
   "network": "Stable Studionet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
-  "contract_address": "0x1001588861d740A600497523C56Fe96fd425A620",
-  "deploy_tx": "0xf26a96cf2c6c2963a31f57d92a45156a649d650305b3027bd11b5d2c5e65bee0",
-  "explorer": "https://explorer-studio.genlayer.com/address/0x1001588861d740A600497523C56Fe96fd425A620",
-  "source_sha256": "e594e59d0cd157e22c518e19340c16ce12e27aa9ef5ea68eaa58674699ca397c",
-  "source_bytes": 24144,
+  "contract_address": "0x38b0aE26d0C6DE7F5C8418368a2dc10f4d843E5E",
+  "deploy_tx": "0xb022a4db01dd729942e7e9c7ba87c304373129869dd7500732bbb6fe259382f6",
+  "explorer": "https://explorer-studio.genlayer.com/address/0x38b0aE26d0C6DE7F5C8418368a2dc10f4d843E5E",
+  "source_sha256": "51a4059beb9e72be889b6096577581d7947ed71f903b9b2faf236a43a6c414df",
+  "source_bytes": 29128,
   "source_file": "contracts/fairgate.py",
   "byte_parity": "BYTE_PARITY_MATCH: TRUE",
   "wallets": {
-    "P1": "0x9387f5e99da2c5295ce5991c55ae3047d1919185",
-    "ORG": "0xd84880347f30d06f4207304c22cabb6b89e4212c",
-    "ART": "0x3d18b6a67ee64506d66c0a9a6c76ca5a793cf95d",
-    "B1": "0xf4fcf29c281eccca8b216a75ac1ad4e6ae0d64aa",
-    "B2": "0x1cbdf6b5d6fd4a2e513cc9fc04896f829eb94193",
-    "OUT": "0x0876b585cd3093be7779a2a11b8ef7035b4d782f"
+    "P1": "0x5a231202c9b01be3c9f61e01143b459784913cd8",
+    "ORG": "0xe700450ad08a854824c5297b6639aff66d368072",
+    "ART": "0x473905691e021cb403b1f723695bd04b0bde7e1e",
+    "B1": "0xb18ad1d946152d8dfa78965dcb36da641f0b8651",
+    "B2": "0x56819b9bb06fde927b368bbcc2720ac9580345ae",
+    "OUT": "0xb0edda7cb444f92a5c381dac895730e8ba1cd489"
   },
   "note": "Temp accounts generated for this evidence run only."
 }

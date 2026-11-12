@@ -1,7 +1,10 @@
-// FairGate: independent verification. Re-reads EVERY transaction in
+// FairGate: independent verification, v1.2. Re-reads EVERY transaction in
 // evidence/transactions.json live from Studionet and re-checks the
 // final readback against EXPECTED.md. Exact comparisons only: no
 // substring matching, and a MAJORITY_DISAGREE is never counted as PASS.
+// NOTE: this checks the scripted evidence state. After the browser
+// write loop adds tickets, the ticket/ledger expectations below must
+// be updated to the post-browser state (as in v1.1) before re-running.
 // Usage: node scripts/verify_evidence.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -42,6 +45,9 @@ ok('deploy tx recorded', typeof txs.deploy_tx === 'string' && txs.deploy_tx.star
 
 // 2. Every recorded transaction, re-read live.
 const EXPECTED_ERROR = {
+  'neg0-not-creator': 'NOT_CREATOR',
+  'neg14-bad-address': 'BAD_ADDRESS',
+  'neg12-buy-unconfigured': 'EVENT_NOT_CONFIGURED',
   'neg1-unknown-event': 'EVENT_NOT_FOUND',
   'neg2-wrong-value': 'VALUE_MUST_EQUAL_PRICE',
   'neg3-stranger-list': 'NOT_TICKET_OWNER',
@@ -53,10 +59,13 @@ const EXPECTED_ERROR = {
   'neg9-double-settle': 'EVENT_ALREADY_SETTLED',
   'neg10-list-refunded': 'TICKET_NOT_ACTIVE',
   'neg11-buy-held': 'EVENT_NOT_ON_SALE',
+  'neg13-early-settle-e3': 'TOO_EARLY',
 };
 const EXPECTED_VERDICT = {
   's1-settle-e1': 'EVENT_HELD',
   's2-settle-e2': 'CANCELLED',
+  's3-settle-e4': 'POSTPONED',
+  's3b-resettle-e4': 'POSTPONED',
 };
 for (const rec of txs.transactions) {
   await sleep(200);
@@ -94,15 +103,19 @@ const read = async (fn, args) => JSON.parse(await reader.readContract({address: 
 const e1 = await read('get_event', [1]);
 const e2 = await read('get_event', [2]);
 const e3 = await read('get_event', [3]);
+const e4 = await read('get_event', [4]);
 ok('E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid',
   e1.status === 'EVENT_HELD' && e1.verdict === 'EVENT_HELD' && e1.tickets_sold === 2
   && e1.escrowed_wei === 0 && e1.organizer_paid === true && e1.settle_count === 1, JSON.stringify(e1));
 ok('E2 readback: CANCELLED, 2 sold, escrow 0',
   e2.status === 'CANCELLED' && e2.verdict === 'CANCELLED' && e2.tickets_sold === 2
   && e2.escrowed_wei === 0 && e2.settle_count === 1, JSON.stringify(e2));
-ok('E3 readback: ON_SALE, 4 sold, escrow 40 GEN, never settled',
-  e3.status === 'ON_SALE' && e3.verdict === '' && e3.tickets_sold === 4
-  && e3.escrowed_wei === 40000000000000000000 && e3.organizer_paid === false && e3.settle_count === 0, JSON.stringify(e3));
+ok('E3 readback: ON_SALE, 2 sold, escrow 20 GEN, never settled',
+  e3.status === 'ON_SALE' && e3.verdict === '' && e3.tickets_sold === 2
+  && e3.escrowed_wei === 20000000000000000000 && e3.organizer_paid === false && e3.settle_count === 0, JSON.stringify(e3));
+ok('E4 readback: POSTPONED, 0 sold, escrow 0, settled twice',
+  e4.status === 'POSTPONED' && e4.verdict === 'POSTPONED' && e4.tickets_sold === 0
+  && e4.escrowed_wei === 0 && e4.organizer_paid === false && e4.settle_count === 2, JSON.stringify(e4));
 ok('E1 anchors are the probe-verified URLs',
   e1.source_a_url === 'http://www.wembleystadium.com/events/2025/OASIS'
   && e1.source_b_url === 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/', JSON.stringify(e1));
@@ -112,6 +125,14 @@ ok('E2 anchors are the probe-verified URLs',
 ok('E3 anchors are the probe-verified URLs',
   e3.source_a_url === 'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour'
   && e3.source_b_url === 'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets', JSON.stringify(e3));
+ok('E4 anchors are the probe-verified URLs',
+  e4.source_a_url === 'https://www.targetcenter.com/events/detail/katseye'
+  && e4.source_b_url === 'https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm', JSON.stringify(e4));
+ok('E1 identity tokens are oasis + wembley', e1.id_a === 'oasis' && e1.id_b === 'wembley', JSON.stringify(e1));
+ok('E2 identity tokens are metro boomin + bridgestone', e2.id_a === 'metro boomin' && e2.id_b === 'bridgestone', JSON.stringify(e2));
+ok('E3 identity tokens are pentatonix + bridgestone', e3.id_a === 'pentatonix' && e3.id_b === 'bridgestone', JSON.stringify(e3));
+ok('E4 identity tokens are katseye + target center', e4.id_a === 'katseye' && e4.id_b === 'target center', JSON.stringify(e4));
+ok('creator is the deployer P1', (await reader.readContract({address: ADDRESS, functionName: 'get_creator', args: [], transactionHashVariant: 'latest-final'})) === deployment.wallets.P1, JSON.stringify(deployment.wallets.P1));
 const wallets = deployment.wallets;
 const expectTickets = {
   1: {status: 'ACTIVE', owner: wallets.B2},
@@ -120,11 +141,6 @@ const expectTickets = {
   4: {status: 'REFUNDED', owner: wallets.B2},
   5: {status: 'ACTIVE', owner: wallets.B2},
   6: {status: 'ACTIVE', owner: wallets.B2},
-  // Browser write loop, pass 1 (ticket #7) and pass 2 (ticket #8).
-  // Full addresses read back live from the contract; the buyer keys
-  // were the browser temp accounts (see EXPECTED.md).
-  7: {status: 'ACTIVE', owner: '0x55b360b6c50d740f9f9e4fd53859bf6940823c41'},
-  8: {status: 'ACTIVE', owner: '0xd4bbeaca522cfd6f69be9affb2d99192bc2e4337'},
 };
 for (const [id, e] of Object.entries(expectTickets)) {
   const t = await read('get_ticket', [Number(id)]);
@@ -132,36 +148,19 @@ for (const [id, e] of Object.entries(expectTickets)) {
     t.status === e.status && t.owner === e.owner, JSON.stringify(t));
 }
 for (const k of Object.keys(wallets)) {
-  // ART is checked explicitly below: the browser resales added 2.2 GEN
-  // of royalties to it, so it is no longer 0.
-  if (k === 'ART') continue;
   const c = await read('get_credit', [wallets[k]]);
   ok(`credit ${k} is 0 after withdrawals`, c.credit_wei === 0, JSON.stringify(c));
 }
-// Browser-loop seller credits, unwithdrawn and disclosed (EXPECTED.md):
-// pass-1 seller A and pass-2 seller C each hold 9.9 GEN; the artist
-// holds 1.1 + 1.1 GEN royalties. Their temp keys were lost in the
-// browser runs, so the credits sit on-chain, recorded — not stranded
-// value from a failed payable (all failed payables sent 0 GEN).
-const browserCredits = {
-  'pass-1 seller A (0xc2a0…c033)': ['0xC2A07C1da2F905baF794084177A243952826c033', 9900000000000000000],
-  'pass-2 seller C (0xb340…5008)': ['0xb3409F9e5B467e4f249F5D2BAF12AC4684FC5008', 9900000000000000000],
-  'artist royalties (1.1 + 1.1)': [wallets.ART, 2200000000000000000],
-};
-for (const [label, [addr, wei]] of Object.entries(browserCredits)) {
-  const c = await read('get_credit', [addr]);
-  ok(`credit ${label} is ${wei / 1e18} GEN, unwithdrawn (disclosed)`, c.credit_wei === wei, JSON.stringify(c));
-}
 const counts = await read('get_counts', []);
-ok('counts: 3 events, 8 tickets',
-  counts.event_count === 3 && counts.ticket_count === 8, JSON.stringify(counts));
-ok('ledger: 134 GEN in, 72 out, balance 62 GEN (= E3 escrow 40 + seller credits 9.9 + 9.9 + artist 2.2, all disclosed), escrow 40, royalties 5.4 GEN, resale volume 54 GEN',
-  counts.total_received_wei === 134000000000000000000
+ok('counts: 4 events, 6 tickets',
+  counts.event_count === 4 && counts.ticket_count === 6, JSON.stringify(counts));
+ok('ledger: 92 GEN in, 72 out, balance 20 GEN (= E3 live escrow, all disclosed), escrow 20, royalties 3.2 GEN, resale volume 32 GEN',
+  counts.total_received_wei === 92000000000000000000
   && counts.total_withdrawn_wei === 72000000000000000000
-  && counts.contract_balance_wei === 62000000000000000000 && counts.escrowed_wei === 40000000000000000000
-  && counts.total_royalties_wei === 5400000000000000000
-  && counts.total_resale_volume_wei === 54000000000000000000, JSON.stringify(counts));
-ok('protocol is fairgate-1.1', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1.1');
+  && counts.contract_balance_wei === 20000000000000000000 && counts.escrowed_wei === 20000000000000000000
+  && counts.total_royalties_wei === 3200000000000000000
+  && counts.total_resale_volume_wei === 32000000000000000000, JSON.stringify(counts));
+ok('protocol is fairgate-1.2', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1.2');
 
 console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} txs checked`);
 if (fail > 0) { console.log('failures:', failures.join(', ')); process.exit(1); }

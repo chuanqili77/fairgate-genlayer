@@ -1,6 +1,6 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 """FairGate: anti-scalper concert tickets + consensus event-outcome
-settlement on GenLayer Stable Studionet. Protocol fairgate-1.1.
+settlement on GenLayer Stable Studionet. Protocol fairgate-1.2.
 
 One concert type, one tier, one resale rule. Face price is 10 GEN
 per ticket. Resale is capped at 110% of face value (11 GEN, code
@@ -10,7 +10,8 @@ contract; consensus decides the event outcome and the money follows
 the verdict:
 
   EVENT_HELD -> escrow pays the organizer
-  CANCELLED  -> every current ticket holder is refunded in full
+  CANCELLED  -> every current ticket holder is refunded the face
+                price (10 GEN per ticket)
   POSTPONED  -> funds stay locked; the event can be re-settled on a
                 new date (re-settlement re-fetches both sources)
 
@@ -18,8 +19,8 @@ Money never moves directly: settlement and resale only record
 pull-payment credits; the entitled party withdraws with withdraw().
 
 Anchors (dual source, both fetched independently by every
-validator at settlement). The two launch events and their source
-URLs are FIXED in this source and byte-frozen at deploy: no one,
+validator at settlement). The launch events and their source URLs
+are FIXED in this source and byte-frozen at deploy: no one,
 including the organizer address, can change what the consensus
 reads. That is the whole point — the beneficiary cannot pick the
 evidence. A future version with organizer-listed events would need
@@ -48,9 +49,7 @@ a source-URL allowlist; v1 does not have one and does not claim one.
      30 July – 9 September 2024) and by source (b)'s "08/6/2024".
   E3 LIVE (ON_SALE, settlement pending the real date): Pentatonix —
      Christmas in the City Tour, Bridgestone Arena, Nashville,
-     2026-12-09 19:00. Added in v1.1 because v1's two events were
-     both already settled, leaving the live site with no writable
-     on-chain flow for a new user.
+     2026-12-09 19:00.
      (a) venue official page:
          https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour
      (b) do615.com, Nashville independent event calendar (DoStuff
@@ -58,39 +57,80 @@ a source-URL allowlist; v1 does not have one and does not claim one.
          ticketing):
          https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets
          Both sources list the show as scheduled for Wed Dec 9, 2026,
-         7:00 PM. Probe-verified before deploy (probe contract):
+         7:00 PM. Both pages were probe-verified before deploy:
          Bridgestone 200, 101,205 chars; do615 200, 52,158 chars;
          neither page contains any cancel/postpone word. E3 stays
          ON_SALE with tickets available, so the live site has a real
          buy / list-resale / buy-resale / withdraw flow. Its escrow
-         stays open until the real event date — that is live money,
-         not stranded value, and the evidence ledger says so.
+         stays open until after the real event date — that is live
+         money, not stranded value, and the evidence ledger says so.
+  E4 POSTPONED: KATSEYE — THE WILDWORLD TOUR, Target Center,
+     Minneapolis, 2026-11-07 20:00. The show was postponed days
+     before the date (member illness); no replacement date has been
+     announced and tickets stay valid for the rescheduled show.
+     (a) venue official page:
+         https://www.targetcenter.com/events/detail/katseye
+         Title: "KATSEYE - POSTPONED | Target Center".
+     (b) MusicTimes, independent music news (no affiliation with
+         the venue, promoter or ticketing):
+         https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm
+         Reports the postponement of the Chicago and Minneapolis
+         shows and names Target Center. No independent event
+         listing with postponement wording was fetchable (the
+         Minneapolis listing site was unreachable and the
+         ticket-aggregator page returned 403 to validators), so
+         the second source is an independent news report rather
+         than a listing; that is disclosed, not hidden. E4 is
+         configured but sells no tickets in the evidence run
+         (escrow 0): it exists to prove the POSTPONED branch
+         on-chain with no money at risk.
 
 Verdict rule (deterministic code, no LLM anywhere). Each validator
 fetches both source pages and scans the raw body, lowercased, for
 two word sets: cancel words ("cancelled", "canceled") and postpone
 words (stems "postpone", "reschedule", which also match "postponed",
-"postponement", "rescheduled", "rescheduling"). The equivalence vector is
-(verdict, cancel_a, cancel_b, postpone_a, postpone_b, fetch_a_ok,
-fetch_b_ok) — exact equality, no tolerance. The rule:
-  - either source fails to fetch (non-200 or request error) ->
-    UNREACHABLE (no state change, retryable)
+"postponement", "rescheduled", "rescheduling"). Before any keyword
+counts, each page must also prove it is the right event: the page
+must contain the artist token AND the venue token for that event
+(identity check, exact substrings, lowercased). A page that fails
+the identity check cannot vote: its keywords are ignored and the
+verdict is UNREACHABLE. The equivalence vector is (verdict,
+cancel_a, cancel_b, postpone_a, postpone_b, fetch_a_ok, fetch_b_ok,
+identity_a, identity_b) — exact equality, no tolerance. The rule:
+  - either source fails to fetch (non-200 or request error) or
+    fails the identity check -> UNREACHABLE (no state change,
+    retryable)
   - both sources contain a cancel word -> CANCELLED
   - both sources contain a postpone word -> POSTPONED
   - neither source contains either word -> EVENT_HELD
   - anything else (sources disagree) -> SOURCES_DISAGREE
     (no state change, retryable)
 HELD has no explicit "held" word on either source page: the rule
-defines HELD as "both sources fetched, neither says cancelled or
-postponed". The fetched page text is data, never instructions:
-injection text inside a page cannot change the verdict, because
-only the four keyword flags are examined.
+defines HELD as "both sources fetched, both confirmed the event,
+neither says cancelled or postponed". The fetched page text is data,
+never instructions: injection text inside a page cannot change the
+verdict, because only the keyword flags and the identity tokens are
+examined — and a page that does not mention the event at all cannot
+contribute a keyword.
+
+Settlement date gate (on-chain, not frontend time). settle_event
+refuses to run before the day after the event date: the contract
+reads the transaction datetime (GenLayer-native, deterministic —
+every validator re-executing the transaction sees the same pinned
+datetime) and requires today > date_iso. A settlement attempt
+before that date fails with TOO_EARLY and changes nothing. The
+frontend also disables the settle button until the day after the
+show as a second layer, but the contract gate is what enforces it:
+frontend time is never treated as chain time. The gate uses the
+transaction datetime, which is fixed when the transaction is
+accepted — not any validator's wall clock — so a transaction
+submitted before the date cannot settle, and one submitted after
+the date can.
 
 A failed payable call KEEPS its value in the contract (platform
-behavior on Studionet, also observed on LinguaCourt and
-CallSettle v1.0). The frontend only ever submits the exact price
-to an existing ticket/listing, so that path is unreachable from
-the UI, and the evidence run sends 0 GEN on its failed-payable
+behavior on Studionet). The frontend only ever submits the exact
+price to an existing ticket/listing, so that path is unreachable
+from the UI, and the evidence run sends 0 GEN on its failed-payable
 negatives, so no value is stranded there.
 
 Royalty rounding: royalty = price_wei * 10 // 100. Prices are whole
@@ -100,38 +140,38 @@ sub-wei dust, which cannot occur for integer-GEN prices. Seller
 receives price - royalty. Every resale conserves exactly
 price_wei in credits.
 
-Sender-bound roles: only the ticket owner can list/cancel a
-resale; only the entitled party can withdraw its credit; the
-organizer/artist payout addresses are set once per event before
-the first ticket is sold (configure_event) and can never change
-after that; settle_event is open to anyone because the outcome is
-decided by consensus, not by the caller. No time gates anywhere
-(Studionet has no clock): every transition is an explicit action.
-The contract cannot enforce "settle only after the event date";
-both launch events E1/E2 already happened (2024/2025), so settlement
-timing is not a risk for them. E3 is a future event (2026-12-09) and
-is deliberately left unsettled in v1.1 — settling it before the real
-date would be a misuse of the demo, and the evidence run does not
-settle it. See KNOWN_LIMITATIONS in the README.
+Sender-bound roles: the deployer address is recorded as creator
+at construction; only the creator can configure an event
+(configure_event), and the organizer/artist payout addresses are
+set once per event before the first ticket is sold and can never
+change after that. Only the ticket owner can list/cancel a
+resale; only the entitled party can withdraw its credit. Buying
+requires the event to be configured, ON_SALE, not sold out, and
+the exact face price. settle_event is open to anyone because the
+outcome is decided by consensus, not by the caller — but the date
+gate above still applies to every caller.
 
 Known limits (neutral, product-scope):
-  * v1.1 ships exactly three launch events, fixed at deploy. There is
+  * v1.2 ships exactly four launch events, fixed at deploy. There is
     no organizer listing flow; adding one needs a source-URL
     allowlist so the beneficiary cannot pick its own evidence.
   * E3 (Pentatonix, 2026-12-09) is ON_SALE and unsettled by design:
     its escrow stays open until after the real event date, when it
     can be settled like E1/E2. Its tickets remain buyable and
-    resalable on the live site in the meantime.
-  * The POSTPONED branch is fully implemented (contract, frontend,
-    mock tests) but v1.1 has no on-chain POSTPONED case: no real
-    postponed concert with dual fetchable sources was found during
-    research (see workdir notes). It activates on the first
-    rescheduled launch event.
+    resalable on the live site in the meantime. The date gate
+    refuses any settlement attempt before 2026-12-10.
+  * E4 (KATSEYE, 2026-11-07) is POSTPONED: its funds stay locked
+    and it can be re-settled when a new date is announced. Its
+    second source is an independent news report, not an event
+    listing (see E4 note above).
+  * The verdict reads the live pages at settlement time. If a
+    source page is rewritten, the verdict follows the new text.
   * An event has no delist action; a POSTPONED event keeps selling
     nothing new (buys are ON_SALE only) while resale stays open.
 """
 from genlayer import *
 import json
+from datetime import datetime, timezone
 
 GEN_WEI = 1000000000000000000  # 1 GEN = 10^18 wei
 FACE_PRICE_GEN = 10
@@ -152,8 +192,9 @@ def packed(x):
     return json.dumps(x, sort_keys=True, separators=(',', ':'))
 
 
-def _scan(text):
-    """Keyword flags on one fetched page body (lowercased).
+def _scan(text, id_a, id_b):
+    """Keyword flags + identity check on one fetched page body
+    (lowercased).
 
     Cancel words are the two past-tense spellings ("cancelled",
     "canceled") — the forms real cancellation notices use. Postpone
@@ -161,38 +202,49 @@ def _scan(text):
     "postponed", "postponement", "rescheduled", "rescheduling".
     The bare stem "cancel" is deliberately NOT a keyword: it appears
     in boilerplate ("cancellation policy") and would false-positive.
+    Identity requires the artist token AND the venue token for the
+    event to appear on the page: a page that does not mention the
+    event cannot vote on its outcome, however many keywords it
+    happens to contain.
     """
     low = text.lower()
     cancel = ('cancelled' in low) or ('canceled' in low)
     postpone = ('postpone' in low) or ('reschedule' in low)
-    return cancel, postpone
+    identity = (id_a.lower() in low) and (id_b.lower() in low)
+    return cancel, postpone, identity
 
 
-def _fetch_once(url):
+def _fetch_once(url, id_a, id_b):
     """One validator's independent fetch + scan. Never raises: a
     fetch failure is reported as ok=False."""
     try:
         response = gl.nondet.web.request(url, method='GET')
     except Exception:
-        return {'ok': False, 'cancel': False, 'postpone': False}
+        return {'ok': False, 'cancel': False, 'postpone': False,
+                'identity': False}
     if getattr(response, 'status', 0) != 200:
-        return {'ok': False, 'cancel': False, 'postpone': False}
+        return {'ok': False, 'cancel': False, 'postpone': False,
+                'identity': False}
     body = response.body
     if isinstance(body, bytes):
         try:
             text = body.decode('utf-8', errors='ignore')
         except Exception:
-            return {'ok': False, 'cancel': False, 'postpone': False}
+            return {'ok': False, 'cancel': False, 'postpone': False,
+                    'identity': False}
     elif isinstance(body, str):
         text = body
     else:
-        return {'ok': False, 'cancel': False, 'postpone': False}
-    cancel, postpone = _scan(text)
-    return {'ok': True, 'cancel': cancel, 'postpone': postpone}
+        return {'ok': False, 'cancel': False, 'postpone': False,
+                'identity': False}
+    cancel, postpone, identity = _scan(text, id_a, id_b)
+    return {'ok': True, 'cancel': cancel, 'postpone': postpone,
+            'identity': identity}
 
 
 def _verdict_from(a, b):
-    if not a['ok'] or not b['ok']:
+    if not a['ok'] or not b['ok'] \
+            or not a['identity'] or not b['identity']:
         return 'UNREACHABLE'
     if a['cancel'] and b['cancel']:
         return 'CANCELLED'
@@ -211,34 +263,39 @@ def _validate_check(res):
     if verdict not in VERDICTS:
         fail('CHECK_VERDICT')
     for k in ('cancel_a', 'cancel_b', 'postpone_a', 'postpone_b',
-              'fetch_a_ok', 'fetch_b_ok'):
+              'fetch_a_ok', 'fetch_b_ok', 'identity_a', 'identity_b'):
         if not isinstance(res.get(k), bool):
             fail('CHECK_FLAG')
     ca, cb = res['cancel_a'], res['cancel_b']
     pa, pb = res['postpone_a'], res['postpone_b']
     fa, fb = res['fetch_a_ok'], res['fetch_b_ok']
-    if verdict == 'CANCELLED' and not (ca and cb):
+    ia, ib = res['identity_a'], res['identity_b']
+    if verdict == 'CANCELLED' and not (ca and cb and ia and ib):
         fail('CHECK_CANCELLED')
-    if verdict == 'POSTPONED' and not (pa and pb):
+    if verdict == 'POSTPONED' and not (pa and pb and ia and ib):
         fail('CHECK_POSTPONED')
-    if verdict == 'EVENT_HELD' and (ca or cb or pa or pb or not fa or not fb):
+    if verdict == 'EVENT_HELD' and (ca or cb or pa or pb
+                                    or not fa or not fb
+                                    or not ia or not ib):
         fail('CHECK_HELD')
-    if verdict == 'UNREACHABLE' and (fa and fb):
+    if verdict == 'UNREACHABLE' and (fa and fb and ia and ib):
         fail('CHECK_UNREACHABLE')
-    if verdict == 'SOURCES_DISAGREE' and (not fa or not fb):
+    if verdict == 'SOURCES_DISAGREE' and (not fa or not fb
+                                          or not ia or not ib):
         fail('CHECK_DISAGREE')
     return res
 
 
-def _run_check(url_a, url_b):
+def _run_check(url_a, url_b, id_a, id_b):
     def leader_fn():
-        a = _fetch_once(url_a)
-        b = _fetch_once(url_b)
+        a = _fetch_once(url_a, id_a, id_b)
+        b = _fetch_once(url_b, id_a, id_b)
         return _validate_check({
             'verdict': _verdict_from(a, b),
             'cancel_a': a['cancel'], 'cancel_b': b['cancel'],
             'postpone_a': a['postpone'], 'postpone_b': b['postpone'],
             'fetch_a_ok': a['ok'], 'fetch_b_ok': b['ok'],
+            'identity_a': a['identity'], 'identity_b': b['identity'],
         })
 
     def validator_fn(result):
@@ -257,7 +314,8 @@ def _run_check(url_a, url_b):
             return False
         return all(leader.get(k) == mine.get(k) for k in
                    ('verdict', 'cancel_a', 'cancel_b', 'postpone_a',
-                    'postpone_b', 'fetch_a_ok', 'fetch_b_ok'))
+                    'postpone_b', 'fetch_a_ok', 'fetch_b_ok',
+                    'identity_a', 'identity_b'))
 
     return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
@@ -272,12 +330,14 @@ class _Recipient:
 
 
 def _event(artist, venue, city, date_iso, date_display,
-           source_a_url, source_a_label, source_b_url, source_b_label):
+           source_a_url, source_a_label, source_b_url, source_b_label,
+           id_a, id_b):
     return {
         'event_id': 0, 'artist': artist, 'venue': venue, 'city': city,
         'date_iso': date_iso, 'date_display': date_display,
         'source_a_url': source_a_url, 'source_a_label': source_a_label,
         'source_b_url': source_b_url, 'source_b_label': source_b_label,
+        'id_a': id_a, 'id_b': id_b,
         'face_price_gen': FACE_PRICE_GEN,
         'face_price_wei': FACE_PRICE_GEN * GEN_WEI,
         'max_resale_gen': MAX_RESALE_GEN, 'royalty_pct': ROYALTY_PCT,
@@ -292,6 +352,7 @@ class FairGate(gl.Contract):
     events: TreeMap[str, str]
     tickets: TreeMap[str, str]
     credits: TreeMap[str, str]
+    creator: str
     next_ticket_id: u32
     total_received: u256
     total_withdrawn: u256
@@ -302,6 +363,7 @@ class FairGate(gl.Contract):
         self.events = TreeMap()
         self.tickets = TreeMap()
         self.credits = TreeMap()
+        self.creator = str(gl.message.sender_address).lower()
         self.next_ticket_id = u32(1)
         self.total_received = u256(0)
         self.total_withdrawn = u256(0)
@@ -313,7 +375,8 @@ class FairGate(gl.Contract):
             'http://www.wembleystadium.com/events/2025/OASIS',
             'Wembley Stadium — official event page',
             'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/',
-            'Wembley Park — district guide ("Oasis played Wembley Stadium in 2025")')
+            'Wembley Park — district guide ("Oasis played Wembley Stadium in 2025")',
+            'oasis', 'wembley')
         e1['event_id'] = 1
         self.events['1'] = packed(e1)
         e2 = _event(
@@ -322,7 +385,8 @@ class FairGate(gl.Contract):
             'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour',
             'Bridgestone Arena — official event page',
             'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets',
-            'do615 — Nashville independent event calendar')
+            'do615 — Nashville independent event calendar',
+            'metro boomin', 'bridgestone')
         e2['event_id'] = 2
         self.events['2'] = packed(e2)
         e3 = _event(
@@ -331,9 +395,20 @@ class FairGate(gl.Contract):
             'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour',
             'Bridgestone Arena — official event page',
             'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets',
-            'do615 — Nashville independent event calendar')
+            'do615 — Nashville independent event calendar',
+            'pentatonix', 'bridgestone')
         e3['event_id'] = 3
         self.events['3'] = packed(e3)
+        e4 = _event(
+            'KATSEYE', 'Target Center', 'Minneapolis',
+            '2026-11-07', '7 November 2026, 8:00 PM',
+            'https://www.targetcenter.com/events/detail/katseye',
+            'Target Center — official event page ("KATSEYE - POSTPONED")',
+            'https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm',
+            'MusicTimes — independent news report (postponement confirmed)',
+            'katseye', 'target center')
+        e4['event_id'] = 4
+        self.events['4'] = packed(e4)
 
     def _load_event(self, event_id):
         raw = self.events.get(str(event_id), '')
@@ -365,6 +440,9 @@ class FairGate(gl.Contract):
     @gl.public.write
     def configure_event(self, event_id: int, organizer: str,
                         artist_address: str) -> str:
+        sender = str(gl.message.sender_address).lower()
+        if sender != self.creator:
+            fail('NOT_CREATOR')
         e = self._load_event(event_id)
         if e['parties_set']:
             fail('PARTIES_ALREADY_SET')
@@ -385,6 +463,8 @@ class FairGate(gl.Contract):
     @gl.public.write.payable
     def buy_ticket(self, event_id: int) -> str:
         e = self._load_event(event_id)
+        if not e['parties_set']:
+            fail('EVENT_NOT_CONFIGURED')
         if e['status'] != 'ON_SALE':
             fail('EVENT_NOT_ON_SALE')
         if int(e['tickets_sold']) >= int(e['tickets_total']):
@@ -473,7 +553,16 @@ class FairGate(gl.Contract):
         e = self._load_event(event_id)
         if e['status'] in ('EVENT_HELD', 'CANCELLED'):
             fail('EVENT_ALREADY_SETTLED')
-        checked = _run_check(e['source_a_url'], e['source_b_url'])
+        # Date gate, enforced on-chain: settlement is refused before
+        # the day after the event date. The clock is the transaction
+        # datetime — deterministic across validators, fixed when the
+        # transaction is accepted. String comparison works because
+        # both sides are ISO dates (YYYY-MM-DD).
+        today = datetime.now(timezone.utc).date().isoformat()
+        if today <= e['date_iso']:
+            fail('TOO_EARLY')
+        checked = _run_check(e['source_a_url'], e['source_b_url'],
+                             e['id_a'], e['id_b'])
         verdict = checked['verdict']
         if verdict in ('UNREACHABLE', 'SOURCES_DISAGREE'):
             # Fail-closed: literally no state change. Settlement can
@@ -523,7 +612,11 @@ class FairGate(gl.Contract):
 
     @gl.public.view
     def get_protocol(self) -> str:
-        return 'fairgate-1.1'
+        return 'fairgate-1.2'
+
+    @gl.public.view
+    def get_creator(self) -> str:
+        return self.creator
 
     @gl.public.view
     def get_event(self, event_id: int) -> str:
@@ -532,7 +625,7 @@ class FairGate(gl.Contract):
     @gl.public.view
     def get_all_events(self) -> str:
         out = []
-        for i in (1, 2, 3):
+        for i in (1, 2, 3, 4):
             raw = self.events.get(str(i), '')
             if raw:
                 out.append(json.loads(raw))
@@ -559,12 +652,12 @@ class FairGate(gl.Contract):
     @gl.public.view
     def get_counts(self) -> str:
         escrowed = 0
-        for i in (1, 2, 3):
+        for i in (1, 2, 3, 4):
             raw = self.events.get(str(i), '')
             if raw:
                 escrowed += int(json.loads(raw)['escrowed_wei'])
         return packed({
-            'event_count': 3,
+            'event_count': 4,
             'ticket_count': int(self.next_ticket_id) - 1,
             'total_received_wei': int(self.total_received),
             'total_withdrawn_wei': int(self.total_withdrawn),

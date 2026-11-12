@@ -1,13 +1,22 @@
-// FairGate: full evidence run on Stable Studionet (61999).
+// FairGate: full evidence run on Stable Studionet (61999), v1.2.
 // Pre-registered expectations: EXPECTED.md (written before this run).
-// 3 config + 6 primary sales + 7 resale + 8 negatives + 2 settlements
-// + 4 post-settlement negatives + 5 withdrawals = 35 txs + deploy.
+// 4 config + 6 primary sales + 7 resale + 3 pre-configure negatives
+// + 8 resale/purchase negatives + 1 early-settle negative + 4
+// settlements (incl. E4 POSTPONED + re-settle) + 4 post-settlement
+// negatives + 5 withdrawals = 42 txs + deploy.
 // E3 (Pentatonix, 2026-12-09) is deliberately NOT settled: its real
-// date is in the future; it stays ON_SALE with 6 of 8 tickets unsold
-// so the live site has a real usable flow. Its 20 GEN escrow stays
-// open by design (see EXPECTED.md ledger split).
-// Resumable via the checkpoint file. Temp accounts live ONLY in the
-// checkpoint file (workspace, NOT in the repo, mode 0600).
+// date is in the future and the on-chain date gate refuses settlement
+// before 2026-12-10 (proven by neg13, TOO_EARLY). It stays ON_SALE
+// with 6 of 8 tickets unsold so the live site has a real usable flow.
+// Its 20 GEN escrow stays open by design (see EXPECTED.md ledger split).
+// E4 (KATSEYE, 2026-11-07) is settled POSTPONED on-chain with no money
+// at risk (0 tickets, 0 escrow), then re-settled to prove the
+// re-settlement path.
+// Resumable: progress is saved to a local state file. Temp accounts
+// live ONLY in that file (workspace, NOT in the repo, mode 0600).
+// IMPORTANT: do NOT delete the state file after this run — the ORG
+// (organizer) key is retained in it so E3's organizer credit can be
+// withdrawn after E3 settles after 2026-12-09 (see EXPECTED.md).
 // Negative checks compare the exact leader-receipt error payload
 // (result.payload), never a substring of the whole receipt, and
 // verify the full on-chain state is unchanged before/after.
@@ -89,6 +98,9 @@ const ev = cp.evidence || (cp.evidence = {done: {}, tickets: {}});
 const done = ev.done;
 const records = [];
 const NEG_ERRORS = {
+  'neg0-not-creator': 'NOT_CREATOR',
+  'neg14-bad-address': 'BAD_ADDRESS',
+  'neg12-buy-unconfigured': 'EVENT_NOT_CONFIGURED',
   'neg1-unknown-event': 'EVENT_NOT_FOUND',
   'neg2-wrong-value': 'VALUE_MUST_EQUAL_PRICE',
   'neg3-stranger-list': 'NOT_TICKET_OWNER',
@@ -100,17 +112,22 @@ const NEG_ERRORS = {
   'neg9-double-settle': 'EVENT_ALREADY_SETTLED',
   'neg10-list-refunded': 'TICKET_NOT_ACTIVE',
   'neg11-buy-held': 'EVENT_NOT_ON_SALE',
+  'neg13-early-settle-e3': 'TOO_EARLY',
 };
 const SETTLE_INFO = {
   's1-settle-e1': {verdict: 'EVENT_HELD', caller: 'OUT'},
   's2-settle-e2': {verdict: 'CANCELLED', caller: 'OUT'},
+  's3-settle-e4': {verdict: 'POSTPONED', caller: 'OUT'},
+  's3b-resettle-e4': {verdict: 'POSTPONED', caller: 'OUT'},
 };
-const LABEL_ORDER = ['cfg-e1', 'cfg-e2', 'cfg-e3',
+const LABEL_ORDER = ['neg0-not-creator', 'neg14-bad-address', 'neg12-buy-unconfigured',
+  'cfg-e1', 'cfg-e2', 'cfg-e3', 'cfg-e4',
   't1-buy', 't2-buy', 't3-buy', 't4-buy', 't5-buy', 't6-buy',
   'r1-list', 'r1-buy', 'r2-list', 'r2-buy', 'r3-list', 'r4-list', 'r4-buy',
   'neg3-stranger-list', 'neg4-over-cap', 'neg6-list', 'neg6-self-buy',
   'neg6-cancel', 'neg5-not-listed', 'neg2-wrong-value', 'neg1-unknown-event',
-  's1-settle-e1', 's2-settle-e2',
+  'neg13-early-settle-e3',
+  's1-settle-e1', 's2-settle-e2', 's3-settle-e4', 's3b-resettle-e4',
   'neg9-double-settle', 'neg11-buy-held', 'neg10-list-refunded',
   'neg7-stranger-withdraw',
   'w-org', 'w-art', 'w-b1', 'w-b2', 'neg8-double-withdraw'];
@@ -170,7 +187,7 @@ async function resolvePending() {
       const n = Object.keys(done).filter((k) => k.startsWith(label + '-attempt-')).length + 1;
       record(`${label}-attempt-${n}`, hash, 'disagreed-retry');
     } else if (good(tx)) {
-      const e = await readEvent(label === 's1-settle-e1' ? 1 : 2);
+      const e = await readEvent(label === 's1-settle-e1' ? 1 : label === 's2-settle-e2' ? 2 : 4);
       if (e.verdict !== SETTLE_INFO[label].verdict) throw new Error('pending ' + label + ' WRONG VERDICT: expected ' + SETTLE_INFO[label].verdict + ', got ' + e.verdict);
       record(label, hash, 'ok', {verdict: e.verdict, caller: SETTLE_INFO[label].caller});
     } else throw new Error('pending ' + label + ' settle tx not good: ' + JSON.stringify(tx).slice(0, 300));
@@ -265,12 +282,18 @@ async function buyTicketFlow(label, who, eventId, priceGen) {
 const org = accounts.ORG.address.toLowerCase();
 const art = accounts.ART.address.toLowerCase();
 
-// A. Launch configuration.
-await writeOk('cfg-e1', 'ORG', 'configure_event', [1, org, art]);
-await writeOk('cfg-e2', 'ORG', 'configure_event', [2, org, art]);
-await writeOk('cfg-e3', 'ORG', 'configure_event', [3, org, art]);
+// A. Pre-configure negatives (before any event is configured).
+await writeErr('neg0-not-creator', 'OUT', 'configure_event', [1, org, art], 'NOT_CREATOR');
+await writeErr('neg14-bad-address', 'P1', 'configure_event', [1, '0x123', art], 'BAD_ADDRESS');
+await writeErr('neg12-buy-unconfigured', 'B1', 'buy_ticket', [1], 'EVENT_NOT_CONFIGURED', 0n);
 
-// B. Primary sales (10 GEN each).
+// B. Launch configuration (creator P1 only).
+await writeOk('cfg-e1', 'P1', 'configure_event', [1, org, art]);
+await writeOk('cfg-e2', 'P1', 'configure_event', [2, org, art]);
+await writeOk('cfg-e3', 'P1', 'configure_event', [3, org, art]);
+await writeOk('cfg-e4', 'P1', 'configure_event', [4, org, art]);
+
+// C. Primary sales (10 GEN each).
 const t1 = await buyTicketFlow('t1-buy', 'B1', 1, 10);
 const t2 = await buyTicketFlow('t2-buy', 'B2', 1, 10);
 const t3 = await buyTicketFlow('t3-buy', 'B1', 2, 10);
@@ -278,7 +301,7 @@ const t4 = await buyTicketFlow('t4-buy', 'B2', 2, 10);
 const t5 = await buyTicketFlow('t5-buy', 'B1', 3, 10);
 const t6 = await buyTicketFlow('t6-buy', 'B2', 3, 10);
 
-// C. Resale happy path.
+// D. Resale happy path.
 await writeOk('r1-list', 'B1', 'list_resale', [t1, 11]);
 await writeOk('r1-buy', 'B2', 'buy_resale', [t1], 11n * GEN);
 await writeOk('r2-list', 'B2', 'list_resale', [t2, 10]);
@@ -287,7 +310,7 @@ await writeOk('r3-list', 'B1', 'list_resale', [t3, 11]);
 await writeOk('r4-list', 'B1', 'list_resale', [t5, 11]);
 await writeOk('r4-buy', 'B2', 'buy_resale', [t5], 11n * GEN);
 
-// D. Resale + purchase negatives (exact errors, 0 GEN on failed payables).
+// E. Resale + purchase negatives (exact errors, 0 GEN on failed payables).
 await writeErr('neg3-stranger-list', 'B2', 'list_resale', [t2, 10], 'NOT_TICKET_OWNER');
 await writeErr('neg4-over-cap', 'B2', 'list_resale', [t1, 12], 'PRICE_CAP');
 await writeOk('neg6-list', 'B1', 'list_resale', [t2, 11]);
@@ -297,17 +320,22 @@ await writeErr('neg5-not-listed', 'B2', 'buy_resale', [t4], 'TICKET_NOT_LISTED',
 await writeErr('neg2-wrong-value', 'B1', 'buy_ticket', [1], 'VALUE_MUST_EQUAL_PRICE', 0n);
 await writeErr('neg1-unknown-event', 'B1', 'buy_ticket', [99], 'EVENT_NOT_FOUND', 0n);
 
-// E. Settlements (caller OUT; consensus decides).
+// F. Early-settlement negative: the date gate refuses E3 before 2026-12-10.
+await writeErr('neg13-early-settle-e3', 'OUT', 'settle_event', [3], 'TOO_EARLY');
+
+// G. Settlements (caller OUT; consensus decides; date gate already passed for E1/E2/E4).
 await settleFlow('s1-settle-e1', 1, 'EVENT_HELD');
 await settleFlow('s2-settle-e2', 2, 'CANCELLED');
+await settleFlow('s3-settle-e4', 4, 'POSTPONED');
+await settleFlow('s3b-resettle-e4', 4, 'POSTPONED');
 
-// F. Post-settlement negatives.
+// H. Post-settlement negatives.
 await writeErr('neg9-double-settle', 'OUT', 'settle_event', [1], 'EVENT_ALREADY_SETTLED');
 await writeErr('neg11-buy-held', 'B1', 'buy_ticket', [1], 'EVENT_NOT_ON_SALE', 0n);
 await writeErr('neg10-list-refunded', 'B1', 'list_resale', [t3, 10], 'TICKET_NOT_ACTIVE');
 await writeErr('neg7-stranger-withdraw', 'OUT', 'withdraw', [], 'NO_CREDIT');
 
-// G. Withdrawals (exact credits).
+// I. Withdrawals (exact credits).
 await withdrawFlow('w-org', 'ORG', 20000000000000000000);
 await withdrawFlow('w-art', 'ART', 3200000000000000000);
 await withdrawFlow('w-b1', 'B1', 29800000000000000000);
@@ -318,12 +346,15 @@ await writeErr('neg8-double-withdraw', 'ORG', 'withdraw', [], 'NO_CREDIT');
 const e1 = await readEvent(1);
 const e2 = await readEvent(2);
 const e3 = await readEvent(3);
+const e4 = await readEvent(4);
 console.log('E1:', JSON.stringify(e1));
 console.log('E2:', JSON.stringify(e2));
 console.log('E3:', JSON.stringify(e3));
+console.log('E4:', JSON.stringify(e4));
 if (e1.status !== 'EVENT_HELD' || e1.verdict !== 'EVENT_HELD' || e1.tickets_sold !== 2 || e1.escrowed_wei !== 0 || e1.organizer_paid !== true || e1.settle_count !== 1) throw new Error('E1 does not match EXPECTED.md');
 if (e2.status !== 'CANCELLED' || e2.verdict !== 'CANCELLED' || e2.tickets_sold !== 2 || e2.escrowed_wei !== 0 || e2.settle_count !== 1) throw new Error('E2 does not match EXPECTED.md');
 if (e3.status !== 'ON_SALE' || e3.verdict !== '' || e3.tickets_sold !== 2 || e3.escrowed_wei !== 20000000000000000000 || e3.organizer_paid !== false || e3.settle_count !== 0) throw new Error('E3 does not match EXPECTED.md');
+if (e4.status !== 'POSTPONED' || e4.verdict !== 'POSTPONED' || e4.tickets_sold !== 0 || e4.escrowed_wei !== 0 || e4.organizer_paid !== false || e4.settle_count !== 2) throw new Error('E4 does not match EXPECTED.md');
 const tk1 = await readTicket(t1);
 const tk2 = await readTicket(t2);
 const tk3 = await readTicket(t3);
@@ -343,7 +374,7 @@ for (const k of Object.keys(accounts)) {
 }
 const counts = await readCounts();
 console.log('counts:', JSON.stringify(counts));
-if (counts.event_count !== 3 || counts.ticket_count !== 6
+if (counts.event_count !== 4 || counts.ticket_count !== 6
   || counts.total_received_wei !== 92000000000000000000
   || counts.total_withdrawn_wei !== 72000000000000000000
   || counts.contract_balance_wei !== 20000000000000000000 || counts.escrowed_wei !== 20000000000000000000

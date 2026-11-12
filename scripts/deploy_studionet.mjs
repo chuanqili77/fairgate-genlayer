@@ -1,8 +1,10 @@
 // FairGate: deploy contracts/fairgate.py on Stable Studionet (61999).
-// Temp accounts live ONLY in the checkpoint file:
+// Temp accounts live ONLY in the local state file:
 //   ~/workspace/build-p6/.fairgate-checkpoint.json
-// (workspace, NOT in the repo, mode 0600, deleted when the flow is done
-// or abandoned). No keys are written to the repo, logs, or evidence.
+// (workspace, NOT in the repo, mode 0600). The file is kept after the
+// flow: the organizer key in it is needed to withdraw E3's organizer
+// credit after E3 settles after 2026-12-09, and is deleted after that
+// withdrawal. No keys are written to the repo, logs, or evidence.
 // Usage: node scripts/deploy_studionet.mjs [--checkpoint <path>]
 import fs from 'node:fs';
 import path from 'node:path';

@@ -1,5 +1,5 @@
 // Stamp the built bundle hash into docs/index.html so a cold-start check can
-// prove the browser loaded the current build (TenderCourt lesson:
+// prove the browser loaded the current build (lesson learned the hard way:
 // an unversioned bundle served stale code and produced false FAILs).
 // Vite already content-hashes the bundle filename; the ?v= stamp is an
 // extra explicit marker. Run automatically as the vite `postbuild` step.

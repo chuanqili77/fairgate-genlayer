@@ -47,8 +47,9 @@ ${rows}
 - Artist royalties paid: 3.2 GEN
 - Resale volume: 32 GEN
 - E1 Oasis Live '25: EVENT_HELD, 2 tickets sold, organizer paid 20 GEN
-- E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded 10 GEN each
-- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026: ON_SALE, 2 tickets sold, 20 GEN escrowed, NOT settled (real date in the future — the 20 GEN balance is live ticket escrow, not stranded value)
+- E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded the 10 GEN face price each (a resale buyer who paid 11 GEN gets 10 back)
+- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026: ON_SALE, 2 tickets sold, 20 GEN escrowed, NOT settled (real date in the future — the 20 GEN balance is live ticket escrow, not stranded value; an early settlement attempt was refused on-chain, neg13 TOO_EARLY)
+- E4 KATSEYE, Target Center, 7 Nov 2026: POSTPONED, 0 tickets sold, 0 GEN escrowed, settled twice on-chain (settle_count 2) — the POSTPONED branch moves no money
 - Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3)
 - All wallet credits 0 after final withdrawals
 
@@ -56,6 +57,9 @@ ${rows}
 
 | Case | What was tried | Expected | Observed |
 |------|---------------|----------|----------|
+| neg0 | OUT configures event 1 (not the creator) | NOT_CREATOR | error |
+| neg14 | P1 configures with a malformed address | BAD_ADDRESS | error |
+| neg12 | buy E1 before any event is configured | EVENT_NOT_CONFIGURED | error, 0 GEN sent |
 | neg1 | buy event 99 | EVENT_NOT_FOUND | error, 0 GEN sent |
 | neg2 | buy E1 with 0 GEN | VALUE_MUST_EQUAL_PRICE | error, 0 GEN sent |
 | neg3 | B2 lists T2 owned by B1 | NOT_TICKET_OWNER | error |
@@ -67,13 +71,13 @@ ${rows}
 | neg9 | settle E1 twice | EVENT_ALREADY_SETTLED | error |
 | neg10 | list REFUNDED T3 | TICKET_NOT_ACTIVE | error |
 | neg11 | buy E1 after settlement | EVENT_NOT_ON_SALE | error, 0 GEN sent |
+| neg13 | settle E3 before its date (2026-11-12 < 2026-12-09) | TOO_EARLY | error, state unchanged |
 
 ## Not covered on-chain (see EXPECTED.md)
 
-- No on-chain POSTPONED case (no real postponed concert with dual fetchable sources was found); branch implemented + mock-covered.
+- SOLD_OUT: no on-chain case (buying all 8 E3 tickets would close the live site's only buyable event); branch implemented + mock-covered.
 - UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed, mock-covered only.
-- BAD_ADDRESS configure guard: all three events configured once at run start, error path unreachable afterwards.
-- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. Its 20 GEN escrow stays open until after the real date.
+- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. An early attempt is refused on-chain (neg13, TOO_EARLY). Its 20 GEN escrow stays open until after the real date. The organizer key is retained offline by the project operator (never committed) so the organizer credit can be withdrawn after that settlement.
 
 ## Browser write loop
 
@@ -94,10 +98,11 @@ const reviewerMd = `# FairGate — Reviewer pack
 FairGate sells concert tickets as on-chain stubs with a hard resale
 cap (11 GEN on a 10 GEN face price) and a 10% artist royalty, and
 settles escrowed ticket money by consensus on whether the show was
-held, cancelled or postponed. Three real concerts, fixed in the
+held, cancelled or postponed. Four real concerts, fixed in the
 contract: Oasis Live '25 at Wembley (HELD), Future & Metro Boomin
-at Bridgestone Arena, Nashville (CANCELLED), and Pentatonix at
-Bridgestone Arena, Nashville, 9 Dec 2026 (ON_SALE — live, unsettled).
+at Bridgestone Arena, Nashville (CANCELLED), KATSEYE at Target
+Center, Minneapolis (POSTPONED), and Pentatonix at Bridgestone
+Arena, Nashville, 9 Dec 2026 (ON_SALE — live, unsettled).
 
 ## Contract
 
@@ -110,7 +115,7 @@ Bridgestone Arena, Nashville, 9 Dec 2026 (ON_SALE — live, unsettled).
 
 1. \`node scripts/byte_parity.mjs\` — deployed code matches \`contracts/fairgate.py\`.
 2. \`node scripts/verify_evidence.mjs\` — re-reads every evidence transaction live and re-checks the final readback against EXPECTED.md.
-3. Open the live site and wait for the FINALIZED readback: the two settled posters show their verdicts, the Pentatonix poster shows ON_SALE with tickets to buy, and the ledger shows 92 GEN in, 72 GEN out, 20 GEN live E3 escrow.
+3. Open the live site and wait for the FINALIZED readback: the three settled posters show their verdicts, the Pentatonix poster shows ON_SALE with tickets to buy, and the ledger shows 92 GEN in, 72 GEN out, 20 GEN live E3 escrow.
 
 ## Anchors (the verdict reads these pages)
 
@@ -118,12 +123,18 @@ Bridgestone Arena, Nashville, 9 Dec 2026 (ON_SALE — live, unsettled).
 |-------|---------------------------|------------------------|
 | Oasis Live '25, Wembley, 25 Jul 2025 | http://www.wembleystadium.com/events/2025/OASIS | https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/ |
 | Future & Metro Boomin, Bridgestone Arena, 6 Aug 2024 | https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour | https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets |
+| KATSEYE, Target Center, 7 Nov 2026 | https://www.targetcenter.com/events/detail/katseye | https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm |
 | Pentatonix, Bridgestone Arena, 9 Dec 2026 | https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour | https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets |
 
-Verdict rule (deterministic, no LLM): both sources fetched, neither
-contains "cancelled"/"canceled"/"postpone"/"reschedule" → EVENT_HELD.
+Verdict rule (deterministic, no LLM): each source must first
+confirm it is the right event (artist + venue named on the page);
+then both sources fetched, neither contains
+"cancelled"/"canceled"/"postpone"/"reschedule" → EVENT_HELD.
 Both contain a cancel word → CANCELLED. Both contain a postpone word
-→ POSTPONED. A fetch failure or disagreement settles nothing.
+→ POSTPONED. A fetch failure, a failed identity check, or
+disagreement settles nothing. Settlement is also refused on-chain
+before the day after the event date (transaction datetime gate):
+an early attempt fails with TOO_EARLY.
 
 ## Evidence transactions
 
@@ -133,24 +144,21 @@ ${txs.map((t, i) => `| ${i + 1} | ${t.label} | ${txLink(t.hash)} |`).join('\n')}
 
 ## Adversarial cases
 
-See EVIDENCE.md: 11 negatives, all with exact on-chain error codes
-(incl. PRICE_CAP at 12 GEN, SELF_PURCHASE, EVENT_ALREADY_SETTLED,
+See EVIDENCE.md: 15 negatives, all with exact on-chain error codes
+(incl. NOT_CREATOR on configure, TOO_EARLY on early settlement,
+PRICE_CAP at 12 GEN, SELF_PURCHASE, EVENT_ALREADY_SETTLED,
 TICKET_NOT_ACTIVE, NO_CREDIT on double withdrawal). Failed payables
 were sent with 0 GEN; the 20 GEN contract balance is exactly E3's
 live ticket escrow, not stranded value.
 
 ## What this project does not prove
 
-- No on-chain POSTPONED case in v1.1 (no real postponed concert with
-  dual fetchable sources was found); the branch is implemented and
-  mock-covered.
 - E3 (Pentatonix, 9 Dec 2026) is not settled in this run; its verdict
-  will be decided after the real date.
+  will be decided after the real date. An early settlement attempt
+  is refused on-chain (TOO_EARLY) and the settle button stays
+  disabled until the day after the show.
 - The verdict reads the live pages at settlement time; if a source
   page is rewritten, the verdict follows the new text.
-- Settlement is not gated on the event date (Studionet has no clock);
-  E1/E2 already happened, so this does not affect them; E3 is left
-  unsettled on purpose until after its real date.
 - The on-chain ticket is a payment and settlement record, not a
   venue entry credential.
 `;

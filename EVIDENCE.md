@@ -1,68 +1,78 @@
 # FairGate — Evidence
 
-- Contract: [0x1001588861d740A600497523C56Fe96fd425A620](https://explorer-studio.genlayer.com/address/0x1001588861d740A600497523C56Fe96fd425A620)
-- Deploy tx: [0xf26a96cf…](https://explorer-studio.genlayer.com/tx/0xf26a96cf2c6c2963a31f57d92a45156a649d650305b3027bd11b5d2c5e65bee0)
-- Source SHA-256: `e594e59d0cd157e22c518e19340c16ce12e27aa9ef5ea68eaa58674699ca397c` (24144 bytes, `contracts/fairgate.py`)
+- Contract: [0x38b0aE26d0C6DE7F5C8418368a2dc10f4d843E5E](https://explorer-studio.genlayer.com/address/0x38b0aE26d0C6DE7F5C8418368a2dc10f4d843E5E)
+- Deploy tx: [0xb022a4db…](https://explorer-studio.genlayer.com/tx/0xb022a4db01dd729942e7e9c7ba87c304373129869dd7500732bbb6fe259382f6)
+- Source SHA-256: `51a4059beb9e72be889b6096577581d7947ed71f903b9b2faf236a43a6c414df` (29128 bytes, `contracts/fairgate.py`)
 - Network: GenLayer Stable Studionet (chain 61999)
 - Independent verification: `node scripts/verify_evidence.mjs` — PASS (see output below)
 - Mock tests: `python3 tests/test_fairgate_mock.py` — all pass
 
-## Evidence transactions (35)
+## Evidence transactions (42)
 
 | # | Step | Transaction | Result |
 |---|------|-------------|--------|
-| 1 | cfg-e1 | [0x338cddfa…](https://explorer-studio.genlayer.com/tx/0x338cddfa7124f4d919f37965bc720b526fe3c6dd9ab1d3b4eeb77ba33a6e91c9) | ok |
-| 2 | cfg-e2 | [0xd26bb3a2…](https://explorer-studio.genlayer.com/tx/0xd26bb3a2dbaa6ee86221df8e92abf9b3d6b807e1a295a7a8ad1363abc0262277) | ok |
-| 3 | cfg-e3 | [0x783fa2fa…](https://explorer-studio.genlayer.com/tx/0x783fa2fad3f063ab70a34b54a861ff19db470cdf222a2d06ba9b4bc0cbeb4b32) | ok |
-| 4 | t1-buy | [0xebb53326…](https://explorer-studio.genlayer.com/tx/0xebb5332620e299b7aa8c966508b8b71aa889106b409da6314cd590028cd41d95) | ok |
-| 5 | t2-buy | [0xe1c40eb8…](https://explorer-studio.genlayer.com/tx/0xe1c40eb8d4a000d4f74a243cfcef5e7f99e264c6377db7fafee1455ac8749497) | ok |
-| 6 | t3-buy | [0xd3a54257…](https://explorer-studio.genlayer.com/tx/0xd3a5425741f2ac72879f8ac0fbcfc759f38c18c25ea4ffeb7bb358eb81faf680) | ok |
-| 7 | t4-buy | [0x00b8839a…](https://explorer-studio.genlayer.com/tx/0x00b8839a0c6145d5f3e148f8e18aed86e350e96029df446fa1251ebb70644f92) | ok |
-| 8 | t5-buy | [0x762dbca2…](https://explorer-studio.genlayer.com/tx/0x762dbca216b15dc340e2a8585124e5cae12f15ecc5ddf233ac744f5dda5d9356) | ok |
-| 9 | t6-buy | [0xc58eb26e…](https://explorer-studio.genlayer.com/tx/0xc58eb26ebb0f9dbdfc62c6653289282f4ef7d378c758a6550d2cf564612dab44) | ok |
-| 10 | r1-list | [0xab125a18…](https://explorer-studio.genlayer.com/tx/0xab125a180824a1f057c85d77682aa6a4c89cd2d1d17e0f50821745aa6a8d688a) | ok |
-| 11 | r1-buy | [0xb0a0b546…](https://explorer-studio.genlayer.com/tx/0xb0a0b5464e35d94aac4fd96065c1fd2002cbca294cea8147fba383dd80dc2be0) | ok |
-| 12 | r2-list | [0xcb57e69e…](https://explorer-studio.genlayer.com/tx/0xcb57e69e6bd441afed1019f17f583ad8d334daeaf613ddb7d85a2f9e8efa4bec) | ok |
-| 13 | r2-buy | [0xb9fa2e53…](https://explorer-studio.genlayer.com/tx/0xb9fa2e5334030ac22323f6552f60c7b5e369bf5d9ec65b2b67ece8370764f851) | ok |
-| 14 | r3-list | [0x97af3a2f…](https://explorer-studio.genlayer.com/tx/0x97af3a2fcd0c8fb215739053f7841379c7d9bd61d3b81dc0e306a68354b5a702) | ok |
-| 15 | r4-list | [0x8c587c2e…](https://explorer-studio.genlayer.com/tx/0x8c587c2e37bb822d9db658bea63384472701c157a5d9f896b7291e589da2efd3) | ok |
-| 16 | r4-buy | [0x6048869b…](https://explorer-studio.genlayer.com/tx/0x6048869bed809358da0fad57787b42b264dd4cab6ea6cdb97806fac6fd151d88) | ok |
-| 17 | neg3-stranger-list | [0x55067eb9…](https://explorer-studio.genlayer.com/tx/0x55067eb975caa88664592c042389b26fbd51c773d7202ca8608b5e8c198ade7e) | error-observed |
-| 18 | neg4-over-cap | [0x0781ef01…](https://explorer-studio.genlayer.com/tx/0x0781ef015f1bf43b80cbccf04c49f8f6c3694fda2a60b2771a5f091fb4a5b17e) | error-observed |
-| 19 | neg6-list | [0xeacd8d0c…](https://explorer-studio.genlayer.com/tx/0xeacd8d0cb3b294bc294b88565056307c4d6fa76051ffb08ffb05774ed734e2be) | ok |
-| 20 | neg6-self-buy | [0xf90d7002…](https://explorer-studio.genlayer.com/tx/0xf90d70026922d49b43e0b5ef562bdca2dd92b8889ab3d94fb24a28d4b3720281) | error-observed |
-| 21 | neg6-cancel | [0x3e8723e3…](https://explorer-studio.genlayer.com/tx/0x3e8723e3483967cb001eb1bc73fb5927513a618338eb6879e6daf2dd2c0f46bf) | ok |
-| 22 | neg5-not-listed | [0x0f25ad03…](https://explorer-studio.genlayer.com/tx/0x0f25ad034cbf8e2660ff8adc69bd2a254e74ad538dfa8f2ea282e2ab64b347d6) | error-observed |
-| 23 | neg2-wrong-value | [0x0b821060…](https://explorer-studio.genlayer.com/tx/0x0b82106093b523132e52e6776a471f3a5013d7a03cd0f241927ad06ae3f85ef2) | error-observed |
-| 24 | neg1-unknown-event | [0xad564688…](https://explorer-studio.genlayer.com/tx/0xad56468872db25d27d58fb7a4138563e9c376dc7d7989039c65b19e5a7fdc499) | error-observed |
-| 25 | s1-settle-e1 | [0x7a78f1d5…](https://explorer-studio.genlayer.com/tx/0x7a78f1d5a2b2a92fea9496aca18a0d345a5d3e086fa778b1000f02565b546596) | ok |
-| 26 | s2-settle-e2 | [0x2f88a746…](https://explorer-studio.genlayer.com/tx/0x2f88a746483e3404e3a9b25c66f7f93d69f3bf2ce7b38891072495c84f27a35f) | ok |
-| 27 | neg9-double-settle | [0xbb12611f…](https://explorer-studio.genlayer.com/tx/0xbb12611fef4a59d0ded065425e24010ee0621a7dfb88c716a86f6dabc8aaeb07) | error-observed |
-| 28 | neg11-buy-held | [0x80a7703e…](https://explorer-studio.genlayer.com/tx/0x80a7703ef65e9c82be77aabd503abb77f3ef3700fe22a7ebd7d182f10ee2100d) | error-observed |
-| 29 | neg10-list-refunded | [0xa8c9c4ce…](https://explorer-studio.genlayer.com/tx/0xa8c9c4cea33e2d70cede2f86596ad27a8c6ab2c56dcb38d1a7e2371604b28e4d) | error-observed |
-| 30 | neg7-stranger-withdraw | [0x4d83bb85…](https://explorer-studio.genlayer.com/tx/0x4d83bb85e4610f70007949758265bd70e3198f30317b29aaf190d5c33342580d) | error-observed |
-| 31 | w-org | [0x1148ae80…](https://explorer-studio.genlayer.com/tx/0x1148ae807b1f4ea626ffd2bd1e2cc771790d75b210a4613f18569619a24769d6) | ok |
-| 32 | w-art | [0x6ef86ca4…](https://explorer-studio.genlayer.com/tx/0x6ef86ca4704c8dec737c80ca479738b9f0dcec1826f9e78bf451f0716a82d9af) | ok |
-| 33 | w-b1 | [0xe21b89ef…](https://explorer-studio.genlayer.com/tx/0xe21b89ef48c019a54c9fc9503e8e216f1e658db0daa0dff005ee08f15a583d07) | ok |
-| 34 | w-b2 | [0xd7f9523d…](https://explorer-studio.genlayer.com/tx/0xd7f9523d5e7c76922711dfe3f874f07c4684cc6516d45e724bb49268706ea8ce) | ok |
-| 35 | neg8-double-withdraw | [0x30df9657…](https://explorer-studio.genlayer.com/tx/0x30df9657cdb6137dba88c16eb7a04fd83883312f15b68442249961a5f3a347d3) | error-observed |
+| 1 | neg0-not-creator | [0xee1180bc…](https://explorer-studio.genlayer.com/tx/0xee1180bc71385e68f6f770b84830655dbe2a3082d260edafe19012bb4409b8b2) | error-observed |
+| 2 | neg14-bad-address | [0xbdb22861…](https://explorer-studio.genlayer.com/tx/0xbdb22861d142f31d24baca5829600c7c9fd46455f482e291bc73b57ecb15befc) | error-observed |
+| 3 | neg12-buy-unconfigured | [0x0de2889f…](https://explorer-studio.genlayer.com/tx/0x0de2889f6b46382b6ee7bc5f74cf7e3b88297d52bec0381092e7caf153184bcd) | error-observed |
+| 4 | cfg-e1 | [0x162752bb…](https://explorer-studio.genlayer.com/tx/0x162752bb035bc225ee4ce354ebec5969c8819bae2b23bf85111229b1c95612a6) | ok |
+| 5 | cfg-e2 | [0xff88a5a7…](https://explorer-studio.genlayer.com/tx/0xff88a5a724726c3e0ddb562e811f7c87ab7b1ef5a73c82afa6332bf8bd2a4513) | ok |
+| 6 | cfg-e3 | [0xc6177fce…](https://explorer-studio.genlayer.com/tx/0xc6177fce75493a0a3760b41f3124e117b48b8aa1076d7ffa3231fb4b312892de) | ok |
+| 7 | cfg-e4 | [0x552e1cba…](https://explorer-studio.genlayer.com/tx/0x552e1cba57a1bd761603f3b3e0fe9859e1874ce50dbe6f3c00cfbfdd411dad94) | ok |
+| 8 | t1-buy | [0xceaa56b3…](https://explorer-studio.genlayer.com/tx/0xceaa56b3bc9994a2b5d5e847d84c8f17038c3c6d405d80809551190802a1b741) | ok |
+| 9 | t2-buy | [0x54618ca0…](https://explorer-studio.genlayer.com/tx/0x54618ca0b9afee723b27aa71d14c31c4f3662a41751a85b36c6c477f66af2666) | ok |
+| 10 | t3-buy | [0x8a05db78…](https://explorer-studio.genlayer.com/tx/0x8a05db7881e83833199a7dc0b99d5f8f2bcedf145609f913e01f3532df12004e) | ok |
+| 11 | t4-buy | [0x9a9a29d8…](https://explorer-studio.genlayer.com/tx/0x9a9a29d862d00c280b56085ef10f9ba551ecb3233b33f7218208755ead58650f) | ok |
+| 12 | t5-buy | [0x8af7fb6b…](https://explorer-studio.genlayer.com/tx/0x8af7fb6b87a5ac47b18fbbc18c764ddf1bac4e5e52f0700f1a7bc331122f3e80) | ok |
+| 13 | t6-buy | [0x96d7dd05…](https://explorer-studio.genlayer.com/tx/0x96d7dd05d09d9d84c430c06de70dd52bf83e7d0cc6a8a4a73ad6c6dc8a2066bd) | ok |
+| 14 | r1-list | [0xf59e9906…](https://explorer-studio.genlayer.com/tx/0xf59e99064cbca1e3f574d2d149cd5800b5d514513bee8742a6bd284a2ab66e90) | ok |
+| 15 | r1-buy | [0x111fdcae…](https://explorer-studio.genlayer.com/tx/0x111fdcae1eb7e9ca02829a3b6047145397f67a7788a5a050ee9d6849b4b9c376) | ok |
+| 16 | r2-list | [0x408cb005…](https://explorer-studio.genlayer.com/tx/0x408cb0058c23400acebbc125a5497e3d46914b651e400ece871a8acc9bdcc10d) | ok |
+| 17 | r2-buy | [0xb29ee443…](https://explorer-studio.genlayer.com/tx/0xb29ee443e1d4fe162fc20b080d170e665fd1d5749bdd71c4ded18481e59bf44d) | ok |
+| 18 | r3-list | [0x78fa5f23…](https://explorer-studio.genlayer.com/tx/0x78fa5f23a971191fddf7762e23becf22a15870d1a5077673e7fa7178aefc0bb1) | ok |
+| 19 | r4-list | [0x5d0e4078…](https://explorer-studio.genlayer.com/tx/0x5d0e40780cd455e48cf57d81a0d6cab29b1d9f836915bcb9113b76816247537e) | ok |
+| 20 | r4-buy | [0xb32300e5…](https://explorer-studio.genlayer.com/tx/0xb32300e51ac6eb7698d831ab382cec4ec33b53cb917377b2bc9b4dd4d8412fff) | ok |
+| 21 | neg3-stranger-list | [0x67026184…](https://explorer-studio.genlayer.com/tx/0x6702618414b6d36ebd95d010ac2fce82dee67f06eeaa4a3bfc3885a0f840324b) | error-observed |
+| 22 | neg4-over-cap | [0xc80233e5…](https://explorer-studio.genlayer.com/tx/0xc80233e5fa7ffa53373dfbb7f30c98770fbde7e5ec1a64ef7e29966fe12f2a4b) | error-observed |
+| 23 | neg6-list | [0xc1ef0930…](https://explorer-studio.genlayer.com/tx/0xc1ef09308222d03a32aa5a3d1fc8f001c9ddc624fab4840c9fc2ced24e6a3177) | ok |
+| 24 | neg6-self-buy | [0x8ad67763…](https://explorer-studio.genlayer.com/tx/0x8ad67763c05adfd860c9637ef12fa8142240b017acba4c7f3de7fd17a7b23e9e) | error-observed |
+| 25 | neg6-cancel | [0x0bcc3161…](https://explorer-studio.genlayer.com/tx/0x0bcc3161ad9a1bbe31c07830d803391ac4fe3a84838a921c05f5395ec89bc595) | ok |
+| 26 | neg5-not-listed | [0x5f9dc81f…](https://explorer-studio.genlayer.com/tx/0x5f9dc81f5a04ba18cd2e8b75e001176438ed47fb49596f3b0e5ba6c7c74a82c9) | error-observed |
+| 27 | neg2-wrong-value | [0x0fd0d285…](https://explorer-studio.genlayer.com/tx/0x0fd0d2851c65f8be75516615592e5bbae05fde941e396635ae96bec99ba2e1a8) | error-observed |
+| 28 | neg1-unknown-event | [0x7ab02c82…](https://explorer-studio.genlayer.com/tx/0x7ab02c82645d265414fd4f8b3852bf6b7dfa370a26278144063e429fc6b22938) | error-observed |
+| 29 | neg13-early-settle-e3 | [0x20f2bb1a…](https://explorer-studio.genlayer.com/tx/0x20f2bb1ab9c5c8ac9db2364cf20d84096ceefa4c5dfbc9c66e6bd5cadf20f6b8) | error-observed |
+| 30 | s1-settle-e1 | [0x75cd8d29…](https://explorer-studio.genlayer.com/tx/0x75cd8d2962c6d5e4024e0763c133190eba1a82a7cbba17f0a57e5e3da04578d8) | ok |
+| 31 | s2-settle-e2 | [0x2ec52ad0…](https://explorer-studio.genlayer.com/tx/0x2ec52ad0227a90cf85f748c41b9fe84b2d92f90c4ec236380991676de1a9aec0) | ok |
+| 32 | s3-settle-e4 | [0xe8bc2e61…](https://explorer-studio.genlayer.com/tx/0xe8bc2e6180eff1153d9b57b9e27cbd15138b86113afb1b47084af581f2d5dd23) | ok |
+| 33 | s3b-resettle-e4 | [0x92959238…](https://explorer-studio.genlayer.com/tx/0x929592387154185c68b658d75f7e64737c6f17ac390ddc341609f14ed1256c29) | ok |
+| 34 | neg9-double-settle | [0x31d44a71…](https://explorer-studio.genlayer.com/tx/0x31d44a71987fa75fbd0238bc41ef3a2ae72882ff5a0ff13cbbced80dcdb15134) | error-observed |
+| 35 | neg11-buy-held | [0x89522f2c…](https://explorer-studio.genlayer.com/tx/0x89522f2cf5461740ad9f5b7d15b4fee714d28ed2834ddba6ef72750101f1eb56) | error-observed |
+| 36 | neg10-list-refunded | [0xdfd839b9…](https://explorer-studio.genlayer.com/tx/0xdfd839b93984b6f9b65297c7383e3301713c98fb7fb23d3512b7b8e416e4544c) | error-observed |
+| 37 | neg7-stranger-withdraw | [0x3dd4205c…](https://explorer-studio.genlayer.com/tx/0x3dd4205ca8eae1eaa177f0cbd1ad7e6cb5a1d3a70fe80b1b3b16322a7a1376d2) | error-observed |
+| 38 | w-org | [0x5e138ea5…](https://explorer-studio.genlayer.com/tx/0x5e138ea5e7d93987f87cfd03a7abac8dca3bfef366867b7ee8a47b2cd8b95f2c) | ok |
+| 39 | w-art | [0x1c7cf496…](https://explorer-studio.genlayer.com/tx/0x1c7cf4967ca893f2f40ddc671d53f20afe45cb8f050f78190ed6408f975ff9a1) | ok |
+| 40 | w-b1 | [0xea99a0d5…](https://explorer-studio.genlayer.com/tx/0xea99a0d57f63b4b6a95a49fbdada7b6df624db63924a4b4407b33d4932dd2a3e) | ok |
+| 41 | w-b2 | [0xa8e1eb5f…](https://explorer-studio.genlayer.com/tx/0xa8e1eb5f2c4fea8d078c7c367832b0e43ecc1dafcd95464ff6875d2b45f29e79) | ok |
+| 42 | neg8-double-withdraw | [0x1a3b56d8…](https://explorer-studio.genlayer.com/tx/0x1a3b56d826df7fce2d40b91aedea27cf67ce916a5340d0d1a1fd9f2333e12910) | error-observed |
 
-## Final ledger (pre-registered in EXPECTED.md, confirmed by verify_evidence.mjs — post-browser state)
+## Final ledger (pre-registered in EXPECTED.md, confirmed by verify_evidence.mjs)
 
-- 134 GEN in = 72 GEN withdrawn + 62 GEN contract balance, every GEN accounted for
-- Contract balance 62 GEN = E3 escrow 40 GEN (4 tickets x 10) + seller credits 9.9 + 9.9 GEN (browser passes 1–2, keys lost, disclosed) + artist royalties 2.2 GEN (unwithdrawn, disclosed)
-- Artist royalties: 5.4 GEN total (3.2 withdrawn in the evidence run + 2.2 credited in the browser passes)
-- Resale volume: 54 GEN
+- 92 GEN in = 72 GEN withdrawn + 20 GEN live E3 escrow, contract balance 20 GEN
+- Artist royalties paid: 3.2 GEN
+- Resale volume: 32 GEN
 - E1 Oasis Live '25: EVENT_HELD, 2 tickets sold, organizer paid 20 GEN
-- E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded 10 GEN each
-- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026: ON_SALE, 4 tickets sold, 40 GEN escrowed, NOT settled (real date in the future — the 40 GEN balance is live ticket escrow, not stranded value)
-- Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3), #7 ACTIVE (0x55b3…3c41, E3, browser pass 1), #8 ACTIVE (0xd4bb…4337, E3, browser pass 2)
-- Evidence-run wallet credits 0 after final withdrawals; browser credits (A 9.9, C 9.9, artist 2.2) remain credited on-chain and disclosed
+- E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded the 10 GEN face price each (a resale buyer who paid 11 GEN gets 10 back)
+- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026: ON_SALE, 2 tickets sold, 20 GEN escrowed, NOT settled (real date in the future — the 20 GEN balance is live ticket escrow, not stranded value; an early settlement attempt was refused on-chain, neg13 TOO_EARLY)
+- E4 KATSEYE, Target Center, 7 Nov 2026: POSTPONED, 0 tickets sold, 0 GEN escrowed, settled twice on-chain (settle_count 2) — the POSTPONED branch moves no money
+- Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3)
+- All wallet credits 0 after final withdrawals
 
 ## Adversarial cases (all on-chain)
 
 | Case | What was tried | Expected | Observed |
 |------|---------------|----------|----------|
+| neg0 | OUT configures event 1 (not the creator) | NOT_CREATOR | error |
+| neg14 | P1 configures with a malformed address | BAD_ADDRESS | error |
+| neg12 | buy E1 before any event is configured | EVENT_NOT_CONFIGURED | error, 0 GEN sent |
 | neg1 | buy event 99 | EVENT_NOT_FOUND | error, 0 GEN sent |
 | neg2 | buy E1 with 0 GEN | VALUE_MUST_EQUAL_PRICE | error, 0 GEN sent |
 | neg3 | B2 lists T2 owned by B1 | NOT_TICKET_OWNER | error |
@@ -74,45 +84,18 @@
 | neg9 | settle E1 twice | EVENT_ALREADY_SETTLED | error |
 | neg10 | list REFUNDED T3 | TICKET_NOT_ACTIVE | error |
 | neg11 | buy E1 after settlement | EVENT_NOT_ON_SALE | error, 0 GEN sent |
+| neg13 | settle E3 before its date (2026-11-12 < 2026-12-09) | TOO_EARLY | error, state unchanged |
 
 ## Not covered on-chain (see EXPECTED.md)
 
-- No on-chain POSTPONED case (no real postponed concert with dual fetchable sources was found); branch implemented + mock-covered.
+- SOLD_OUT: no on-chain case (buying all 8 E3 tickets would close the live site's only buyable event); branch implemented + mock-covered.
 - UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed, mock-covered only.
-- BAD_ADDRESS configure guard: all three events configured once at run start, error path unreachable afterwards.
-- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. Its 40 GEN escrow stays open until after the real date. Studionet has no clock, so the contract cannot refuse an early settle: the keyword rule would return EVENT_HELD and pay the organizer. The site disables the settle button until after the show date; the contract itself stays permissionless.
+- E3 settlement: E3's real date is 2026-12-09, in the future; it is not settled in this run by design. An early attempt is refused on-chain (neg13, TOO_EARLY). Its 20 GEN escrow stays open until after the real date. The organizer key is retained offline by the project operator (never committed) so the organizer credit can be withdrawn after that settlement.
 
-## Browser write loop (live site, 2026-11-12)
+## Browser write loop
 
-Pass 1 (ticket #7) and pass 2 (ticket #8) each proved buy / list /
-buy-resale in a real browser; cold start passed both times (English
-default, E1 HELD with Buy disabled, E3 settle disabled with the
-after-show-date note). No settle was pressed in either pass.
-
-| # | Step | Transaction | Result |
-|---|------|-------------|--------|
-| B1 | pass 1: A buys E3 ticket #7, 10 GEN | [0xbd288cc9…](https://explorer-studio.genlayer.com/tx/0xbd288cc94e48d26f65962c10fc32826497a84c93f582f10f8fb0cf5ee2319cb7) | ok, ticket #7 ACTIVE, owner A |
-| B2 | pass 1: A lists #7 at 11 GEN | [0x4fd8c113…](https://explorer-studio.genlayer.com/tx/0x4fd8c1138098d84743c67275f98c94425de26e785d36c0a03776220632d21c33) | ok, LISTED at cap |
-| B3 | pass 1: B buys the resale, 11 GEN | [0x33182f2e…](https://explorer-studio.genlayer.com/tx/0x33182f2e3c1e0a5d45d9fd43a2f52ed99606b1ba905ba12a7d61837e50f219ae) | ok, ticket #7 owner B, A credit 9.9 GEN, artist +1.1 GEN |
-| B4 | pass 2: C buys E3 ticket #8, 10 GEN | [0xa5a4b51a…](https://explorer-studio.genlayer.com/tx/0xa5a4b51a69bfa3d4f3256381f6ca07047c893408eef1b02091e42f9a57431f7b) | ok, ticket #8 ACTIVE, owner C |
-| B5 | pass 2: C lists #8 at 11 GEN | [0x0f0b97a6…](https://explorer-studio.genlayer.com/tx/0x0f0b97a65cf0949abe851773c3f174f88bf4c3c5db8a119f144b675f0e23d495) | ok, LISTED at cap |
-| B6 | pass 2: D buys the resale, 11 GEN | [0x017dc8bd…](https://explorer-studio.genlayer.com/tx/0x017dc8bd2d31914bf55cf330144c9e3e7e45cce48caf1d9e7a21df1d0d667dd1) | ok, ticket #8 owner D, C credit 9.9 GEN, artist +1.1 GEN |
-
-Seller withdrawal was NOT proven in the browser in either pass:
-pass 1 lost A's key on a tab reload (no restore flow existed then);
-pass 2's fixes (Refresh button, restore field, disconnect key copy)
-were proven working in a continuation run — Refresh re-read the
-ledger in place, and the restore flow returned account E
-(0xbc78…0f44) end to end — but C's key existed only in the browser
-clipboard, which had been overwritten, and the browser tools cannot
-paste from the clipboard, so C's 9.9 GEN could not be withdrawn from
-that browser. This is an automation limit, not a site defect; a human
-user with the saved key can paste it into the restore field and
-withdraw. Withdrawal itself is proven by the evidence run's five
-withdrawals. The ticket-owner label fix is in the live bundle
-(grep-verified: `stubOwner":"Owner"`) but was not live-rendered in a
-browser run, because no stub existed under the new bundle. All six
-browser transactions above were re-read live and are FINALIZED.
+To be recorded by the reviewer pass on the live site (buy / list /
+buy-resale / settle / withdraw with transaction hashes).
 
 ## Verify output
 
@@ -120,9 +103,13 @@ browser transactions above were re-read live and are FINALIZED.
 PASS byte parity (deployed code == repo source)
 PASS source sha matches deployment.json
 PASS deploy tx recorded
+PASS tx neg0-not-creator FINALIZED+AGREE+ERROR with exact payload NOT_CREATOR
+PASS tx neg14-bad-address FINALIZED+AGREE+ERROR with exact payload BAD_ADDRESS
+PASS tx neg12-buy-unconfigured FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_CONFIGURED
 PASS tx cfg-e1 FINALIZED+AGREE+SUCCESS
 PASS tx cfg-e2 FINALIZED+AGREE+SUCCESS
 PASS tx cfg-e3 FINALIZED+AGREE+SUCCESS
+PASS tx cfg-e4 FINALIZED+AGREE+SUCCESS
 PASS tx t1-buy FINALIZED+AGREE+SUCCESS
 PASS tx t2-buy FINALIZED+AGREE+SUCCESS
 PASS tx t3-buy FINALIZED+AGREE+SUCCESS
@@ -144,10 +131,15 @@ PASS tx neg6-cancel FINALIZED+AGREE+SUCCESS
 PASS tx neg5-not-listed FINALIZED+AGREE+ERROR with exact payload TICKET_NOT_LISTED
 PASS tx neg2-wrong-value FINALIZED+AGREE+ERROR with exact payload VALUE_MUST_EQUAL_PRICE
 PASS tx neg1-unknown-event FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_FOUND
+PASS tx neg13-early-settle-e3 FINALIZED+AGREE+ERROR with exact payload TOO_EARLY
 PASS tx s1-settle-e1 FINALIZED+AGREE+SUCCESS
 PASS tx s1-settle-e1 verdict recorded as EVENT_HELD
 PASS tx s2-settle-e2 FINALIZED+AGREE+SUCCESS
 PASS tx s2-settle-e2 verdict recorded as CANCELLED
+PASS tx s3-settle-e4 FINALIZED+AGREE+SUCCESS
+PASS tx s3-settle-e4 verdict recorded as POSTPONED
+PASS tx s3b-resettle-e4 FINALIZED+AGREE+SUCCESS
+PASS tx s3b-resettle-e4 verdict recorded as POSTPONED
 PASS tx neg9-double-settle FINALIZED+AGREE+ERROR with exact payload EVENT_ALREADY_SETTLED
 PASS tx neg11-buy-held FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_ON_SALE
 PASS tx neg10-list-refunded FINALIZED+AGREE+ERROR with exact payload TICKET_NOT_ACTIVE
@@ -159,30 +151,33 @@ PASS tx w-b2 FINALIZED+AGREE+SUCCESS
 PASS tx neg8-double-withdraw FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
 PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid
 PASS E2 readback: CANCELLED, 2 sold, escrow 0
-PASS E3 readback: ON_SALE, 4 sold, escrow 40 GEN, never settled
+PASS E3 readback: ON_SALE, 2 sold, escrow 20 GEN, never settled
+PASS E4 readback: POSTPONED, 0 sold, escrow 0, settled twice
 PASS E1 anchors are the probe-verified URLs
 PASS E2 anchors are the probe-verified URLs
 PASS E3 anchors are the probe-verified URLs
-PASS ticket 1 readback == EXPECTED.md (ACTIVE, owner 0x1cbd…)
-PASS ticket 2 readback == EXPECTED.md (ACTIVE, owner 0xf4fc…)
-PASS ticket 3 readback == EXPECTED.md (REFUNDED, owner 0xf4fc…)
-PASS ticket 4 readback == EXPECTED.md (REFUNDED, owner 0x1cbd…)
-PASS ticket 5 readback == EXPECTED.md (ACTIVE, owner 0x1cbd…)
-PASS ticket 6 readback == EXPECTED.md (ACTIVE, owner 0x1cbd…)
-PASS ticket 7 readback == EXPECTED.md (ACTIVE, owner 0x55b3…)
-PASS ticket 8 readback == EXPECTED.md (ACTIVE, owner 0xd4bb…)
+PASS E4 anchors are the probe-verified URLs
+PASS E1 identity tokens are oasis + wembley
+PASS E2 identity tokens are metro boomin + bridgestone
+PASS E3 identity tokens are pentatonix + bridgestone
+PASS E4 identity tokens are katseye + target center
+PASS creator is the deployer P1
+PASS ticket 1 readback == EXPECTED.md (ACTIVE, owner 0x5681…)
+PASS ticket 2 readback == EXPECTED.md (ACTIVE, owner 0xb18a…)
+PASS ticket 3 readback == EXPECTED.md (REFUNDED, owner 0xb18a…)
+PASS ticket 4 readback == EXPECTED.md (REFUNDED, owner 0x5681…)
+PASS ticket 5 readback == EXPECTED.md (ACTIVE, owner 0x5681…)
+PASS ticket 6 readback == EXPECTED.md (ACTIVE, owner 0x5681…)
 PASS credit P1 is 0 after withdrawals
 PASS credit ORG is 0 after withdrawals
+PASS credit ART is 0 after withdrawals
 PASS credit B1 is 0 after withdrawals
 PASS credit B2 is 0 after withdrawals
 PASS credit OUT is 0 after withdrawals
-PASS credit pass-1 seller A (0xc2a0…c033) is 9.9 GEN, unwithdrawn (disclosed)
-PASS credit pass-2 seller C (0xb340…5008) is 9.9 GEN, unwithdrawn (disclosed)
-PASS credit artist royalties (1.1 + 1.1) is 2.2 GEN, unwithdrawn (disclosed)
-PASS counts: 3 events, 8 tickets
-PASS ledger: 134 GEN in, 72 out, balance 62 GEN (= E3 escrow 40 + seller credits 9.9 + 9.9 + artist 2.2, all disclosed), escrow 40, royalties 5.4 GEN, resale volume 54 GEN
-PASS protocol is fairgate-1.1
+PASS counts: 4 events, 6 tickets
+PASS ledger: 92 GEN in, 72 out, balance 20 GEN (= E3 live escrow, all disclosed), escrow 20, royalties 3.2 GEN, resale volume 32 GEN
+PASS protocol is fairgate-1.2
 
-verify: 65 PASS, 0 FAIL, 35 txs checked
+verify: 77 PASS, 0 FAIL, 42 txs checked
 INDEPENDENT VERIFICATION PASS
 ```

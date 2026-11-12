@@ -107,6 +107,7 @@ main h3 { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-s
 .poster-band { position: relative; padding: 26px 22px 20px; color: #fff; overflow: hidden; }
 .band-oasis { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 70%, #3d5aa8 100%); }
 .band-future { background: linear-gradient(135deg, var(--plum) 0%, var(--plum-2) 70%, #7a3a68 100%); }
+.band-katseye { background: linear-gradient(135deg, #0f4a3a 0%, #166b52 70%, #2a8a68 100%); }
 .poster-artist {
   font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase;
   font-size: clamp(30px, 5vw, 44px); line-height: 1.02; letter-spacing: 0.01em;
