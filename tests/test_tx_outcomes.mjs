@@ -13,7 +13,7 @@ try {
   const source = fs.readFileSync(path.join(root, 'src/chain.ts'), 'utf8');
   const output = ts.transpileModule(source, {compilerOptions: {target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ESNext}}).outputText;
   const file = path.join(temporary, 'chain.mjs'); fs.writeFileSync(file, output);
-  const {txGood, saveMyTx, loadMyTxs} = await import(pathToFileURL(file).href);
+  const {txGood, saveMyTx, loadMyTxs, leaderReturn} = await import(pathToFileURL(file).href);
   const receipt = (status, result, execution) => ({status, result, consensus_data: {leader_receipt: [{mode: 'leader', execution_result: execution}]}});
   assert.equal(txGood(receipt(7, 6, 'SUCCESS')), true);
   assert.equal(txGood(receipt('FINALIZED', 'MAJORITY_AGREE', 'SUCCESS')), true);
@@ -28,5 +28,13 @@ try {
   assert.equal(loadMyTxs().length, 1, 'receipt update preserves a single transaction record');
   saveMyTx('0x456', 'withdraw', 'error');
   assert.equal(loadMyTxs()[1].result, 'error');
-  console.log('ALL TRANSACTION OUTCOME TESTS PASS (10 assertions, no chain writes)');
+
+  const loadReceipt = hash => JSON.parse(fs.readFileSync(path.join(root, 'evidence/receipts', hash + '.json'), 'utf8')).receipt;
+  const held = leaderReturn(loadReceipt('0xff69bb3abf2a614055c1414aa3a446b5cf8931539aa41b1ef5dde56c45fbe97f'));
+  assert.equal(held.verdict, 'EVENT_HELD');
+  assert.deepEqual([held.changed, held.held_a, held.held_b], [true, true, true]);
+  const closed = leaderReturn(loadReceipt('0x0d3922bd01b6bb92d313843acc55da98c5c2f44a01cc9ec5fb3a3968684d13e5'));
+  assert.deepEqual([closed.changed, closed.verdict], [false, 'UNREACHABLE'], 'SUCCESS can carry an unchanged fail-closed business outcome');
+  assert.equal(leaderReturn({}), null);
+  console.log('ALL TRANSACTION OUTCOME TESTS PASS (14 assertions, no chain writes)');
 } finally { fs.rmSync(temporary, {recursive: true, force: true}); }

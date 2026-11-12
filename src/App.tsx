@@ -13,7 +13,7 @@ import {
   readAll, readMyCredit,
   savePendingTx, loadPendingTxs, clearPendingTx,
   saveMyTx, loadMyTxs, TxUnknownError,
-  waitFinalized, sendWriteOnly, txGood, leaderExecution, leaderPayload,
+  waitFinalized, sendWriteOnly, txGood, leaderExecution, leaderPayload, leaderReturn,
   injectedProvider, walletKind, connectInjected,
   tempPrivateKey, isTempKeyAcked, ackTempKey,
   temporaryAccount, rotateTemporaryAccount, restoreTemporaryAccount, destroyTemporaryAccount,
@@ -114,13 +114,16 @@ export default function App() {
     if (![7, 'FINALIZED'].includes(receipt.status)) throw new TxUnknownError(hash);
     const success = txGood(receipt);
     const disagreed = [5, 'MAJORITY_DISAGREE'].includes(receipt.result);
-    saveMyTx(hash, label, success ? 'success' : disagreed ? 'disagreed' : 'error');
+    const outcome = leaderReturn(receipt);
+    const noChange = success && outcome?.changed === false && ['UNREACHABLE', 'SOURCES_DISAGREE'].includes(outcome.verdict);
+    saveMyTx(hash, label, noChange ? 'no-state-change' : success ? 'success' : disagreed ? 'disagreed' : 'error');
     clearPendingTx(hash);
     setPending(loadPendingTxs());
     setMyTxs(loadMyTxs());
     const readbackOk = await refresh();
     await refreshCredit(wallet);
-    if (success) setNotice(tr(readbackOk ? 'app.done' : 'app.finalizedReadbackPending') + ': ' + hash);
+    if (noChange) setNotice(tr('app.noStateChange') + ' · ' + outcome.verdict + ': ' + hash);
+    else if (success) setNotice(tr(readbackOk ? 'app.done' : 'app.finalizedReadbackPending') + ': ' + hash);
     else {
       setNotice('');
       setErr(tr(disagreed ? 'app.txDisagreed' : 'app.txFailed') + ': ' + hash + ' · ' + String(leaderExecution(receipt)) + ' ' + leaderPayload(receipt));

@@ -1,0 +1,157 @@
+PASS byte parity (deployed code == repo source)
+PASS source sha matches deployment.json
+PASS deploy tx recorded
+PASS evidence file names the deployed contract
+PASS chain id is Stable Studionet 61999
+PASS deployment FINALIZED+AGREE+SUCCESS
+PASS tx neg0-not-creator (scripted) targets this deployment
+PASS tx neg0-not-creator (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_CREATOR
+PASS tx neg14-bad-address (scripted) targets this deployment
+PASS tx neg14-bad-address (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_ADDRESS
+PASS tx neg15-bad-settle-after (scripted) targets this deployment
+PASS tx neg15-bad-settle-after (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_SETTLE_AFTER_TS
+PASS tx neg16-bad-tz-offset (scripted) targets this deployment
+PASS tx neg16-bad-tz-offset (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_TZ_OFFSET
+PASS tx neg12-buy-unconfigured (scripted) targets this deployment
+PASS tx neg12-buy-unconfigured (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_CONFIGURED
+PASS tx cfg-e1 (scripted) targets this deployment
+PASS tx cfg-e1 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx cfg-e2 (scripted) targets this deployment
+PASS tx cfg-e2 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx cfg-e3 (scripted) targets this deployment
+PASS tx cfg-e3 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx cfg-e4 (scripted) targets this deployment
+PASS tx cfg-e4 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t1-buy (scripted) targets this deployment
+PASS tx t1-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t2-buy (scripted) targets this deployment
+PASS tx t2-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t3-buy (scripted) targets this deployment
+PASS tx t3-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t4-buy (scripted) targets this deployment
+PASS tx t4-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t5-buy (scripted) targets this deployment
+PASS tx t5-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t6-buy (scripted) targets this deployment
+PASS tx t6-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx t7-buy (scripted) targets this deployment
+PASS tx t7-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r1-list (scripted) targets this deployment
+PASS tx r1-list (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r1-buy (scripted) targets this deployment
+PASS tx r1-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r2-list (scripted) targets this deployment
+PASS tx r2-list (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r2-buy (scripted) targets this deployment
+PASS tx r2-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r3-list (scripted) targets this deployment
+PASS tx r3-list (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r4-list (scripted) targets this deployment
+PASS tx r4-list (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx r4-buy (scripted) targets this deployment
+PASS tx r4-buy (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx neg3-stranger-list (scripted) targets this deployment
+PASS tx neg3-stranger-list (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_TICKET_OWNER
+PASS tx neg4-over-cap (scripted) targets this deployment
+PASS tx neg4-over-cap (scripted) FINALIZED+AGREE+ERROR with exact payload PRICE_CAP
+PASS tx neg6-list (scripted) targets this deployment
+PASS tx neg6-list (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx neg6-self-buy (scripted) targets this deployment
+PASS tx neg6-self-buy (scripted) FINALIZED+AGREE+ERROR with exact payload SELF_PURCHASE
+PASS tx neg6-cancel (scripted) targets this deployment
+PASS tx neg6-cancel (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx neg5-not-listed (scripted) targets this deployment
+PASS tx neg5-not-listed (scripted) FINALIZED+AGREE+ERROR with exact payload TICKET_NOT_LISTED
+PASS tx neg2-wrong-value (scripted) targets this deployment
+PASS tx neg2-wrong-value (scripted) FINALIZED+AGREE+ERROR with exact payload VALUE_MUST_EQUAL_PRICE
+PASS tx neg1-unknown-event (scripted) targets this deployment
+PASS tx neg1-unknown-event (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_FOUND
+PASS tx neg13-early-settle-e3 (scripted) targets this deployment
+PASS tx neg13-early-settle-e3 (scripted) FINALIZED+AGREE+ERROR with exact payload TOO_EARLY
+PASS tx s1-settle-e1 (scripted) targets this deployment
+PASS tx s1-settle-e1 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx s1-settle-e1 verdict recorded as EVENT_HELD
+PASS tx s1-settle-e1 actual returned verdict matches
+PASS tx s1-settle-e1 independently fetched both identified sources
+PASS positive held evidence from both sources
+PASS tx s2-settle-e2 (scripted) targets this deployment
+PASS tx s2-settle-e2 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx s2-settle-e2 verdict recorded as CANCELLED
+PASS tx s2-settle-e2 actual returned verdict matches
+PASS tx s2-settle-e2 independently fetched both identified sources
+PASS tx s3-settle-e4 (scripted) targets this deployment
+PASS tx s3-settle-e4 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx s3-settle-e4 verdict recorded as POSTPONED
+PASS tx s3-settle-e4 actual returned verdict matches
+PASS tx s3-settle-e4 independently fetched both identified sources
+PASS tx neg18-rsch-stranger (scripted) targets this deployment
+PASS tx neg18-rsch-stranger (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_CREATOR
+PASS tx neg19-rsch-onsale (scripted) targets this deployment
+PASS tx neg19-rsch-onsale (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_POSTPONED
+PASS tx neg20-rsch-earlier (scripted) targets this deployment
+PASS tx neg20-rsch-earlier (scripted) FINALIZED+AGREE+ERROR with exact payload DATE_NOT_LATER
+PASS tx neg21-rsch-settled-e1 (scripted) targets this deployment
+PASS tx neg21-rsch-settled-e1 (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_POSTPONED
+PASS tx neg22-rsch-settled-e2 (scripted) targets this deployment
+PASS tx neg22-rsch-settled-e2 (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_POSTPONED
+PASS tx neg23-rsch-bad-settle (scripted) targets this deployment
+PASS tx neg23-rsch-bad-settle (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_SETTLE_AFTER_TS
+PASS tx rsch1 (scripted) targets this deployment
+PASS tx rsch1 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx rsch2 (scripted) targets this deployment
+PASS tx rsch2 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx neg17-settle-after-rsch (scripted) targets this deployment
+PASS tx neg17-settle-after-rsch (scripted) FINALIZED+AGREE+ERROR with exact payload TOO_EARLY
+PASS tx neg9-double-settle (scripted) targets this deployment
+PASS tx neg9-double-settle (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_ALREADY_SETTLED
+PASS tx neg11-buy-held (scripted) targets this deployment
+PASS tx neg11-buy-held (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_ON_SALE
+PASS tx neg10-list-refunded (scripted) targets this deployment
+PASS tx neg10-list-refunded (scripted) FINALIZED+AGREE+ERROR with exact payload TICKET_NOT_ACTIVE
+PASS tx neg7-stranger-withdraw (scripted) targets this deployment
+PASS tx neg7-stranger-withdraw (scripted) FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
+PASS tx w-org (scripted) targets this deployment
+PASS tx w-org (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx w-art (scripted) targets this deployment
+PASS tx w-art (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx w-b1 (scripted) targets this deployment
+PASS tx w-b1 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx w-b2 (scripted) targets this deployment
+PASS tx w-b2 (scripted) FINALIZED+AGREE+SUCCESS
+PASS tx neg8-double-withdraw (scripted) targets this deployment
+PASS tx neg8-double-withdraw (scripted) FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
+
+browser write loop: not yet run — scripted checks above are the complete result for now
+PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid, timestamps stored
+PASS E2 readback: CANCELLED, 2 sold, escrow 0, timestamps stored
+PASS E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, settle_count 1
+PASS E1 anchors are the probe-verified URLs
+PASS E2 anchors are the probe-verified URLs
+PASS E3 anchors are the probe-verified URLs
+PASS E4 anchors are the probe-verified URLs
+PASS E1 identity tokens are oasis + wembley
+PASS E2 identity tokens are metro boomin + bridgestone
+PASS E3 identity tokens are pentatonix + bridgestone
+PASS E4 identity tokens are katseye + target center
+PASS E3 timestamps: start 2026-12-09 19:00 CST, settle_after 2026-12-10T06:00:00Z
+PASS creator is the deployer P1
+PASS ticket 1 readback == EXPECTED.md (ACTIVE, owner 0x71e1…)
+PASS ticket 2 readback == EXPECTED.md (ACTIVE, owner 0x74ba…)
+PASS ticket 3 readback == EXPECTED.md (REFUNDED, owner 0x74ba…)
+PASS ticket 4 readback == EXPECTED.md (REFUNDED, owner 0x71e1…)
+PASS ticket 5 readback == EXPECTED.md (ACTIVE, owner 0x71e1…)
+PASS ticket 6 readback == EXPECTED.md (ACTIVE, owner 0x71e1…)
+PASS ticket 7 readback == EXPECTED.md (ACTIVE, owner 0x74ba…)
+PASS credit P1 is 0 after withdrawals
+PASS credit ORG is 0 after withdrawals
+PASS credit ART is 0 after withdrawals
+PASS credit B1 is 0 after withdrawals
+PASS credit B2 is 0 after withdrawals
+PASS credit OUT is 0 after withdrawals
+PASS E3 readback (scripted): ON_SALE, 2 sold, escrow 20 GEN, never settled
+PASS counts (scripted): 4 events, 7 tickets
+PASS ledger (scripted): 102 GEN in, 72 out, balance 30 GEN (= E3 20 + E4 10 escrow), escrow 30, royalties 3.2 GEN, resale volume 32 GEN
+PASS protocol matches evidence scope
+
+verify: 152 PASS, 0 FAIL, 53 scripted txs + 0 browser txs checked
+INDEPENDENT VERIFICATION PASS

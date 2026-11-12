@@ -3,10 +3,6 @@
   "source_file": "contracts/fairgate.py",
   "source_sha256": "bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991",
   "deployed": true,
-  "live_acceptance": false,
-  "historical_protocol": "fairgate-1.4",
-  "historical_contract": "0x58EC3bAE9605e4b138566742Bc163528e5813F7f",
-  "note": "V1.4 source outage and unchanged rejected expectations are preserved in evidence/v1.4-first/.",
   "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
   "deploy_tx": "0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6",
   "byte_parity": true

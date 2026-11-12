@@ -2,39 +2,50 @@
 
 Live site: https://chuanqili77.github.io/fairgate-genlayer/
 
-FairGate combines fixed-price concert tickets, capped resale and event-outcome settlement on GenLayer Stable Studionet (61999). Tickets cost 10 GEN; resale is capped at 11 GEN with a 10% artist royalty rounded down in wei. Settlement records pull-payment credits for the organizer or current holders.
+FairGate combines fixed-price concert tickets, capped resale and event-outcome settlement on GenLayer Stable Studionet (61999). Tickets cost 10 GEN; resale is capped at 11 GEN with a 10% artist royalty rounded down in wei. Settlement creates pull-payment credits for the organizer or current holders; the entitled address withdraws them.
 
-Current canonical source: **fairgate-1.5, deployed; live settlement evidence is being recorded**. Current contract: 0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE. Deployment 0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6 is FINALIZED + MAJORITY_AGREE + SUCCESS with byte-identical source. The V1.4 observations below concern the previous source and address. V1.5 fixes the inaccessible second E1 source; see [EXPECTED_V15.md](EXPECTED_V15.md).
+## Contract
+
+- Protocol: **fairgate-1.5**
+- Address: [0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE](https://explorer-studio.genlayer.com/address/0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE)
+- Deploy: [0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6](https://explorer-studio.genlayer.com/tx/0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6)
+- Source SHA-256: `bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991`
+- Chain: Stable Studionet, **61999**; RPC: https://studio.genlayer.com/api
+- Canonical source: [contracts/fairgate.py](contracts/fairgate.py), byte-identical to the deployed code.
 
 ## Positive-evidence settlement
 
-Protocol `fairgate-1.5` requires two independently fetched, fixed publications to identify the act and venue and provide positive evidence of the configured dated performance. Merely finding no cancellation or postponement is insufficient. Supported records are explicit dated past-tense performance prose, an original same-day first-night retrospective, or a dated completed-gig measured-spending record. Planned listings, conditional or negated prose, another act's date, and update timestamps cannot authorize a payout.
+Absence of cancellation does **not** prove that a show happened. EVENT_HELD needs positive evidence from each of two independently fetched, frozen sources identifying the act, venue and configured performance date. Accepted forms are explicit dated past performance, an original same-day first-night retrospective, an original same-day report of a past performance on the matching weekday night, or a dated completed-gig measured-spending record. Update timestamps, forecasts, negation, prior-week references and another act's dates cannot replace that proof.
 
-Validators independently fetch both URLs and reproduce every verdict, fetch, identity, cancellation, postponement and held flag. The leader's verdict must satisfy the deterministic mapping before equivalence comparison. Unavailable or insufficient evidence returns `UNREACHABLE`; conflicting evidence returns `SOURCES_DISAGREE`. Both preserve all contract state and escrow. Venue-linked cancellation refunds current holders at face value; postponement keeps escrow locked. Only a dual positive `EVENT_HELD` credits the exact event escrow to the organizer, once.
+Every validator independently fetches both sources and reproduces the verdict, fetch, identity, cancellation, postponement and held flags. The leader verdict must satisfy the same deterministic mapping before equivalence comparison. UNREACHABLE and SOURCES_DISAGREE preserve all contract state and escrow. Cancellation refunds current holders at face value; postponement retains escrow. Only dual positive EVENT_HELD credits the exact event escrow to the organizer, once.
 
-Settlement requires the pinned transaction timestamp to reach the first second after the local event day. The contract derives this boundary from the configured start and UTC offset. Only the creator may configure payees before sales or reschedule a postponed event to a later date; rescheduling preserves tickets, holders and escrow.
+Settlement also requires the pinned transaction time to reach the first second after the local event day. The contract derives and checks this boundary from start and UTC offset. Configuration is creator-only and precedes sales. Rescheduling is creator-only, POSTPONED-only and later-date-only; it changes no ticket, holder or escrow.
 
-## Deployment and observed limitation
+## Recorded state
 
-- V1.4: [0x58EC3bAE9605e4b138566742Bc163528e5813F7f](https://explorer-studio.genlayer.com/address/0x58EC3bAE9605e4b138566742Bc163528e5813F7f)
-- Deployment: [0x26863639f7306e9a68c62892683e21e03ddb9244c6668bb19eb76c6b5a517d71](https://explorer-studio.genlayer.com/tx/0x26863639f7306e9a68c62892683e21e03ddb9244c6668bb19eb76c6b5a517d71)
-- Source SHA-256: `1158a74ac511e4600ba8c822288297bf4530d3f2a2efc7b54ea89c387e0e27c6`
-- Deployment was FINALIZED + MAJORITY_AGREE + SUCCESS with byte-identical canonical source.
-
-The E1 positive settlement has **not succeeded**. Two finalized, agreed, successfully executed calls returned `changed=false`, `UNREACHABLE`: Radio X identified the completed performance, while Lloyds failed identity and held checks. An independent GenVM diagnostic received a Lloyds error page (HTTP 200, Error 1007), although an ordinary local HTTP request received the article. Escrow remained locked. Successful execution of a fail-closed call is not successful payout evidence.
-
-The prospective plan remains unchanged in [EXPECTED.md](EXPECTED.md). Current transaction evidence is explicitly incomplete. The published Pages deployment remains historical V1.3 until a corrected deployment has full live evidence; V1.3's original source and documents are preserved under [evidence/v1.3/](evidence/v1.3/). Historical receipts establish historical execution, not correctness of V1.4's payout rule.
-
-## V1.5 fixed launch events
-
-| Event | Date | Fixed sources | Intended path |
+| Event | Current date | Latest-final status | Escrow GEN |
 |---|---|---|---|
-| Oasis, Wembley Stadium | 25 July 2025 | Radio X; Lloyds Banking Group | Dual positive performance evidence; currently fails closed |
-| Future & Metro Boomin, Bridgestone Arena | 6 August 2024 | Venue; do615 | Cancellation |
-| Pentatonix, Bridgestone Arena | 9 December 2026 | Venue; do615 | Future sale; early settlement refused |
-| KATSEYE, Target Center | 7 November 2026 | Venue; iHeart | Postponement and later rescheduling |
+| 1 · Oasis | 2025-07-25 | EVENT_HELD | 0 |
+| 2 · Future & Metro Boomin | 2024-08-06 | CANCELLED | 0 |
+| 3 · Pentatonix | 2026-12-09 | ON_SALE | 20 |
+| 4 · KATSEYE | 2027-02-20 | POSTPONED | 10 |
 
-## Reproducible checks
+The scripted run records **102 GEN received = 72 GEN withdrawn + 30 GEN escrow/balance**, with 3.2 GEN royalties and 32 GEN resale volume. All role credits are zero after withdrawal. E3's future escrow and E4's postponed escrow remain intentionally open.
+
+Independent live verification: **152 PASS, 0 FAIL**, covering deployment and 53 scripted transactions. Successful operations require FINALIZED + MAJORITY_AGREE + leader SUCCESS. Negative operations require the exact expected finalized agreed ERROR and unchanged state. A successfully executed fail-closed call is not a successful settlement.
+
+Local checks: **168 named Python checks**, including 5120 verdict/flag combinations, and **14 Node assertions** using shipped receipt/history helpers and real receipt fixtures. Python syntax, TypeScript checking, build and repository hygiene pass. These local fixtures are not live consensus.
+
+No V1.5 browser write is recorded yet. The browser workflow and its actual signing surfaces are separately specified in [EXPECTED.md](EXPECTED.md); its future transactions must not be replaced with old browser evidence.
+
+## Evidence and reproduction
+
+- [EVIDENCE.md](EVIDENCE.md): finalized outcomes, transaction links and ledger.
+- [REVIEWER.md](REVIEWER.md): frozen source anchors, mechanism and limits.
+- [evidence/transactions.json](evidence/transactions.json): complete scripted manifest; raw receipts in evidence/receipts/.
+- [evidence/readback-v1.5.json](evidence/readback-v1.5.json): latest-final state and observation time.
+- [evidence/verification-v1.5.txt](evidence/verification-v1.5.txt): independent live output.
+- [EXPECTED.md](EXPECTED.md), [EXPECTED_V15.md](EXPECTED_V15.md): prospective inputs and transparent source revisions.
 
 ```bash
 npm ci
@@ -42,13 +53,16 @@ npm test
 npx tsc --noEmit
 npm run build
 npm run check-clean
-node scripts/verify_evidence.mjs --historical-v13
+npm run verify
+node scripts/byte_parity.mjs
 ```
 
-Mock tests exercise the actual Python contract code, including exhaustive verdict/flag combinations, independent validator fetching, forged results, time boundaries, unchanged fail-closed state, permissions, resale caps, royalties and withdrawal conservation. Node tests exercise shipped receipt/history helpers. They are not live consensus. The default live verifier requires a complete current-deployment transaction manifest and refuses this incomplete run.
+The frontend retains pending hashes across refresh, verifies finality and consensus, and reads latest-final state. A timeout remains unknown and is polled without resending. A changed=false settlement is explicitly shown as no state or fund movement. Temporary test-account backup downloads stay local; they are never evidence files.
 
-The frontend preserves pending hashes across refresh, checks FINALIZED + MAJORITY_AGREE + SUCCESS, and reads latest-final state. A timeout keeps the transaction pending rather than resending it or declaring success. A local test-account backup download is available; wallet credentials never belong in evidence or the repository.
+## Source history and limits
 
-## Limits
+V1.4's Lloyds page returned an HTTP-200 error document inside GenVM. Two E1 attempts correctly returned changed=false/UNREACHABLE. Original source, expectations, failed receipts and readback are preserved under [evidence/v1.4-first/](evidence/v1.4-first/); the recorded old balance was 70 GEN escrow plus 32 GEN withdrawable resale credits. V1.5 uses Radio X and The Independent/PA for E1. A JamBase preflight failed, so E2 uses the original do615 dated cancellation page. Diagnostic observations are recorded separately and never count as product settlement acceptance.
 
-The deterministic English extractor recognizes bounded evidence forms rather than general semantic truth. Source outages or unsupported wording can keep escrow locked; fixed URLs cannot be replaced by beneficiaries. Publisher independence is not cryptographic proof of reality. Future E3 is not eligible for settlement before 2026-12-10T06:00:00Z. Tickets are payment records, not venue admission credentials. Failed-payable tests use zero value because the Studionet runtime retains value on failed payable calls.
+Historical V1.3 and older deployments are retired and archived. Their receipts prove historical execution, not safety of their old absence-of-cancellation payout rule. Use the current address above.
+
+The English extractor recognizes bounded evidence forms, not general semantic truth. Source outages, changed wording or disagreement can lock escrow; beneficiaries cannot replace frozen URLs. Publisher independence is not cryptographic proof of reality. E3 is not settled before 2026-12-10T06:00:00Z; E4 stays postponed/rescheduled. SOLD_OUT and forged-validator cases are local tests, not live business demonstrations. Tickets are payment records, not venue admission credentials. Failed-payable negatives use zero value because Studionet retains value on failed payable calls.

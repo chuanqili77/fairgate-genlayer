@@ -4,8 +4,8 @@
 // A payable write (buy_ticket / buy_resale) with a temporary account
 // requires the key-backup acknowledgement first: the key must be saved
 // before any escrowed funds can depend on it (see App.tsx). No private
-// keys are ever written to disk or sent anywhere; the temp key lives in
-// this tab's sessionStorage only.
+// keys are uploaded by the app. The temp key lives in this tab's
+// sessionStorage; an explicit backup download saves a local JSON file.
 import { createClient, createAccount, generatePrivateKey } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
@@ -174,6 +174,15 @@ export function leaderReceipt(tx: any) {
   return r || null;
 }
 export function leaderExecution(tx: any) { return leaderReceipt(tx)?.execution_result || null; }
+export function leaderReturn(tx: any): any {
+  let value = leaderReceipt(tx)?.result?.payload;
+  if (value && typeof value === 'object' && typeof value.readable === 'string') value = value.readable;
+  for (let i = 0; i < 3 && typeof value === 'string'; i++) {
+    try { value = JSON.parse(value); } catch { break; }
+  }
+  return value && typeof value === 'object' ? value : null;
+}
+
 export function leaderPayload(tx: any) {
   const r = leaderReceipt(tx);
   if (!r) return '';

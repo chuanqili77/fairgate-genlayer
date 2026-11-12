@@ -1,0 +1,175 @@
+
+> fairgate-genlayer@1.0.0 test
+> python3 tests/test_fairgate_mock.py && node tests/test_tx_outcomes.mjs
+
+PASS original Wembley event listing: no cancel word
+PASS original Wembley event listing: no postpone word
+PASS original Wembley event listing: identity ok
+PASS original Wembley event listing is NOT positive held proof
+PASS Wembley official retrospective: positive held proof
+PASS Wembley official retrospective: identity ok
+PASS Wembley Park source: positive held proof
+PASS wembleypark page: no cancel word
+PASS wembleypark page: no postpone word
+PASS wembleypark page: identity ok
+PASS E1 two independent positive sources authorize EVENT_HELD
+PASS a future scheduled event is not held evidence
+PASS bridgestone page: cancel word present
+PASS bridgestone page: no postpone word
+PASS bridgestone page: identity ok
+PASS legacy do615 snippet lacks venue-linked cancellation sentence
+PASS do615 page: no postpone word
+PASS do615 page: identity ok
+PASS bridgestone pentatonix page: no cancel word
+PASS bridgestone pentatonix page: no postpone word
+PASS bridgestone pentatonix page: identity ok
+PASS do615 pentatonix page: no cancel word
+PASS do615 pentatonix page: no postpone word
+PASS do615 pentatonix page: identity ok
+PASS E3 scheduled-only pages do not prove the show was held
+PASS target center page: postpone word present
+PASS target center page: no cancel word
+PASS target center page: identity ok
+PASS legacy snippet does not explicitly tie status to target venue
+PASS musictimes page: no cancel word
+PASS musictimes page: identity ok
+PASS ambiguous legacy E4 snippet fails closed
+PASS postponed page: postpone word present
+PASS postponed page: no cancel word
+PASS canceled (US spelling) counts
+PASS no cancellation words alone are insufficient
+PASS HELD: both sources provide positive evidence
+PASS CANCELLED: both cancel + identity
+PASS POSTPONED: both postpone + identity
+PASS UNREACHABLE: one fetch fails
+PASS UNREACHABLE: both fetch fail
+PASS UNREACHABLE: A identity fails (wrong event page)
+PASS UNREACHABLE: both cancel but B is the wrong event
+PASS UNREACHABLE: A postpone word but no identity
+PASS SOURCES_DISAGREE: only A cancels
+PASS SOURCES_DISAGREE: only B postpones
+PASS SOURCES_DISAGREE: A cancels, B postpones
+PASS conflicting cancel and postpone signals fail closed
+PASS unrelated cancellation sentence cannot change target event
+PASS stray cancel word on a WRONG event page: identity fails
+PASS wrong-event page pair cannot produce CANCELLED
+PASS derive E3 settle_after from start + offset -360
+PASS gate: E3 refuses 2026-12-10 00:00 UTC (1796860800)
+PASS gate: E3 refuses 2026-12-10 01:00 UTC (1796864400)
+PASS gate: E3 refuses 1s before the cutoff (1796882399)
+PASS gate: E3 allows exactly at the cutoff (1796882400)
+PASS gate: E3 allows after the cutoff
+PASS derive E1 (London BST +60): 2025-07-25 19:00 -> 2025-07-25T23:00Z
+PASS derive E2 (Nashville CDT -300): 2024-08-06 20:00 -> 2024-08-07T05:00Z
+PASS derive E4 (Minneapolis CST -360): 2026-11-07 20:00 -> 2026-11-08T06:00Z
+PASS derive E4 reschedule 1 (2027-01-16 20:00 CST): 2027-01-17T06:00Z
+PASS derive E4 reschedule 2 (2027-02-20 20:00 CST): 2027-02-21T06:00Z
+PASS derive rejects start_ts 0
+PASS derive rejects offset -721 (below UTC-12)
+PASS derive rejects offset 841 (above UTC+14)
+PASS derive rejects bool start_ts
+PASS configure by creator ok
+PASS configure by stranger rejected
+PASS configure twice rejected
+PASS configure after sales rejected
+PASS creator check comes first (stranger + already set)
+PASS buy ok
+PASS buy unconfigured rejected
+PASS buy settled event rejected
+PASS buy sold-out event rejected
+PASS buy 7/8 ok (last ticket)
+PASS buy wrong value rejected
+PASS buy overpay rejected
+PASS resale 11 GEN allowed (cap included)
+PASS resale 12 GEN rejected
+PASS resale 10 GEN allowed
+PASS resale 1 GEN allowed
+PASS resale 0 GEN rejected
+PASS royalty 10 GEN -> 1 GEN
+PASS royalty 11 GEN -> 1.1 GEN (exact in wei)
+PASS royalty 1 GEN -> 0.1 GEN
+PASS royalty 5 GEN -> 0.5 GEN
+PASS resale 11 GEN conserves: 1.1 + 9.9 = 11
+PASS resale 10 GEN conserves: 1 + 9 = 10
+PASS injection text: no keywords and no identity, verdict is UNREACHABLE
+PASS injection text: scan finds no cancel word
+PASS injection text: scan finds no postpone word
+PASS injection text: identity fails without the event tokens
+PASS injection page pair cannot produce a verdict
+PASS reschedule E4 ok (creator, POSTPONED, later date, derived gate)
+PASS reschedule by stranger rejected
+PASS reschedule unconfigured rejected
+PASS reschedule ON_SALE event rejected
+PASS reschedule settled event rejected
+PASS reschedule to an earlier date rejected
+PASS reschedule to the same date rejected
+PASS reschedule with a wrong settle_after rejected
+PASS reschedule with a wrong offset rejected
+PASS second reschedule ok (new start later than the rescheduled start)
+PASS second reschedule to the first new date rejected (not later)
+PASS (1) footer cancelled ignored
+PASS (2) recommended postponed ignored
+PASS (3) no status words on the target page
+PASS (3) a no-status pair remains fail-closed
+PASS (4) conflicting sources read SOURCES_DISAGREE
+PASS (5a) postponed pair still reads POSTPONED
+PASS (5b) unlinked cancellation snippet fails closed
+PASS JSON-LD EventPostponed counts as a postpone signal
+PASS nav bar status words ignored
+PASS not proof of target dated performance: Oasis did not perform at Wembley on 25 July 2025.
+PASS not proof of target dated performance: Oasis never played Wembley on 25 July 2025.
+PASS not proof of target dated performance: Oasis at Wembley on 25 July 2025. Another band performed in London.
+PASS not proof of target dated performance: If Oasis performed at Wembley on 25 July 2025, payments would be released.
+PASS not proof of target dated performance: Oasis played Wembley on 12 July 2009.
+PASS not proof of target dated performance: Oasis performed at Wembley on 26 July 2025.
+PASS dated positive performance evidence
+PASS year-only retrospective cannot establish exact event date
+PASS all 5120 verdict/evidence combinations checked
+PASS insufficient/contradictory/offline evidence changes nothing
+PASS escrow, tickets and credits unchanged
+PASS leader and validator independently fetched both sources
+PASS insufficient/contradictory/offline evidence changes nothing
+PASS escrow, tickets and credits unchanged
+PASS leader and validator independently fetched both sources
+PASS insufficient/contradictory/offline evidence changes nothing
+PASS escrow, tickets and credits unchanged
+PASS leader and validator independently fetched both sources
+PASS validator rejects fabricated EVENT_HELD
+PASS dual dated positive proof releases escrow
+PASS organizer credit equals exact escrow
+PASS event escrow zero after credit
+PASS settled event cannot credit twice
+PASS buyer cannot withdraw organizer credit
+PASS organizer cannot withdraw twice
+PASS full state-machine ledger conserved
+PASS same-day original first-night report is dated positive evidence
+PASS an update timestamp cannot replace original publication day
+PASS wrong original publication day fails first-night shortcut
+PASS future first-night listing remains insufficient
+PASS entity apostrophes cannot split identity sentences
+PASS dated completed-gig measured spending is positive evidence
+PASS planned-gig table alone is insufficient
+PASS projected spending cannot replace past observation
+PASS different dated gig table is insufficient
+PASS conditional completed-spending phrase cannot unlock escrow
+PASS another act dated column cannot establish the target performance
+PASS script tag text cannot consume the visible article
+PASS asset URL words do not remove article text
+PASS two explicit target-venue cancellations refund
+PASS another city cancellation cannot cancel the target venue
+PASS two target-venue postponements keep escrow
+PASS original same-day weekday performance
+PASS modified date cannot resolve a weekday
+PASS different original date cannot resolve weekday
+PASS wrong weekday
+PASS earlier performance
+PASS last Friday is not this Friday
+PASS future weekday listing
+PASS conditional weekday performance
+PASS different explicit year
+PASS weekday ticket listing
+PASS other performer
+PASS other venue
+
+ALL MOCK TESTS PASS
+ALL TRANSACTION OUTCOME TESTS PASS (14 assertions, no chain writes)

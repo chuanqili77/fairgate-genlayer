@@ -1,0 +1,239 @@
+{
+  "observed_at": "2026-11-12T19:23:17.121Z",
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
+  "protocol": "fairgate-1.5",
+  "source_sha256": "bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991",
+  "transactionHashVariant": "latest-final",
+  "events": [
+    {
+      "artist": "Oasis",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "London",
+      "date_display": "25 July 2025",
+      "date_iso": "2025-07-25",
+      "escrowed_wei": 0,
+      "event_id": 1,
+      "event_start_ts": 1753466400,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "oasis",
+      "id_b": "wembley",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": true,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1753484400,
+      "settle_count": 1,
+      "source_a_label": "Radio X — same-day first-night report",
+      "source_a_url": "https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/",
+      "source_b_label": "The Independent / PA — original same-day performance report",
+      "source_b_url": "https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html",
+      "status": "EVENT_HELD",
+      "tickets_sold": 2,
+      "tickets_total": 8,
+      "tz_name": "Europe/London",
+      "tz_offset_min": 60,
+      "venue": "Wembley Stadium",
+      "verdict": "EVENT_HELD"
+    },
+    {
+      "artist": "Future & Metro Boomin",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "Nashville",
+      "date_display": "6 August 2024, 8:00 PM",
+      "date_iso": "2024-08-06",
+      "escrowed_wei": 0,
+      "event_id": 2,
+      "event_start_ts": 1722992400,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "metro boomin",
+      "id_b": "bridgestone",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": false,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1723006800,
+      "settle_count": 1,
+      "source_a_label": "Bridgestone Arena — official event page",
+      "source_a_url": "https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour",
+      "source_b_label": "do615 — dated cancelled concert record",
+      "source_b_url": "https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets",
+      "status": "CANCELLED",
+      "tickets_sold": 2,
+      "tickets_total": 8,
+      "tz_name": "America/Chicago",
+      "tz_offset_min": -300,
+      "venue": "Bridgestone Arena",
+      "verdict": "CANCELLED"
+    },
+    {
+      "artist": "Pentatonix",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "Nashville",
+      "date_display": "9 December 2026, 7:00 PM",
+      "date_iso": "2026-12-09",
+      "escrowed_wei": 20000000000000000000,
+      "event_id": 3,
+      "event_start_ts": 1796864400,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "pentatonix",
+      "id_b": "bridgestone",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": false,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1796882400,
+      "settle_count": 0,
+      "source_a_label": "Bridgestone Arena — official event page",
+      "source_a_url": "https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour",
+      "source_b_label": "do615 — Nashville independent event calendar",
+      "source_b_url": "https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets",
+      "status": "ON_SALE",
+      "tickets_sold": 2,
+      "tickets_total": 8,
+      "tz_name": "America/Chicago",
+      "tz_offset_min": -360,
+      "venue": "Bridgestone Arena",
+      "verdict": ""
+    },
+    {
+      "artist": "KATSEYE",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "Minneapolis",
+      "date_display": "20 February 2027, 8:00 PM",
+      "date_iso": "2027-02-20",
+      "escrowed_wei": 10000000000000000000,
+      "event_id": 4,
+      "event_start_ts": 1803175200,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "katseye",
+      "id_b": "target center",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": false,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1803189600,
+      "settle_count": 1,
+      "source_a_label": "Target Center — official event page (\"KATSEYE - POSTPONED\")",
+      "source_a_url": "https://www.targetcenter.com/events/detail/katseye",
+      "source_b_label": "iHeart — Target Center postponement announcement report",
+      "source_b_url": "https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/",
+      "status": "POSTPONED",
+      "tickets_sold": 1,
+      "tickets_total": 8,
+      "tz_name": "America/Chicago",
+      "tz_offset_min": -360,
+      "venue": "Target Center",
+      "verdict": "POSTPONED"
+    }
+  ],
+  "tickets": [
+    {
+      "event_id": 1,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 1
+    },
+    {
+      "event_id": 1,
+      "owner": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 2
+    },
+    {
+      "event_id": 2,
+      "owner": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "REFUNDED",
+      "ticket_id": 3
+    },
+    {
+      "event_id": 2,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "REFUNDED",
+      "ticket_id": 4
+    },
+    {
+      "event_id": 3,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 5
+    },
+    {
+      "event_id": 3,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 6
+    },
+    {
+      "event_id": 4,
+      "owner": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 7
+    }
+  ],
+  "counts": {
+    "contract_balance_wei": 30000000000000000000,
+    "escrowed_wei": 30000000000000000000,
+    "event_count": 4,
+    "ticket_count": 7,
+    "total_received_wei": 102000000000000000000,
+    "total_resale_volume_wei": 32000000000000000000,
+    "total_royalties_wei": 3200000000000000000,
+    "total_withdrawn_wei": 72000000000000000000
+  },
+  "credits": {
+    "P1": {
+      "address": "0xf57ff445659008bdb27b416f0cdd9d39f3b969a0",
+      "credit_wei": 0
+    },
+    "ORG": {
+      "address": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "credit_wei": 0
+    },
+    "ART": {
+      "address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "credit_wei": 0
+    },
+    "B1": {
+      "address": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "credit_wei": 0
+    },
+    "B2": {
+      "address": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "credit_wei": 0
+    },
+    "OUT": {
+      "address": "0x4f6eabf46dda0399e01af019e6d6c104850c4717",
+      "credit_wei": 0
+    }
+  },
+  "verification": {
+    "pass": 152,
+    "fail": 0,
+    "scripted_records": 53,
+    "workflow_records": 0
+  }
+}

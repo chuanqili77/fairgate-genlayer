@@ -174,6 +174,8 @@ and after each negative and fails the run if anything changed.
 
 ## Browser write loop (pre-registered before the browser run)
 
+Before the V1.5 browser run, the artist withdrawal signing surface is explicitly the auxiliary SDK (as permitted by the actual-signing-surface rule below). Four writes are performed through the live browser UI; the fifth is the retained artist account's SDK withdrawal. Monetary expectations are unchanged.
+
 The reviewer pass runs on the live site with in-browser temporary
 test accounts. Do NOT press settle on E3: its settle button is
 disabled until its settlement timestamp (2026-12-10T06:00:00Z) and
@@ -189,7 +191,7 @@ timestamp is 2027-02-21T06:00:00Z).
 | Same account lists ticket #8 for resale at 11 GEN | LISTED at 11 GEN (the cap, included), FINALIZED. |
 | Second temp account buys the resale | 11 GEN paid, ticket #8 owner changes, ACTIVE; seller credit 9.9 GEN; artist credit 1.1 GEN; FINALIZED. |
 | Seller withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
-| Artist withdraws the artist credit in-browser | 1.1 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
+| Artist withdraws the artist credit through the auxiliary SDK using the retained ART test account | 1.1 GEN withdrawn, FINALIZED; chain credit becomes zero. This is an SDK transaction, not a browser transaction. |
 
 Post-browser ledger: 123 GEN in, 83 GEN out, 40 GEN balance
 (E3 30 + E4 10 escrow), royalties 4.3 GEN, resale volume 43 GEN,
