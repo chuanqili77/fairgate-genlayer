@@ -1,0 +1,4 @@
+node_modules/
+.*-checkpoint.json
+*.checkpoint.json
+.DS_Store

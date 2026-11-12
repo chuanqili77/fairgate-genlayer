@@ -1,0 +1,191 @@
+{
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "contract_address": "0x6b42859cA5ef671F8DC27A191E450cCe8B9cAE12",
+  "deploy_tx": "0x61fea80782dddb0ba36846527980da80f32c062afeea8bb64c900443e5285c93",
+  "complete": true,
+  "transactions": [
+    {
+      "label": "cfg-e1",
+      "hash": "0xaf8d6d271603f619572949e0f83418d71217ee3d46fc1f4024947d646ece08be",
+      "result": "ok"
+    },
+    {
+      "label": "cfg-e2",
+      "hash": "0x4ee4d3a3ba46670620d6188d5de0535ef521156b1786632dc45ca3cbd854d729",
+      "result": "ok"
+    },
+    {
+      "label": "t1-buy",
+      "hash": "0xd070f86649550b7329aaae325ae15020f5355bfc7004459a7d6c9b494c0d3209",
+      "result": "ok"
+    },
+    {
+      "label": "t2-buy",
+      "hash": "0xff6747e6b0baa63533f1ccdcf748b6b2169278ff79311e5a89dada23bb819e90",
+      "result": "ok"
+    },
+    {
+      "label": "t3-buy",
+      "hash": "0xc14335c4f3edabf80256e603d8cc18adc09dec6326309c9abe5542220cd36fef",
+      "result": "ok"
+    },
+    {
+      "label": "t4-buy",
+      "hash": "0xbf27644ef3dcc16afa6c7bf20cf7ee16cbf19cf5539c7bf2941fe63054d2f330",
+      "result": "ok"
+    },
+    {
+      "label": "r1-list",
+      "hash": "0xbe9445f0d69bace6bc3258a25764391accaade12314079df41182d2619f4e69c",
+      "result": "ok"
+    },
+    {
+      "label": "r1-buy",
+      "hash": "0xc6e7995a7be9730fd8dd25c31700ffa0d36651e9d70b3975249c08ee12e80e5d",
+      "result": "ok"
+    },
+    {
+      "label": "r2-list",
+      "hash": "0xc5309b68589300a9afd803e27569208e7575a4c93193397b2e9ca7e8fdd3d4f6",
+      "result": "ok"
+    },
+    {
+      "label": "r2-buy",
+      "hash": "0xebe8b9c9c05c818669e500e2f99cb62adab53fe0626bc2cf36dc09bef60a753c",
+      "result": "ok"
+    },
+    {
+      "label": "r3-list",
+      "hash": "0xcecc1f77191190d48d5e7a7be024bac88dcce45e56ea7ef9c6c6d6a20e3ad412",
+      "result": "ok"
+    },
+    {
+      "label": "neg3-stranger-list",
+      "hash": "0xe57689488d0594a1aa5f5d3c3611cb989ae7fcb2f73da9906a4eb2a14ce2da8b",
+      "result": "error-observed",
+      "expected_error": "NOT_TICKET_OWNER",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg4-over-cap",
+      "hash": "0xc32d2440e7de5c82346f5059b97ed8e66cd987594269d3e7608ee25cd8db310c",
+      "result": "error-observed",
+      "expected_error": "PRICE_CAP",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg6-list",
+      "hash": "0xe6bf512ab555e32dc5df8cc84a748975ed85ea182c41abe0b81cce88cd47437c",
+      "result": "ok"
+    },
+    {
+      "label": "neg6-self-buy",
+      "hash": "0x32743a68d034d0c55a66258bbb2c904274525f36096999b9ea78ef78ac91223b",
+      "result": "error-observed",
+      "expected_error": "SELF_PURCHASE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg6-cancel",
+      "hash": "0x66d02b1aec1f4ad09f5eaa22f19891841551371199238fe1cc8401dfd74e9fd9",
+      "result": "ok"
+    },
+    {
+      "label": "neg5-not-listed",
+      "hash": "0x34ad44e9e263e6288089066d21e4725acb8d9f559dda5737330f0841051ab7ba",
+      "result": "error-observed",
+      "expected_error": "TICKET_NOT_LISTED",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg2-wrong-value",
+      "hash": "0x613e74e01139670c61f7ec98de94e15ff6cfbac6faa9a88c4135074e543fe97e",
+      "result": "error-observed",
+      "expected_error": "VALUE_MUST_EQUAL_PRICE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg1-unknown-event",
+      "hash": "0xc72df4044447909e3e558d112f3905a67d360706aad8835b9fa09167f7dc96b8",
+      "result": "error-observed",
+      "expected_error": "EVENT_NOT_FOUND",
+      "unchanged_state": true
+    },
+    {
+      "label": "s1-settle-e1",
+      "hash": "0x834b10e59ff8cd5c32879d4c5a1b540ebb1e235a59fe93e0bcdbf3e20b142403",
+      "result": "ok",
+      "verdict": "EVENT_HELD",
+      "attempts": 1,
+      "caller": "OUT"
+    },
+    {
+      "label": "s2-settle-e2",
+      "hash": "0x2e7f3719f1277a0c96cd459e43a2cd4a4c39dac6d6da676c3e45553005b50239",
+      "result": "ok",
+      "verdict": "CANCELLED",
+      "attempts": 1,
+      "caller": "OUT"
+    },
+    {
+      "label": "neg9-double-settle",
+      "hash": "0x32d8d9f33cadd37712919e4ce81fb22aef748df619b4b9303fa6ceb156ad4d33",
+      "result": "error-observed",
+      "expected_error": "EVENT_ALREADY_SETTLED",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg11-buy-held",
+      "hash": "0x3c1e11dbc5fd1eee8732bbd49768a8c5c998d1c6894949e3327d7f1c2386b757",
+      "result": "error-observed",
+      "expected_error": "EVENT_NOT_ON_SALE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg10-list-refunded",
+      "hash": "0xddbcf666f6b6ccd1529e0826973b877b5278fe97ea55822c5d13da058248e67f",
+      "result": "error-observed",
+      "expected_error": "TICKET_NOT_ACTIVE",
+      "unchanged_state": true
+    },
+    {
+      "label": "neg7-stranger-withdraw",
+      "hash": "0xbbf2cc24b4899f5cb2d1162991ebc883eb903b2d08c827802fe0acd1efce7b97",
+      "result": "error-observed",
+      "expected_error": "NO_CREDIT",
+      "unchanged_state": true
+    },
+    {
+      "label": "w-org",
+      "hash": "0xdd4454d5381e85bfbcae0ae594f7e52651ba1ec9c49c7789c35321b29cd98945",
+      "result": "ok",
+      "withdrawn_wei": 20000000000000000000
+    },
+    {
+      "label": "w-art",
+      "hash": "0xa5cc202b9dbf3376494f45c1984bd9bacb24f8dab2c70f1388c08670f9d9ccc6",
+      "result": "ok",
+      "withdrawn_wei": 2100000000000000000
+    },
+    {
+      "label": "w-b1",
+      "hash": "0xe5e726ca7f382a0b4a5675b9f1eef7b20dde1b4f0962bd9d6554a1c72ad8520d",
+      "result": "ok",
+      "withdrawn_wei": 19900000000000000000
+    },
+    {
+      "label": "w-b2",
+      "hash": "0x30767a39454a0e7be78b3b0b722c52b02e0b53adee11838080ddcdf30829b14a",
+      "result": "ok",
+      "withdrawn_wei": 19000000000000000000
+    },
+    {
+      "label": "neg8-double-withdraw",
+      "hash": "0x7dc21f741285fe8cfea83e95e3e2e58f50224bc9d2bda27ce1c3a0c328a6e694",
+      "result": "error-observed",
+      "expected_error": "NO_CREDIT",
+      "unchanged_state": true
+    }
+  ]
+}
