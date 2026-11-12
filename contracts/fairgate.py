@@ -559,7 +559,7 @@ class FairGate(gl.Contract):
             'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour',
             'Bridgestone Arena — official event page',
             'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets',
-            'JamBase — dated cancelled concert record',
+            'do615 — dated cancelled concert record',
             'metro boomin', 'bridgestone')
         e2['event_id'] = 2
         self.events['2'] = packed(e2)

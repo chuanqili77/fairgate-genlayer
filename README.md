@@ -25,7 +25,7 @@ The E1 positive settlement has **not succeeded**. Two finalized, agreed, success
 
 The prospective plan remains unchanged in [EXPECTED.md](EXPECTED.md). Current transaction evidence is explicitly incomplete. The published Pages deployment remains historical V1.3 until a corrected deployment has full live evidence; V1.3's original source and documents are preserved under [evidence/v1.3/](evidence/v1.3/). Historical receipts establish historical execution, not correctness of V1.4's payout rule.
 
-## Fixed launch events
+## V1.5 fixed launch events
 
 | Event | Date | Fixed sources | Intended path |
 |---|---|---|---|
