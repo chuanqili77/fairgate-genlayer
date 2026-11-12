@@ -240,7 +240,7 @@ async function resolvePending() {
   const {label, hash} = cp.pending;
   if (done[label] === hash) { delete cp.pending; saveCheckpoint(cp); return; }
   console.log('resolving pending tx:', label, hash);
-  const tx = await reader.waitForTransactionReceipt({hash, status: 'FINALIZED', interval: 5000, retries: 12, fullTransaction: true});
+  const tx = await collect(reader, hash, label + ' (resume)');
   if (Object.hasOwn(NEG_ERRORS, label)) {
     const code = NEG_ERRORS[label];
     if (!errorObserved(tx, code)) throw new Error('pending ' + label + ' did not show expected error ' + code);
