@@ -435,7 +435,7 @@ def _scan(html, id_a, id_b):
     )
     held = any(re.search(pattern, low) for pattern in held_patterns)
     identity = (id_a.lower() in low) and (id_b.lower() in low)
-    return cancel, postpone, held, identity
+    return cancel, postpone, identity, held
 
 
 def _fetch_once(url, id_a, id_b):
@@ -461,7 +461,7 @@ def _fetch_once(url, id_a, id_b):
     else:
         return {'ok': False, 'cancel': False, 'postpone': False,
                 'held': False, 'identity': False}
-    cancel, postpone, held, identity = _scan(text, id_a, id_b)
+    cancel, postpone, identity, held = _scan(text, id_a, id_b)
     return {'ok': True, 'cancel': cancel, 'postpone': postpone,
             'held': held, 'identity': identity}
 
