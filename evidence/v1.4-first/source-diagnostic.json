@@ -1,0 +1,22 @@
+{
+  "deploy": "0xf15470842f38c8dd151274b9a46241f2263cf5496645e37526ec58d69b395e85",
+  "address": "0x224004a3d05bf08bB688006B6E4dC1AB17DcC056",
+  "probes": {
+    "https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html": {
+      "hash": "0xaa778d113d5fd127f7c218805661b651076ae759146498e5e2d6f6b345166444",
+      "result": {
+        "flags": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "length": 24064,
+        "scoped_length": 392,
+        "snippet": "Lloyds Banking Group - Error text/html; charset=utf-8 en-gb no-cache no-store IE=IE8 all,index,follow global general Lloyds Banking Group - Error We are sorry an error has occurred, please try again later. We are currently working to fix the problem and should have it resolved shortly. To search and apply for jobs, please visit our jobs page. [Error 1007 ID: 18.5d847b5c.1794507185.13c0418]",
+        "status": 200,
+        "tail": "Lloyds Banking Group - Error text/html; charset=utf-8 en-gb no-cache no-store IE=IE8 all,index,follow global general Lloyds Banking Group - Error We are sorry an error has occurred, please try again later. We are currently working to fix the problem and should have it resolved shortly. To search and apply for jobs, please visit our jobs page. [Error 1007 ID: 18.5d847b5c.1794507185.13c0418]"
+      }
+    }
+  }
+}

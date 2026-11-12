@@ -6,14 +6,14 @@
 // says UNCONFIRMED; export is disabled. On-chain values (status,
 // verdict, ticket state, amounts) are always shown in English; the
 // translated text next to them is only a gloss.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   MAX_RESALE_GEN,
   loadDeployment, contractAddress, explorerTx, explorerAddress,
   readAll, readMyCredit,
   savePendingTx, loadPendingTxs, clearPendingTx,
   saveMyTx, loadMyTxs, TxUnknownError,
-  waitFinalized, sendWriteOnly,
+  waitFinalized, sendWriteOnly, txGood, leaderExecution, leaderPayload, leaderReturn,
   injectedProvider, walletKind, connectInjected,
   tempPrivateKey, isTempKeyAcked, ackTempKey,
   temporaryAccount, rotateTemporaryAccount, restoreTemporaryAccount, destroyTemporaryAccount,
@@ -69,6 +69,8 @@ export default function App() {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
+  const tracking = useRef(new Set<string>());
+
   const tr = useCallback((k: string) => t(lang, k), [lang]);
   const finalized = readback === 'ok';
 
@@ -99,8 +101,7 @@ export default function App() {
   useEffect(() => {
     const p = checkParity();
     if (p.missing.length || p.extra.length) console.warn('i18n parity', p);
-    loadDeployment().then((d) => { setDeployment(d); setPending(loadPendingTxs()); setMyTxs(loadMyTxs()); }).catch((e) => setErr(String(e?.message || e)));
-    refresh();
+    loadDeployment().then(async (d) => { setDeployment(d); setPending(loadPendingTxs()); setMyTxs(loadMyTxs()); await refresh(); }).catch((e) => setErr(String(e?.message || e)));
     fetch('./transactions.json', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d) setEvidenceTxs(normalizeEvidence(d)); })
@@ -108,6 +109,48 @@ export default function App() {
   }, [refresh]);
 
   useEffect(() => { refreshCredit(wallet); }, [wallet, refreshCredit, readback]);
+
+  const finishTransaction = useCallback(async (hash: string, label: string, receipt: any) => {
+    if (![7, 'FINALIZED'].includes(receipt.status)) throw new TxUnknownError(hash);
+    const success = txGood(receipt);
+    const disagreed = [5, 'MAJORITY_DISAGREE'].includes(receipt.result);
+    const outcome = leaderReturn(receipt);
+    const noChange = success && outcome?.changed === false && ['UNREACHABLE', 'SOURCES_DISAGREE'].includes(outcome.verdict);
+    saveMyTx(hash, label, noChange ? 'no-state-change' : success ? 'success' : disagreed ? 'disagreed' : 'error');
+    clearPendingTx(hash);
+    setPending(loadPendingTxs());
+    setMyTxs(loadMyTxs());
+    const readbackOk = await refresh();
+    await refreshCredit(wallet);
+    if (noChange) setNotice(tr('app.noStateChange') + ' · ' + outcome.verdict + ': ' + hash);
+    else if (success) setNotice(tr(readbackOk ? 'app.done' : 'app.finalizedReadbackPending') + ': ' + hash);
+    else {
+      setNotice('');
+      setErr(tr(disagreed ? 'app.txDisagreed' : 'app.txFailed') + ': ' + hash + ' · ' + String(leaderExecution(receipt)) + ' ' + leaderPayload(receipt));
+    }
+  }, [refresh, refreshCredit, wallet, tr]);
+
+  useEffect(() => {
+    if (!deployment) return;
+    let cancelled = false;
+    const poll = async () => {
+      const work = loadPendingTxs().map(async (item) => {
+        if (tracking.current.has(item.hash)) return;
+        tracking.current.add(item.hash);
+        try {
+          const receipt = await waitFinalized(item.hash);
+          if (!cancelled) await finishTransaction(item.hash, item.label, receipt);
+        } catch {
+          // A timeout or read failure is still unknown. Keep the durable hash
+          // and retry it; never replace uncertainty with success or re-send.
+        } finally { tracking.current.delete(item.hash); }
+      });
+      await Promise.allSettled(work);
+    };
+    void poll();
+    const timer = window.setInterval(() => { void poll(); }, 8000);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [deployment?.contract_address, finishTransaction]);
 
   const switchLang = (l: Lang) => { setLang(l); setLangState(l); };
 
@@ -127,18 +170,15 @@ export default function App() {
       setPending(loadPendingTxs());
       setMyTxs(loadMyTxs());
       setNotice(tr('app.txSent') + ': ' + hash);
+      tracking.current.add(hash);
       try {
-        await waitFinalized(hash);
-        clearPendingTx(hash);
-        setPending(loadPendingTxs());
-        await refresh();
-        await refreshCredit(wallet);
-        setNotice(tr('app.done') + ': ' + hash);
+        const receipt = await waitFinalized(hash);
+        await finishTransaction(hash, label, receipt);
       } catch (e) {
         if (e instanceof TxUnknownError) {
           setNotice(tr('app.txUnknown') + ': ' + hash);
         } else { throw e; }
-      }
+      } finally { tracking.current.delete(hash); }
     } catch (e: unknown) {
       setErr(tr('app.error') + ': ' + String((e as Error)?.message || e));
     } finally {
@@ -170,6 +210,19 @@ export default function App() {
     setShowDisconnect(false);
   };
 
+  const downloadTestBackup = () => {
+    if (wallet?.mode !== 'temporary') return;
+    const privateKey = tempPrivateKey();
+    if (!privateKey) return;
+    const data = {network: 'Stable Studionet', chain_id: 61999, address: wallet.address, private_key: privateKey};
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'fairgate-test-account-' + wallet.address + '.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportReceipts = () => {
     if (!finalized) return;
     const payload = {
@@ -197,7 +250,7 @@ export default function App() {
     v === 'EVENT_HELD' ? 'stamp-held' : v === 'CANCELLED' ? 'stamp-cancelled' : v === 'POSTPONED' ? 'stamp-postponed' : 'stamp-neutral';
 
   const verdictOutcome = (ev: EventRec) => {
-    if (ev.verdict === 'EVENT_HELD') return tr('app.organizerPaid') + ' · ' + gen(ev.escrowed_wei) + ' GEN';
+    if (ev.verdict === 'EVENT_HELD') return tr('app.organizerPaid') + ' · ' + gen(ev.face_price_wei * ev.tickets_sold) + ' GEN';
     if (ev.verdict === 'CANCELLED') return tr('app.refundsPaid');
     if (ev.verdict === 'POSTPONED') return tr('app.fundsHeld');
     if (ev.verdict === 'UNREACHABLE' || ev.verdict === 'SOURCES_DISAGREE') return tr('app.noSettlement');
@@ -551,6 +604,7 @@ export default function App() {
             <p className="mono key-box">{tempPrivateKey() ?? '—'}</p>
             <div className="modal-actions">
               <button className="btn btn-ghost" onClick={() => { try { navigator.clipboard.writeText(tempPrivateKey() ?? ''); setNotice(tr('app.copied')); } catch { /* ignore */ } }}>{tr('app.copyKey')}</button>
+              <button className="btn btn-ghost" onClick={downloadTestBackup}>{tr('app.downloadBackup')}</button>
               <button className="btn btn-primary" onClick={() => { ackTempKey(); setShowKeyModal(false); const a = pendingAction; setPendingAction(null); a?.(); }}>{tr('app.keyBackupAck')}</button>
               <button className="btn btn-ghost" onClick={() => setShowKeyModal(false)}>{tr('app.cancel')}</button>
             </div>

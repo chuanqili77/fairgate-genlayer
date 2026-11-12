@@ -1,0 +1,100 @@
+{
+  "observed_at": "2026-11-12T17:19:57.124892+00:00",
+  "scope": "Off-chain source availability and deterministic extraction only; not live validator consensus.",
+  "sources": [
+    {
+      "event_id": 1,
+      "source": "a",
+      "url": "https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/",
+      "observed_at": "2026-11-12T17:11:47.730862+00:00",
+      "http_status": 200,
+      "body_sha256": "3c18645e6d3371dfa79dfa62e7d2a57084da1e200452469073cf6f182f14563c",
+      "body_bytes": 83282,
+      "cancel": false,
+      "postpone": false,
+      "identity": true,
+      "held": true
+    },
+    {
+      "event_id": 1,
+      "source": "b",
+      "url": "https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html",
+      "observed_at": "2026-11-12T17:11:56.199883+00:00",
+      "http_status": 200,
+      "body_sha256": "ea88aecbdde27b96a066e4fbb8695d5a7332b7fd4e6bee213fbb00d7e40bb182",
+      "body_bytes": 315914,
+      "cancel": false,
+      "postpone": false,
+      "identity": true,
+      "held": true
+    },
+    {
+      "event_id": 2,
+      "source": "a",
+      "url": "https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour",
+      "http_status": 200,
+      "body_sha256": "fcf94b3d530c4a09ea2345b8b9ce3ac700fe2b534f9346ddfc5e24a3bf4e53c6",
+      "body_bytes": 105303,
+      "cancel": true,
+      "postpone": false,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 2,
+      "source": "b",
+      "url": "https://www.jambase.com/show/future-bridgestone-arena-20240806",
+      "observed_at": "2026-11-12T17:21:40.137344+00:00",
+      "http_status": 200,
+      "body_sha256": "e6d212bd39d71063bc8196d413c88ec4c70ffa0fde7b823cf617779daac51841",
+      "body_bytes": 191057,
+      "cancel": true,
+      "postpone": false,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 3,
+      "source": "a",
+      "url": "https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour",
+      "http_status": 200,
+      "body_sha256": "d258cd63bb6fb5826569e3e7abc5f7522f046d128dfd065f506a308d1ad06b94",
+      "body_bytes": 101211,
+      "cancel": false,
+      "postpone": false,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 3,
+      "source": "b",
+      "url": "https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    },
+    {
+      "event_id": 4,
+      "source": "a",
+      "url": "https://www.targetcenter.com/events/detail/katseye",
+      "http_status": 200,
+      "body_sha256": "ff43ec3bf1a945dd1f31aff84ca07a6e7c58337e0a468c452a4384f4d98de07f",
+      "body_bytes": 137143,
+      "cancel": false,
+      "postpone": true,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 4,
+      "source": "b",
+      "url": "https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/",
+      "observed_at": "2026-11-12T17:20:56.665442+00:00",
+      "http_status": 200,
+      "body_sha256": "c52d85e6f2e8f38f0b22dc302a633376ea44a117e5366b523f7f8e714a9020b4",
+      "body_bytes": 278895,
+      "cancel": false,
+      "postpone": true,
+      "identity": true,
+      "held": false
+    }
+  ]
+}

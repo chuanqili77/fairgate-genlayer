@@ -1,116 +1,20 @@
-# EXPECTED.md — FairGate evidence v1.3 (pre-registered BEFORE the run)
+# FairGate V1.5 prospective chain test plan
 
-Contract: FairGate, protocol `fairgate-1.3`, Stable Studionet (61999).
-Address: 0x8883831222208CcbAf34DAcb8ac08f167edA6c6C
-Deploy tx: 0xaaf1e0d5764a083372676cc667eb89bc8ddefa8cd624a80866ab597841e7ef3b
-Source SHA-256: dfca9b07359070883cf592df0b451dd8f7f4c37ea426760f50a2d0591c8775c5 (41,041 bytes, byte parity TRUE)
-Face price 10 GEN per ticket; resale cap 11 GEN (110%, cap included);
-artist royalty 10% (price * 10 // 100 in wei, exact for whole-GEN prices).
-Four launch events, fixed in the contract source (see README for why
-they are fixed, and for the probe results behind the verdict rule).
+This V1.5 plan supersedes the unsuccessful V1.4 run, without rewriting its expectations or outcomes; its unchanged registration is archived in evidence/v1.4-first/EXPECTED.md. V1.4 returned UNREACHABLE because GenVM received a Lloyds error page. V1.5 changes the frozen second E1 URL to The Independent and adds original-publication-date resolution for a matching weekday-night past performance. The source was diagnostic-probed before product deployment; those diagnostic transactions are not prospectively registered product tests. This plan is published before V1.5 product deployment and transactions. This is a new run, not a correction of the original V1.3 registration archived unchanged in evidence/v1.3/EXPECTED.md. Exact current source SHA is in evidence/source-status.json. No new contract address or result is asserted in advance.
 
-## Why v1.3 (v1.2 superseded, archived in evidence/v1.2/)
+Face price 10 GEN; resale cap 11 GEN; artist royalty 10%, rounded down in wei. Creator P1 configures organizer ORG and artist ART; B1/B2 are buyers and OUT tests permission rejection. Keys remain outside the repository. E3/E4 open escrow and its entitlement accounts must be retained until eventual settlement.
 
-v1.2 (fairgate-1.2, 0x38b0aE26…) verified clean (byte parity TRUE,
-verify 78/78, ledger 113 in = 83 out + 30 balance) but had three
-defects that are fixed in v1.3:
+GenVM source preflight also found JamBase unavailable. Before any V1.5 product transaction, E2 source B is restored to the original do615 dated cancellation page: its existing historical evidence and a new HTTP-200 GenVM body observation identify the exact cancellation. The failed JamBase diagnostic remains recorded.
 
-1. The settlement gate compared UTC date strings against the event
-   date. A show that starts in the evening local time could be
-   settled hours before the local day ended. v1.3 stores explicit
-   Unix timestamps per event (event_start_ts, settle_after_ts) and
-   the local UTC offset; the contract derives settle_after_ts
-   itself as the first second of the day after the show in the
-   event's own local time zone and refuses any other value, and
-   settle_event compares the GenLayer transaction Unix timestamp
-   against it. No date strings are compared anywhere. E3's gate is
-   now exactly 2026-12-10T06:00:00Z (2026-12-10 00:00 Nashville).
-2. A POSTPONED event had no safe way to move to a new date: the
-   only path was re-settling it, which left the old date and the
-   old settlement timestamp in place. v1.3 adds reschedule_event
-   (creator only, POSTPONED only, new date later than the old date,
-   new settlement timestamp re-derived and re-checked, tickets /
-   holders / escrow untouched, no money released, re-reschedulable,
-   settled or selling events refused, never reopens sales).
-3. The verdict scanned the whole raw page, so a cancelled word in a
-   footer or a recommended article about another event could
-   influence the result. v1.3 reads only scoped text (page title,
-   meta content, JSON-LD structured event data, visible body after
-   removing navigation, footers, asides, scripts, styles and
-   recommended / related sections). The identity check and the
-   keyword flags run on that scoped text only. The E1/E2/E4
-   verdicts are unchanged (re-proven on-chain in this run).
+Frozen source anchors:
+- E1 (2025-07-25): Radio X original same-day first-night report and The Independent original same-day weekday-night performance report. Both must independently produce held=true.
+- E2 (2024-08-06): Bridgestone Arena cancellation and do615 specific dated cancelled concert record.
+- E3 (2026-12-09): venue and do615 schedule; no early settlement, irrespective of source availability.
+- E4 (2026-11-07): Target Center and iHeart venue-linked postponement report. Another city's cancellation cannot decide this show.
 
-v1.3 also makes the browser write loop a formal evidence file
-(docs/browser-transactions.json, re-read live by the verify
-script) instead of a Markdown-only record. v1.2 history is
-preserved unchanged in evidence/v1.2/.
+Every validator independently fetches both sources, confirms identity and reproduces all flags including held_a/held_b. Lack of cancellation is never held proof. Unsupported wording, failed fetch or disagreement leaves state and escrow unchanged. Supported positive modes are specified in EXPECTED_V15.md and canonical source. Mock tests are not chain evidence.
 
-## Events (fixed at deploy)
-
-| ID | Event | Local start | UTC offset | event_start_ts | settle_after_ts (local midnight after) |
-|----|-------|-------------|------------|----------------|----------------------------------------|
-| E1 | Oasis Live '25, Wembley Stadium, London | 2025-07-25 19:00 BST | +60 | 1753466400 (2025-07-25T18:00:00Z) | 1753484400 (2025-07-25T23:00:00Z = 2026-07-26 00:00 BST) |
-| E2 | Future & Metro Boomin – We Trust You Tour, Bridgestone Arena, Nashville | 2024-08-06 20:00 CDT | -300 | 1722992400 (2024-08-07T01:00:00Z) | 1723006800 (2024-08-07T05:00:00Z = 2024-08-07 00:00 CDT) |
-| E3 | Pentatonix: Christmas in the City Tour, Bridgestone Arena, Nashville | 2026-12-09 19:00 CST | -360 | 1796864400 (2026-12-10T01:00:00Z) | 1796882400 (2026-12-10T06:00:00Z = 2026-12-10 00:00 CST) |
-| E4 | KATSEYE — THE WILDWORLD TOUR, Target Center, Minneapolis | 2026-11-07 20:00 CST | -360 | 1794103200 (2026-11-08T02:00:00Z) | 1794117600 (2026-11-08T06:00:00Z = 2026-11-08 00:00 CST) |
-
-Offsets verified against the IANA zone (Europe/London,
-America/Chicago) for each event date. Sources and expected
-verdicts are unchanged from v1.2:
-
-| ID | Source A (venue official) | Source B (independent) | Expected verdict |
-|----|---------------------------|------------------------|------------------|
-| E1 | http://www.wembleystadium.com/events/2025/OASIS | https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/ ("Oasis played Wembley Stadium in 2025") | EVENT_HELD |
-| E2 | https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour ("CANCELLED: … has been cancelled") | https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets ("Cancelled - …", "Past(08/6/2024)") | CANCELLED |
-| E3 | https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour | https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets | NOT SETTLED in this run (live event, ON_SALE; timestamp gate refuses settlement before 2026-12-10T06:00:00Z) |
-| E4 | https://www.targetcenter.com/events/detail/katseye (title "KATSEYE - POSTPONED \| Target Center") | https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm (independent news report, postponement confirmed) | POSTPONED |
-
-Verdict rule (deterministic, no LLM): each validator fetches both
-sources and reads ONLY the scoped text — page title, meta content
-(description / keywords), JSON-LD structured event data, and the
-visible body text after removing navigation, footers, asides,
-scripts, styles and recommended / related / sidebar sections.
-Cancel words: "cancelled", "canceled". Postpone words: stems
-"postpone", "reschedule" (also match "postponed", "postponement",
-"rescheduled", "rescheduling"). Identity check first: the scoped
-text must contain the artist token AND the venue token for the
-event (E1: oasis + wembley; E2: metro boomin + bridgestone; E3:
-pentatonix + bridgestone; E4: katseye + target center). A source
-that fails to fetch, or fails the identity check, cannot vote: the
-verdict is UNREACHABLE (no state change). Both sources fetched OK
-+ identity confirmed + no cancel/postpone word in either =
-EVENT_HELD. Both sources contain a cancel word = CANCELLED. Both
-contain a postpone word = POSTPONED. Sources disagree =
-SOURCES_DISAGREE (no state change). Equivalence vector is
-(verdict, cancel_a, cancel_b, postpone_a, postpone_b, fetch_a_ok,
-fetch_b_ok, identity_a, identity_b), exact equality.
-
-Settlement time gate (on-chain): settle_event reads the
-transaction datetime (GenLayer-native, deterministic), converts it
-to a Unix timestamp and requires tx_ts >= settle_after_ts. An
-earlier attempt fails with TOO_EARLY, state unchanged. The
-contract derives settle_after_ts from event_start_ts and the
-local UTC offset at configuration and refuses any other value.
-
-Probe results (probe contract, validators fetching live — NOT the
-product evidence): clock check — datetime.now(timezone.utc)
-.timestamp() returns the transaction Unix timestamp; all eight
-anchor URLs probed with the scoped extractor report exactly the
-expected signature (E1a/E1b no keywords + identity, E2a/E2b cancel
-only + identity, E3a/E3b no keywords + identity, E4a/E4b postpone
-only + identity). Full probe output in probe-v13-results.json.
-
-## Accounts (temporary, evidence run only)
-
-P1 = deployer and creator (only P1 can configure events and
-reschedule them). ORG = organizer payout address, ART = artist
-payout address, B1/B2 = buyers, OUT = stranger (negative caller).
-ORG/ART are set once per event by configure_event before the first
-ticket sale. The ORG key is RETAINED after this run (held offline
-by the project operator, never committed) because E3's organizer
-credit can only be withdrawn after E3 settles after 2026-12-09;
-it is deleted after that withdrawal.
+Event timestamps, configuration and resale operations below are deterministic prospective inputs. All successful transactions require FINALIZED + MAJORITY_AGREE + leader SUCCESS; negatives additionally require exact expected ERROR and unchanged state. Any wrong result aborts and must be retained, never edited into a pass.
 
 ## Evidence flow (53 txs + deploy = 54)
 
@@ -249,7 +153,7 @@ behavior on Studionet). Every failed-payable negative in this run
 can be stranded. The verify script re-reads the full state before
 and after each negative and fails the run if anything changed.
 
-## Not covered by on-chain evidence in v1.3
+## Not covered by on-chain evidence in v1.4
 
 - SOLD_OUT: no on-chain case. Buying all 8 E3 tickets would close
   the live site's only buyable event, so the sold-out path is
@@ -258,8 +162,8 @@ and after each negative and fails the run if anything changed.
 - UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed
   branches with no state change; they occur only if a source fetch
   fails, a source fails the identity check, or the sources
-  disagree, which the probe shows does not happen for these eight
-  URLs right now. Covered by mock tests.
+  disagree, which may occur whenever external pages change or reject a fetch.
+  Local availability checks are not chain consensus. Covered by Mock tests unless actual fail-closed receipts are recorded.
 - E3 settlement: E3's real date is 2026-12-09 19:00 Nashville, in
   the future. It is not settled in this run by design; an early
   attempt is refused on-chain (neg13, TOO_EARLY). Its escrow
@@ -269,6 +173,8 @@ and after each negative and fails the run if anything changed.
   can be withdrawn after that settlement.
 
 ## Browser write loop (pre-registered before the browser run)
+
+Before the V1.5 browser run, the artist withdrawal signing surface is explicitly the auxiliary SDK (as permitted by the actual-signing-surface rule below). Four writes are performed through the live browser UI; the fifth is the retained artist account's SDK withdrawal. Monetary expectations are unchanged.
 
 The reviewer pass runs on the live site with in-browser temporary
 test accounts. Do NOT press settle on E3: its settle button is
@@ -280,15 +186,15 @@ timestamp is 2027-02-21T06:00:00Z).
 
 | Step | Expected |
 |------|----------|
-| Cold start, no wallet | Page renders in English by default; before any FINALIZED readback the values are dashes + UNCONFIRMED and export is disabled; contract address is exactly 0x8883831222208CcbAf34DAcb8ac08f167edA6c6C. E1's poster shows HELD (never the raw text EVENT_HELD and never a raw key like app.status_EVENT_HELD); its Buy button is disabled; E1/E2/E4 carry a settled-historical-demo tag. E3's settle button is disabled with the note that settlement opens 2026-12-10 06:00 UTC. After readback: 4 events, 7 tickets, 30 GEN escrow. |
+| Cold start, no wallet | Page renders in English by default; before any FINALIZED readback the values are dashes + UNCONFIRMED and export is disabled; contract address exactly matches the new V1.5 deployment manifest. E1's poster shows HELD (never the raw text EVENT_HELD and never a raw key like app.status_EVENT_HELD); its Buy button is disabled; E1/E2/E4 carry a settled-historical-demo tag. E3's settle button is disabled with the note that settlement opens 2026-12-10 06:00 UTC. After readback: 4 events, 7 tickets, 30 GEN escrow. |
 | Temp account buys 1 E3 ticket | 10 GEN escrowed, ticket #8, ACTIVE, FINALIZED. |
 | Same account lists ticket #8 for resale at 11 GEN | LISTED at 11 GEN (the cap, included), FINALIZED. |
 | Second temp account buys the resale | 11 GEN paid, ticket #8 owner changes, ACTIVE; seller credit 9.9 GEN; artist credit 1.1 GEN; FINALIZED. |
 | Seller withdraws the seller credit in-browser | 9.9 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
-| Artist withdraws the artist credit in-browser | 1.1 GEN withdrawn, FINALIZED; credit then shows withdrawn. |
+| Artist withdraws the artist credit through the auxiliary SDK using the retained ART test account | 1.1 GEN withdrawn, FINALIZED; chain credit becomes zero. This is an SDK transaction, not a browser transaction. |
 
 Post-browser ledger: 123 GEN in, 83 GEN out, 40 GEN balance
 (E3 30 + E4 10 escrow), royalties 4.3 GEN, resale volume 43 GEN,
-8 tickets, E3 3/8 sold. All five browser transactions are recorded
+8 tickets, E3 3/8 sold. The five transaction hashes will be recorded with their actual signing surface (browser or auxiliary SDK withdrawal), never mislabeled. They are recorded
 in docs/browser-transactions.json and re-read live by
 scripts/verify_evidence.mjs.

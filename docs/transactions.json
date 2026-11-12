@@ -1,318 +1,336 @@
 {
   "network": "Stable Studionet",
   "chain_id": 61999,
-  "contract_address": "0x8883831222208CcbAf34DAcb8ac08f167edA6c6C",
-  "deploy_tx": "0xaaf1e0d5764a083372676cc667eb89bc8ddefa8cd624a80866ab597841e7ef3b",
+  "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
+  "deploy_tx": "0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6",
   "complete": true,
   "transactions": [
     {
       "label": "neg0-not-creator",
-      "hash": "0x150156b116e65a728c55d6a15553cfe9256ab5128f614374690ebe39686fec96",
+      "hash": "0xb40a0efd1a6e111a5d952012e1073b33632872c72933f05795c78b93caf940d4",
       "result": "error-observed",
-      "expected_error": "NOT_CREATOR"
+      "expected_error": "NOT_CREATOR",
+      "unchanged_state": true
     },
     {
       "label": "neg14-bad-address",
-      "hash": "0x3d2f16f5de7434f918d6978036db650d87f53aed2fd32e5b0ee9d67e70a7f774",
+      "hash": "0x89b718e05d4f728c84934b3a85b0e0bc016982d6cf24f7fc675f9ba26d61db6a",
       "result": "error-observed",
-      "expected_error": "BAD_ADDRESS"
+      "expected_error": "BAD_ADDRESS",
+      "unchanged_state": true
     },
     {
       "label": "neg15-bad-settle-after",
-      "hash": "0xc16ddabb2dca9e86b1771f6a2e72ec8d1c72ef9e5efdac8863d22b0729a9a63d",
+      "hash": "0x8681a4e41069a5f4578e33b6d349334b664f1ffd5b4f7d590c7f4f2005efc548",
       "result": "error-observed",
-      "expected_error": "BAD_SETTLE_AFTER_TS"
+      "expected_error": "BAD_SETTLE_AFTER_TS",
+      "unchanged_state": true
     },
     {
       "label": "neg16-bad-tz-offset",
-      "hash": "0xd712503d21baba85673df0d89001f294551fa11fd074544203d51e349063ffb3",
+      "hash": "0xeb15c731bc9a4cd24da5966210a3381d684e81204310279dce159c939b52baf6",
       "result": "error-observed",
-      "expected_error": "BAD_TZ_OFFSET"
+      "expected_error": "BAD_TZ_OFFSET",
+      "unchanged_state": true
     },
     {
       "label": "neg12-buy-unconfigured",
-      "hash": "0x1a886fa540a3eb4b19ec00f34b3eb1c63fe3353030c932b4779392e554aacab8",
+      "hash": "0xf0eedc00beb51e4ca4b9141b30c3efdd88c07f871657d7bf0791e63c7f703079",
       "result": "error-observed",
-      "expected_error": "EVENT_NOT_CONFIGURED"
+      "expected_error": "EVENT_NOT_CONFIGURED",
+      "unchanged_state": true
     },
     {
       "label": "cfg-e1",
-      "hash": "0xcb5d32d6a90f3080a88ea512089920713132b3cfe57040020c55c7b2b5866f1b",
+      "hash": "0x97d905ba57a05a8956a423f3c2d3a93cb1d8dc363276ec23a1fa5d9c5e6db6a2",
       "result": "ok"
     },
     {
       "label": "cfg-e2",
-      "hash": "0x29b2873d390113ca4af6a5332b938fcd8c1bd0af736c19c0aecbbe9787e07235",
+      "hash": "0x10702fc4590116c23a11f7bd9c226a989eb041c628ca8696ba8054077c2fe281",
       "result": "ok"
     },
     {
       "label": "cfg-e3",
-      "hash": "0x47907daffa2034c6f98c478614ee7a63b9e74f5f2736a94893e11ffefd156ee2",
+      "hash": "0x6b3167ab39b637bedcfd49a712e430e180217c62dfa72e263273b55f791fa95f",
       "result": "ok"
     },
     {
       "label": "cfg-e4",
-      "hash": "0x973624864f342e5b4123cde07e67920af9ec2239f6d6ceedcca8afeeeb419db5",
+      "hash": "0x852fab21584f9426e4f9031706364e8f7f2e0664b362f7985433dac9184f9eb7",
       "result": "ok"
     },
     {
       "label": "t1-buy",
-      "hash": "0x260c8c4a1d625390bd0537f4866542e0201a1ca54222db0a40f09fb893977e65",
+      "hash": "0xbb86bea75542ccaa3310ebd110f58df79028228aad47b16eb57782da4875ecdc",
       "result": "ok"
     },
     {
       "label": "t2-buy",
-      "hash": "0xbba1d461205663b922a7dbc8809e72e9591abfb5c75295c0dcfeba7fa8c0dcf8",
+      "hash": "0x643054d10a1a719de20ea2f31b4c71b3258643b9209d0a789c45868b55da8c60",
       "result": "ok"
     },
     {
       "label": "t3-buy",
-      "hash": "0x849feda3b322e27a0824d35f3c2d58b4f23a7145f129d3e934ddf972b4cc8683",
+      "hash": "0x8c7c489fe4b31d4c3a1800bc7eced530aeae7627bdf575a5f8309d09ae7bcd7b",
       "result": "ok"
     },
     {
       "label": "t4-buy",
-      "hash": "0x23e193fd191b8a443184cb315f434276107b058d2aaba4ca8f8d3f60249a98e7",
+      "hash": "0xbba8227aee85877089a967284e64563163762fe0a0d8e5992cb2d4e1bd4bc63c",
       "result": "ok"
     },
     {
       "label": "t5-buy",
-      "hash": "0xabadcd706340379b64e7c5a9b8715d7e966fef33dedb54e46ce693c00a1e6db8",
+      "hash": "0x44519e3d219934a82538f754f365a4197f08211441662a614451500873914dc9",
       "result": "ok"
     },
     {
       "label": "t6-buy",
-      "hash": "0x8979f6a8ae336297b5cfed7ba0d954fc7a39a18b32a8c12e683b59ea80ac102e",
+      "hash": "0x4cb443c40e215e9445249058bf4d78b73c91bcb202327cb1dbbdae119ccbfcd3",
       "result": "ok"
     },
     {
       "label": "t7-buy",
-      "hash": "0x9f7f698b40efe177f9d448caa8667445759e8ae48cb0b67c30792c12d1a9999e",
+      "hash": "0xa87ba9bb83aec366eb36e85737bec420dd5a80a6d38a9ca7c632ecc134c3ae18",
       "result": "ok"
     },
     {
       "label": "r1-list",
-      "hash": "0xdba993b18c616b410a186d662ecb0a7eacf7719b1ee4896670847db2b0cb5cb4",
+      "hash": "0xd5a5cfbe69eab75f3db43de3e5c6a721749b0c98963321eb28030ec2d7e8dbc8",
       "result": "ok"
     },
     {
       "label": "r1-buy",
-      "hash": "0x0ac4a01b8785e77ab99c82be54e70566e9a20520d308fee5c8fe7ed7ae06ddf9",
+      "hash": "0xa59ef49b3aff4cb32655f6d69bb34d655d20887170d639882973df5d8cb62a40",
       "result": "ok"
     },
     {
       "label": "r2-list",
-      "hash": "0x679979233b09babe02b5b7ff194af81d2028dda2ad8bc9d9bfa116f967ecf46c",
+      "hash": "0xd8f531362f773fceb960895ce6455900be896a8b83bd2589b391052a7e8df362",
       "result": "ok"
     },
     {
       "label": "r2-buy",
-      "hash": "0x993e66767d889962d085d68d642404c9465e9ec1bec07c466982e5258063f251",
+      "hash": "0x69e01c725b4aaafac4ed75d776c45ec991e64ebc7d2d4d0510f066114d36ad93",
       "result": "ok"
     },
     {
       "label": "r3-list",
-      "hash": "0xcf5314f835e06adacf28496a11d62b1c89dbe17ba484e851033abefb2ff4919b",
+      "hash": "0x4e89aa9fcf5a13c4d5443b3b927efeb8b6a76a77d3e145687390091ab7b84a1f",
       "result": "ok"
     },
     {
       "label": "r4-list",
-      "hash": "0x57c99269ec206e503877103292ab411bac44417c7ec271b67808c24f02ad9131",
+      "hash": "0xa915e874c21dd5550b336d0cfe07efac22d5e6d282f4ad19d1596482e2b81ec0",
       "result": "ok"
     },
     {
       "label": "r4-buy",
-      "hash": "0x6504018057c8ca6d0409f1b7a024f1c926a42540f67c63bd41fb22064af745af",
+      "hash": "0x8ba0f550b8b3aa6c99b6fe8e496d07c8564f525f1b2f4371eebad990e3b037f1",
       "result": "ok"
     },
     {
       "label": "neg3-stranger-list",
-      "hash": "0xa3620138e9167e9eab3b1c0421755b3775ea1ce9ef0579c70d588d6eb39e8d9e",
+      "hash": "0x11ed41ed5ef9d4617fe0290ad5b1e7937214c265c9303ac4b15eb26f0bf34f39",
       "result": "error-observed",
-      "expected_error": "NOT_TICKET_OWNER"
+      "expected_error": "NOT_TICKET_OWNER",
+      "unchanged_state": true
     },
     {
       "label": "neg4-over-cap",
-      "hash": "0x51065cc3907b9f699779038ed68e5c027060d24993d0eb4a6a948fa754fe5d65",
+      "hash": "0xfe790dc27602c369462379a82f00e635a14bf710bb8de9e4cadf7a478eda9f21",
       "result": "error-observed",
-      "expected_error": "PRICE_CAP"
+      "expected_error": "PRICE_CAP",
+      "unchanged_state": true
     },
     {
       "label": "neg6-list",
-      "hash": "0x84c261431e47693cd81ae05764a7cb2cd5842f68ea89322d25f6e733e359a92c",
+      "hash": "0x6a80a77f21c264a7e801a9f5b8fbea08420130b0058d19b0c45c00c01d22e859",
       "result": "ok"
     },
     {
       "label": "neg6-self-buy",
-      "hash": "0x25d3dcccfbb0db0392a0540d217b20bed482c7c2b4a3edd89ddd3329ec376172",
+      "hash": "0xe56a205af7d8694026f9c379b902afc0f0a11754ed15cd0fcfd2d3946b004d65",
       "result": "error-observed",
-      "expected_error": "SELF_PURCHASE"
+      "expected_error": "SELF_PURCHASE",
+      "unchanged_state": true
     },
     {
       "label": "neg6-cancel",
-      "hash": "0xb0fef64d512e5d7cef20f09f11a107218133b161706c13369ddc08c84451917f",
+      "hash": "0x8312cc9cf61390b8ab2835af11fa691eb2cabc0ef9aedb64d2b4d27fdf65dfdc",
       "result": "ok"
     },
     {
       "label": "neg5-not-listed",
-      "hash": "0x2f1c47b39d5918d30cca83566e2fb58defeac68b20f49ca74c18b3dac0def877",
+      "hash": "0xa3c0d818f68ffaeec94cd7f4cf2d020562b71f55be5c4732857075dcdc884284",
       "result": "error-observed",
-      "expected_error": "TICKET_NOT_LISTED"
+      "expected_error": "TICKET_NOT_LISTED",
+      "unchanged_state": true
     },
     {
       "label": "neg2-wrong-value",
-      "hash": "0xb72b5a8775f6019815cef93dabf9e7c542c154fb66460a182b6b722ec2663a5c",
+      "hash": "0x1eac6525dc75a351ee40ba83afa727eefd3f588c4611c50a27783446e3e9cb0a",
       "result": "error-observed",
-      "expected_error": "VALUE_MUST_EQUAL_PRICE"
+      "expected_error": "VALUE_MUST_EQUAL_PRICE",
+      "unchanged_state": true
     },
     {
       "label": "neg1-unknown-event",
-      "hash": "0xc297d70258200f151e8ba82d87e0d639348e53901380fe0d3ec8b9a2c95ca97d",
+      "hash": "0x91c1c2f8e76c277450cbde22ecd21f59abbe47fe6c904d0e930f97158882aa12",
       "result": "error-observed",
-      "expected_error": "EVENT_NOT_FOUND"
+      "expected_error": "EVENT_NOT_FOUND",
+      "unchanged_state": true
     },
     {
       "label": "neg13-early-settle-e3",
-      "hash": "0xb262990ada7ba857f8d15d162376e34d59ca1304c6facd1ae6e3f2e0fc568c51",
+      "hash": "0x497b7e2a1acf29b121ccf55a4d925e61fde87037b39e79eb4a6a1241f4b9b33a",
       "result": "error-observed",
-      "expected_error": "TOO_EARLY"
+      "expected_error": "TOO_EARLY",
+      "unchanged_state": true
     },
     {
       "label": "s1-settle-e1",
-      "hash": "0x42939cc58d4dba64156e36ed673cb74b40415687d2b8e6314699dbcf6df1ed4f",
+      "hash": "0xff69bb3abf2a614055c1414aa3a446b5cf8931539aa41b1ef5dde56c45fbe97f",
       "result": "ok",
       "verdict": "EVENT_HELD",
+      "attempts": 1,
       "caller": "OUT"
     },
     {
       "label": "s2-settle-e2",
-      "hash": "0x578f389519ead79f28786c5e783cb34e47dce5688ec39f12b446c7c27163b187",
+      "hash": "0x3b0c4fca922c54592b125ea0f9690f0fb0a53be4e28d92b3c9a737f5371a1031",
       "result": "ok",
       "verdict": "CANCELLED",
+      "attempts": 1,
       "caller": "OUT"
     },
     {
       "label": "s3-settle-e4",
-      "hash": "0xa525b48eae0dee915c5dcb731d747bb4550e581bb2e42660effc18f56f69b703",
+      "hash": "0x67fdca5b94de3ba4ff11ede59503fc9fc6c8a69d3b1fd35a7584b1ae1b000376",
       "result": "ok",
       "verdict": "POSTPONED",
+      "attempts": 1,
       "caller": "OUT"
     },
     {
       "label": "neg18-rsch-stranger",
-      "hash": "0x8a534add11ebbc28cd452cebce6d9483a6bd537526b61e64e8fe94209cd4cd0b",
+      "hash": "0x1951f0ac469c4e544be815cc887ee42ec3b80cffff103ec063b00d3dc6748be2",
       "result": "error-observed",
-      "expected_error": "NOT_CREATOR"
+      "expected_error": "NOT_CREATOR",
+      "unchanged_state": true
     },
     {
       "label": "neg19-rsch-onsale",
-      "hash": "0x340c12dda3cd8a41dd74e6adf59a854752b7790824b232adeebde303678bc945",
+      "hash": "0x2183b47ddb014e331038d3c01f5752982ed82837cc7ee4835600b2f6a8bdd5b6",
       "result": "error-observed",
-      "expected_error": "NOT_POSTPONED"
+      "expected_error": "NOT_POSTPONED",
+      "unchanged_state": true
     },
     {
       "label": "neg20-rsch-earlier",
-      "hash": "0x0e76c594cc3cf77e4e5500ccd235d0d9e4cd578bbca9a5a1cec3a86e89e50b28",
+      "hash": "0x667241f213f75e8c05a88238e87dc6218a15e7a52b02e1b9245d0d1f59fd4e95",
       "result": "error-observed",
-      "expected_error": "DATE_NOT_LATER"
+      "expected_error": "DATE_NOT_LATER",
+      "unchanged_state": true
     },
     {
       "label": "neg21-rsch-settled-e1",
-      "hash": "0xa57d5899465f3c8214aa46087c6e764ffbf07d0d4f813aba4034f2778b8b56a6",
+      "hash": "0x4306e58ca0fc068a8099ebd568902b28fe99263a191e91ed1c8e410172a3bc5c",
       "result": "error-observed",
       "expected_error": "NOT_POSTPONED",
       "unchanged_state": true
     },
     {
       "label": "neg22-rsch-settled-e2",
-      "hash": "0xee9bfa8e203ee278d0630c7c10edda46204722c29ba9ff468e60e7cfff6a62d3",
+      "hash": "0x70fb16f00866bfea5e9f64602206fc37c0eb3130ab6336cb57506593132366a3",
       "result": "error-observed",
       "expected_error": "NOT_POSTPONED",
       "unchanged_state": true
     },
     {
       "label": "neg23-rsch-bad-settle",
-      "hash": "0x64ac2d8a512f9de490799a251db572a2f0e1e78a5f74ed0fc1cced16f2c7afca",
+      "hash": "0x272cbed666afb38667f3b2397802f5d28b42500eefbfaa1289489cbeb8e79d9f",
       "result": "error-observed",
       "expected_error": "BAD_SETTLE_AFTER_TS",
       "unchanged_state": true
     },
     {
       "label": "rsch1",
-      "hash": "0x3d55afee63ffb17f4cd35e7d578539c2e23eabdc14080ad6b67d5d430c9364ee",
+      "hash": "0x40c98798bf0029263433ae33e5f9837c0276f250ceeecfd8d222ee0740582f7a",
       "result": "ok",
       "new_date": "2027-01-16",
       "new_settle_after_ts": 1800165600
     },
     {
       "label": "rsch2",
-      "hash": "0x6542fa8d9cf45d677b556266d70ecb0383e0c4a80fead7593a4cf3c597126354",
+      "hash": "0x1f10f32f303c816f13acab555d65cce6e9e03093349996d21f88863ab3e02728",
       "result": "ok",
       "new_date": "2027-02-20",
       "new_settle_after_ts": 1803189600
     },
     {
       "label": "neg17-settle-after-rsch",
-      "hash": "0x3e263e84c12c21e10fdd364dc3cedb5568ec45e0b9ce5e1735867ec121761915",
+      "hash": "0xca5362ba89611a59ab54789f90430aabb4cfeadc19c385b821c049332b3f813e",
       "result": "error-observed",
       "expected_error": "TOO_EARLY",
       "unchanged_state": true
     },
     {
       "label": "neg9-double-settle",
-      "hash": "0x4bb32c5ccd59b88a69c75b38b642ed35114f3647940b2d46dd4f2b38a014612e",
+      "hash": "0x71e8ab24477568d40a90799dcb1add9b40c0f15c1b0fe73600f8bf82c84d20a4",
       "result": "error-observed",
       "expected_error": "EVENT_ALREADY_SETTLED",
       "unchanged_state": true
     },
     {
       "label": "neg11-buy-held",
-      "hash": "0x5d1b20664b8a877a13626490adc8c0a17a4662e09d3dc80e023a19f8d48c02dc",
+      "hash": "0xa48d1382cfdb489fd0e2e3ee48fdc25ae161c7c43cc2669b34c9a96127adb069",
       "result": "error-observed",
       "expected_error": "EVENT_NOT_ON_SALE",
       "unchanged_state": true
     },
     {
       "label": "neg10-list-refunded",
-      "hash": "0xe8a4abc0ca18eacecb5e03c644c42a79dcafcc7a1ddc883903c185b988f28bc9",
+      "hash": "0x72cd524559b0ee38205d4053db836f91c2b429b1a19b68881dc5e827a24c81d7",
       "result": "error-observed",
       "expected_error": "TICKET_NOT_ACTIVE",
       "unchanged_state": true
     },
     {
       "label": "neg7-stranger-withdraw",
-      "hash": "0xba72d72a8fc962fcbd8ced6f1f7659a1224cd4d124e49f6648095c0e46dd7c25",
+      "hash": "0xb6670e08a728fc512e367b8649592f78c80691b3b1b898e279137b5e3791196b",
       "result": "error-observed",
       "expected_error": "NO_CREDIT",
       "unchanged_state": true
     },
     {
       "label": "w-org",
-      "hash": "0x265316e881585c01fad78f81d8c0a4a7b51e8fe561ca0b89613b727236ac30ec",
+      "hash": "0xd0de1b675b534f2a33622280dca3b7b3a918005236691e5654da4b6dd5d2f845",
       "result": "ok",
       "withdrawn_wei": 20000000000000000000
     },
     {
       "label": "w-art",
-      "hash": "0x566507291ee5f32d545d5b0f61b2429ab6ab4cee6d7c9f4ed28c12e95b2972e1",
+      "hash": "0xa5448a6b8cc904ab6be5516725719a1a7fd2f60246e24075bf7e85f387354ea8",
       "result": "ok",
       "withdrawn_wei": 3200000000000000000
     },
     {
       "label": "w-b1",
-      "hash": "0x4f17555d1f7cee481ea9aba6a616591ba056e6e7a29292de606091f8764f9400",
+      "hash": "0xc5c99e58e16f74e1499e8d3cde17be8b4cf577062f8d32585057b3678c9d4709",
       "result": "ok",
       "withdrawn_wei": 29800000000000000000
     },
     {
       "label": "w-b2",
-      "hash": "0x60134cb15653f7a1ce2d568691c7292f0352050543d838100b1c4d969f5f24f8",
+      "hash": "0xc1f31f97f15f55f0a7c031f4d0a638e77922bd977823a3d1a3313cefb60a476c",
       "result": "ok",
       "withdrawn_wei": 19000000000000000000
     },
     {
       "label": "neg8-double-withdraw",
-      "hash": "0xe391e084538b45f70f86dbea0254e19539e78532eebc31083499a7ad544e0b67",
+      "hash": "0x2ece2c20f4293ffe4af3b21d7f7dc0719645d40263663b7f8de5e55ef5e3b0af",
       "result": "error-observed",
       "expected_error": "NO_CREDIT",
       "unchanged_state": true

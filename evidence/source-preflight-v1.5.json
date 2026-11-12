@@ -1,0 +1,69 @@
+{
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "scope": "No-escrow diagnostic; not product settlement acceptance",
+  "diagnostic_contract": "0x77a5067329d295865c5Fe5a759f598bcfA45A3aD",
+  "deploy_tx": "0x9ee3421bf3f5efc6cacd1ef2ef3eb527fa79acaa58553240994fd3d0634914f2",
+  "observations": [
+    {
+      "url": "https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html",
+      "tx": "0xac1e5e80f772c0a26a30933b25c034d58086039731cc8b03f5f44c33fdf66d4c",
+      "status": 200,
+      "flags": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "response_chars": 334307
+    }
+  ],
+  "other_source_batch": {
+    "diagnostic_contract": "0xd585dD987a41F953eA4FB05265d3618c4DB46af8",
+    "deploy_tx": "0xd886399cf25f1c674bdb01466c4986c44aeac8767265b9a6ca440d5d2908ce51",
+    "tx": "0x6a8ae640094f74f0e15cdef44a219cdb96cbdb068227a4d3d88ae2b83e94c7f5",
+    "observations": [
+      {
+        "cancel": true,
+        "held": false,
+        "identity": true,
+        "label": "E2a",
+        "ok": true,
+        "postpone": false
+      },
+      {
+        "cancel": false,
+        "held": false,
+        "identity": false,
+        "label": "E2b",
+        "ok": false,
+        "postpone": false
+      },
+      {
+        "cancel": false,
+        "held": false,
+        "identity": true,
+        "label": "E4a",
+        "ok": true,
+        "postpone": true
+      },
+      {
+        "cancel": false,
+        "held": false,
+        "identity": true,
+        "label": "E4b",
+        "ok": true,
+        "postpone": true
+      }
+    ],
+    "interpretation": "E2b JamBase was unavailable; no product deployment has been accepted using this preflight."
+  },
+  "replacement_E2b": {
+    "url": "https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets",
+    "diagnostic_contract": "0x650AE3f59F54979cf850E7E2C5ab01aeA88088e5",
+    "tx": "0x1dcbc140aa6f252fbdd63f521af93bb04fa44653472af131d706d9cf4bd3c804",
+    "http_status": 200,
+    "response_chars": 62654,
+    "note": "The generic diagnostic used fixed Oasis/Wembley tokens; its identity flags do not describe E2. A local scan of its captured visible text with Metro Boomin/Bridgestone tokens returned cancel=true, postpone=false, identity=true, held=false. The original do615 URL also has historical V1.3 settlement evidence. This is preflight, not a V1.5 product settlement."
+  }
+}

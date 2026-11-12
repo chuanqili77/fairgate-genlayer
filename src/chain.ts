@@ -4,8 +4,8 @@
 // A payable write (buy_ticket / buy_resale) with a temporary account
 // requires the key-backup acknowledgement first: the key must be saved
 // before any escrowed funds can depend on it (see App.tsx). No private
-// keys are ever written to disk or sent anywhere; the temp key lives in
-// this tab's sessionStorage only.
+// keys are uploaded by the app. The temp key lives in this tab's
+// sessionStorage; an explicit backup download saves a local JSON file.
 import { createClient, createAccount, generatePrivateKey } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
@@ -72,8 +72,7 @@ export interface Counts {
 // viem@x.y.z" is viem's error footer, NOT a version probe. A hung RPC
 // fetch throws nothing, so every read is raced against a 30s timeout
 // and the whole read is retried up to 3 times; a hung read fails fast
-// instead of stalling the page (a real-browser first load once stalled
-// 7+ minutes on a sibling project before this timeout existed).
+// instead of letting a hung RPC read block the page indefinitely.
 const withTimeout = <T,>(p: Promise<T>, ms: number, what: string): Promise<T> =>
   Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error('READ_TIMEOUT: ' + what)), ms))]);
 export async function readAll(): Promise<{ events: EventRec[]; tickets: TicketRec[]; counts: Counts; is_finalized_readback: boolean; at: string }> {
@@ -136,20 +135,20 @@ export function clearPendingTx(hash: string) {
 // here leaves the browser.
 export interface MyTx { hash: string; label: string; savedAt: string; result: string }
 const myTxsKey = () => scopedKey('fairgate-my-txs');
-export function saveMyTx(hash: string, label: string) {
+export function saveMyTx(hash: string, label: string, result?: string) {
   try {
     const list: MyTx[] = JSON.parse(localStorage.getItem(myTxsKey()) || '[]');
     const at = new Date().toISOString();
     const i = list.findIndex((p) => p.hash === hash);
-    if (i >= 0) list[i] = { hash, label, savedAt: list[i].savedAt || at, result: list[i].result || 'ok' };
-    else list.push({ hash, label, savedAt: at, result: 'ok' });
+    if (i >= 0) list[i] = { hash, label, savedAt: list[i].savedAt || at, result: result ?? list[i].result ?? 'pending' };
+    else list.push({ hash, label, savedAt: at, result: result ?? 'pending' });
     localStorage.setItem(myTxsKey(), JSON.stringify(list.slice(-200)));
   } catch { /* storage unavailable: hash is still shown on screen */ }
 }
 export function loadMyTxs(): MyTx[] {
   try {
     return (JSON.parse(localStorage.getItem(myTxsKey()) || '[]') as MyTx[])
-      .map((m) => ({ ...m, result: m.result || 'ok' }));
+      .map((m) => ({ ...m, result: m.result || 'unknown' }));
   } catch { return []; }
 }
 
@@ -174,6 +173,15 @@ export function leaderReceipt(tx: any) {
   return r || null;
 }
 export function leaderExecution(tx: any) { return leaderReceipt(tx)?.execution_result || null; }
+export function leaderReturn(tx: any): any {
+  let value = leaderReceipt(tx)?.result?.payload;
+  if (value && typeof value === 'object' && typeof value.readable === 'string') value = value.readable;
+  for (let i = 0; i < 3 && typeof value === 'string'; i++) {
+    try { value = JSON.parse(value); } catch { break; }
+  }
+  return value && typeof value === 'object' ? value : null;
+}
+
 export function leaderPayload(tx: any) {
   const r = leaderReceipt(tx);
   if (!r) return '';
@@ -284,6 +292,10 @@ export function destroyTemporaryAccount() {
 export async function sendWriteOnly(wallet: Wallet, functionName: string, args: any[], value = 0n) {
   if (!wallet?.client) throw new Error('NO_SIGNER');
   await ensureInjectedChain(wallet);
+  if (functionName !== 'withdraw') {
+    const protocol = await reader.readContract({address: contractAddress() as `0x${string}`, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final' as any});
+    if (protocol !== 'fairgate-1.5') throw new Error('DEPLOYMENT_UPDATE_REQUIRED: fairgate-1.5 required before new sales or settlement; existing withdrawals remain available.');
+  }
   const hash = await wallet.client.writeContract({ address: contractAddress() as `0x${string}`, functionName, args, value, leaderOnly: false });
   return hash as string;
 }

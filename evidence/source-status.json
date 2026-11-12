@@ -1,0 +1,9 @@
+{
+  "protocol": "fairgate-1.5",
+  "source_file": "contracts/fairgate.py",
+  "source_sha256": "bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991",
+  "deployed": true,
+  "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
+  "deploy_tx": "0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6",
+  "byte_parity": true
+}

@@ -22,11 +22,13 @@ const RPC_URL = 'https://studio.genlayer.com/api';
 const CHAIN_ID = 61999;
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const reader = createClient({chain: studionet});
-const deployment = JSON.parse(fs.readFileSync(path.join(REPO, 'evidence', 'deployment.json'), 'utf8'));
-const txs = JSON.parse(fs.readFileSync(path.join(REPO, 'evidence', 'transactions.json'), 'utf8'));
+const historical = process.argv.includes('--historical-v13');
+const evidenceDir = historical ? 'evidence/v1.3' : 'evidence';
+const deployment = JSON.parse(fs.readFileSync(path.join(REPO, evidenceDir, 'deployment.json'), 'utf8'));
+const txs = JSON.parse(fs.readFileSync(path.join(REPO, evidenceDir, 'transactions.json'), 'utf8'));
 let browser = null;
 try {
-  browser = JSON.parse(fs.readFileSync(path.join(REPO, 'docs', 'browser-transactions.json'), 'utf8'));
+  browser = JSON.parse(fs.readFileSync(path.join(REPO, historical ? evidenceDir : 'docs', 'browser-transactions.json'), 'utf8'));
 } catch { browser = null; }
 const browserTxs = Array.isArray(browser?.transactions) ? browser.transactions : [];
 const ADDRESS = deployment.contract_address;
@@ -47,12 +49,29 @@ function leaderReceipt(tx) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // 1. Byte parity: deployed code == repo source, byte for byte.
-const source = fs.readFileSync(path.join(REPO, 'contracts', 'fairgate.py'), 'utf8');
+const source = fs.readFileSync(path.join(REPO, historical ? evidenceDir : 'contracts', 'fairgate.py'), 'utf8');
+if (!historical && sha(source) !== deployment.source_sha256) throw new Error('SOURCE_NOT_DEPLOYED: current V1.5 source requires a fresh deployment and evidence. Use --historical-v13 only to audit the archived V1.3 deployment.');
+if (historical) console.log('HISTORICAL V1.3 ONLY: these receipts do not verify V1.5 release safety.');
+if (!historical && txs.complete !== true) throw new Error('INCOMPLETE_EVIDENCE: full V1.5 regression has not completed');
 const onChain = await reader.getContractCode(ADDRESS);
 ok('byte parity (deployed code == repo source)', onChain === source);
 ok('source sha matches deployment.json', sha(source) === deployment.source_sha256);
 ok('deploy tx recorded', typeof txs.deploy_tx === 'string' && txs.deploy_tx.startsWith('0x'));
 ok('evidence file names the deployed contract', txs.contract_address === ADDRESS, String(txs.contract_address));
+
+ok('chain id is Stable Studionet 61999', await reader.getChainId() === CHAIN_ID);
+const deployReceipt = await reader.getTransaction({hash: deployment.deploy_tx});
+ok('deployment FINALIZED+AGREE+SUCCESS', [7, 'FINALIZED'].includes(deployReceipt.status)
+  && [6, 'MAJORITY_AGREE'].includes(deployReceipt.result)
+  && leaderReceipt(deployReceipt)?.execution_result === 'SUCCESS');
+function decodedReturn(leader) {
+  let value = leader?.result?.payload;
+  if (value && typeof value === 'object' && typeof value.readable === 'string') value = value.readable;
+  for (let i = 0; i < 3 && typeof value === 'string'; i++) {
+    try { value = JSON.parse(value); } catch { break; }
+  }
+  return value;
+}
 
 // 2. Every recorded transaction, re-read live (scripted + browser).
 const EXPECTED_ERROR = {
@@ -98,20 +117,34 @@ async function checkTxRecord(rec, kind) {
   const finalized = [7, 'FINALIZED'].includes(tx.status);
   const agreed = [6, 'MAJORITY_AGREE'].includes(tx.result);
   const leader = leaderReceipt(tx);
+  const target = String(tx.to_address || tx.to || tx.transaction?.to_address || tx.transaction?.to || '').toLowerCase();
+  ok(`tx ${rec.label} (${kind}) targets this deployment`, target === ADDRESS.toLowerCase(), target);
   if (rec.result === 'ok') {
     ok(`tx ${rec.label} (${kind}) FINALIZED+AGREE+SUCCESS`, finalized && agreed && leader?.execution_result === 'SUCCESS',
       `status=${tx.status} result=${tx.result} leader=${leader?.execution_result}`);
     if (EXPECTED_VERDICT[rec.label]) {
       ok(`tx ${rec.label} verdict recorded as ${EXPECTED_VERDICT[rec.label]}`, rec.verdict === EXPECTED_VERDICT[rec.label], `recorded verdict=${rec.verdict}`);
+      if (!historical) {
+        const result = decodedReturn(leader);
+        ok(`tx ${rec.label} actual returned verdict matches`, result?.verdict === EXPECTED_VERDICT[rec.label], JSON.stringify(result));
+        ok(`tx ${rec.label} independently fetched both identified sources`, result?.fetch_a_ok === true && result?.fetch_b_ok === true && result?.identity_a === true && result?.identity_b === true);
+        if (rec.label === 's1-settle-e1') ok('positive held evidence from both sources', result?.held_a === true && result?.held_b === true && !result.cancel_a && !result.cancel_b && !result.postpone_a && !result.postpone_b);
+      }
     }
   } else if (rec.result === 'error-observed') {
     const payload = leader?.result?.payload || '';
     ok(`tx ${rec.label} (${kind}) FINALIZED+AGREE+ERROR with exact payload ${EXPECTED_ERROR[rec.label]}`,
       finalized && agreed && leader?.execution_result === 'ERROR' && payload === EXPECTED_ERROR[rec.label],
       `status=${tx.status} result=${tx.result} leader=${leader?.execution_result} payload=${payload}`);
+  } else if (rec.result === 'fail-closed') {
+    const value = decodedReturn(leader);
+    if (finalized && agreed && leader?.execution_result === 'SUCCESS' && value?.changed === false
+        && ['UNREACHABLE', 'SOURCES_DISAGREE'].includes(value.verdict) && value.verdict === rec.verdict) {
+      console.log(`INFO tx ${rec.label}: finalized fail-closed ${value.verdict}, not a successful settlement`);
+    } else ok(`tx ${rec.label} actual fail-closed receipt`, false, JSON.stringify(value));
   } else if (rec.result === 'disagreed-retry') {
-    ok(`tx ${rec.label} (${kind}) is a recorded MAJORITY_DISAGREE retry (fail-closed, not a pass)`,
-      [5, 'MAJORITY_DISAGREE'].includes(tx.result));
+    if (finalized && [5, 'MAJORITY_DISAGREE'].includes(tx.result)) console.log(`INFO tx ${rec.label} is a finalized disagreement, not counted as a business PASS`);
+    else ok(`tx ${rec.label} disagreement receipt`, false);
   } else {
     ok(`tx ${rec.label} (${kind}) has a known result kind`, false, rec.result);
   }
@@ -145,17 +178,17 @@ ok('E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, se
   && e4.event_start_ts === 1803175200 && e4.settle_after_ts === 1803189600 && e4.tz_offset_min === -360
   && e4.date_iso === '2027-02-20', JSON.stringify(e4));
 ok('E1 anchors are the probe-verified URLs',
-  e1.source_a_url === 'http://www.wembleystadium.com/events/2025/OASIS'
-  && e1.source_b_url === 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/', JSON.stringify(e1));
+  e1.source_a_url === (historical ? 'http://www.wembleystadium.com/events/2025/OASIS' : 'https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/')
+  && e1.source_b_url === (historical ? 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/' : 'https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html'), JSON.stringify(e1));
 ok('E2 anchors are the probe-verified URLs',
   e2.source_a_url === 'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour'
-  && e2.source_b_url === 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets', JSON.stringify(e2));
+  && e2.source_b_url === (historical ? 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets' : 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets'), JSON.stringify(e2));
 ok('E3 anchors are the probe-verified URLs',
   e3.source_a_url === 'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour'
   && e3.source_b_url === 'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets', JSON.stringify(e3));
 ok('E4 anchors are the probe-verified URLs',
   e4.source_a_url === 'https://www.targetcenter.com/events/detail/katseye'
-  && e4.source_b_url === 'https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm', JSON.stringify(e4));
+  && e4.source_b_url === (historical ? 'https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm' : 'https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/'), JSON.stringify(e4));
 ok('E1 identity tokens are oasis + wembley', e1.id_a === 'oasis' && e1.id_b === 'wembley', JSON.stringify(e1));
 ok('E2 identity tokens are metro boomin + bridgestone', e2.id_a === 'metro boomin' && e2.id_b === 'bridgestone', JSON.stringify(e2));
 ok('E3 identity tokens are pentatonix + bridgestone', e3.id_a === 'pentatonix' && e3.id_b === 'bridgestone', JSON.stringify(e3));
@@ -211,7 +244,7 @@ if (browserTxs.length === 0) {
     && counts.total_royalties_wei === 4300000000000000000
     && counts.total_resale_volume_wei === 43000000000000000000, JSON.stringify(counts));
 }
-ok('protocol is fairgate-1.3', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1.3');
+ok('protocol matches evidence scope', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === (historical ? 'fairgate-1.3' : 'fairgate-1.5'));
 
 console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} scripted txs + ${browserTxs.length} browser txs checked`);
 if (fail > 0) { console.log('failures:', failures.join(', ')); process.exit(1); }

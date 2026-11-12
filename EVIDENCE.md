@@ -1,235 +1,93 @@
-# FairGate — Evidence
+# FairGate V1.5 — reproducible evidence
 
-- Contract: [0x8883831222208CcbAf34DAcb8ac08f167edA6c6C](https://explorer-studio.genlayer.com/address/0x8883831222208CcbAf34DAcb8ac08f167edA6c6C)
-- Deploy tx: [0xaaf1e0d5…](https://explorer-studio.genlayer.com/tx/0xaaf1e0d5764a083372676cc667eb89bc8ddefa8cd624a80866ab597841e7ef3b)
-- Source SHA-256: `dfca9b07359070883cf592df0b451dd8f7f4c37ea426760f50a2d0591c8775c5` (41041 bytes, `contracts/fairgate.py`)
-- Network: GenLayer Stable Studionet (chain 61999)
-- Independent verification: `node scripts/verify_evidence.mjs` — PASS (see output below)
-- Mock tests: `python3 tests/test_fairgate_mock.py` — all pass
+- Contract: 0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE
+- Deployment transaction: [0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6](https://explorer-studio.genlayer.com/tx/0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6)
+- Canonical source SHA-256: bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991 (38397 bytes)
+- Network: Stable Studionet, 61999
+- Independent live verification: 152 PASS, 0 FAIL
+- Latest-final observation: 2026-11-12T19:23:17.121Z
 
-## Evidence transactions (53)
+Deployment and successful transaction checks require FINALIZED + MAJORITY_AGREE + leader SUCCESS. Negative calls require finalized majority agreement, the exact leader ERROR and unchanged state. Disagreement attempts are retained separately and are not business passes.
 
-| # | Step | Transaction | Result |
-|---|------|-------------|--------|
-| 1 | neg0-not-creator | [0x150156b1…](https://explorer-studio.genlayer.com/tx/0x150156b116e65a728c55d6a15553cfe9256ab5128f614374690ebe39686fec96) | error-observed |
-| 2 | neg14-bad-address | [0x3d2f16f5…](https://explorer-studio.genlayer.com/tx/0x3d2f16f5de7434f918d6978036db650d87f53aed2fd32e5b0ee9d67e70a7f774) | error-observed |
-| 3 | neg15-bad-settle-after | [0xc16ddabb…](https://explorer-studio.genlayer.com/tx/0xc16ddabb2dca9e86b1771f6a2e72ec8d1c72ef9e5efdac8863d22b0729a9a63d) | error-observed |
-| 4 | neg16-bad-tz-offset | [0xd712503d…](https://explorer-studio.genlayer.com/tx/0xd712503d21baba85673df0d89001f294551fa11fd074544203d51e349063ffb3) | error-observed |
-| 5 | neg12-buy-unconfigured | [0x1a886fa5…](https://explorer-studio.genlayer.com/tx/0x1a886fa540a3eb4b19ec00f34b3eb1c63fe3353030c932b4779392e554aacab8) | error-observed |
-| 6 | cfg-e1 | [0xcb5d32d6…](https://explorer-studio.genlayer.com/tx/0xcb5d32d6a90f3080a88ea512089920713132b3cfe57040020c55c7b2b5866f1b) | ok |
-| 7 | cfg-e2 | [0x29b2873d…](https://explorer-studio.genlayer.com/tx/0x29b2873d390113ca4af6a5332b938fcd8c1bd0af736c19c0aecbbe9787e07235) | ok |
-| 8 | cfg-e3 | [0x47907daf…](https://explorer-studio.genlayer.com/tx/0x47907daffa2034c6f98c478614ee7a63b9e74f5f2736a94893e11ffefd156ee2) | ok |
-| 9 | cfg-e4 | [0x97362486…](https://explorer-studio.genlayer.com/tx/0x973624864f342e5b4123cde07e67920af9ec2239f6d6ceedcca8afeeeb419db5) | ok |
-| 10 | t1-buy | [0x260c8c4a…](https://explorer-studio.genlayer.com/tx/0x260c8c4a1d625390bd0537f4866542e0201a1ca54222db0a40f09fb893977e65) | ok |
-| 11 | t2-buy | [0xbba1d461…](https://explorer-studio.genlayer.com/tx/0xbba1d461205663b922a7dbc8809e72e9591abfb5c75295c0dcfeba7fa8c0dcf8) | ok |
-| 12 | t3-buy | [0x849feda3…](https://explorer-studio.genlayer.com/tx/0x849feda3b322e27a0824d35f3c2d58b4f23a7145f129d3e934ddf972b4cc8683) | ok |
-| 13 | t4-buy | [0x23e193fd…](https://explorer-studio.genlayer.com/tx/0x23e193fd191b8a443184cb315f434276107b058d2aaba4ca8f8d3f60249a98e7) | ok |
-| 14 | t5-buy | [0xabadcd70…](https://explorer-studio.genlayer.com/tx/0xabadcd706340379b64e7c5a9b8715d7e966fef33dedb54e46ce693c00a1e6db8) | ok |
-| 15 | t6-buy | [0x8979f6a8…](https://explorer-studio.genlayer.com/tx/0x8979f6a8ae336297b5cfed7ba0d954fc7a39a18b32a8c12e683b59ea80ac102e) | ok |
-| 16 | t7-buy | [0x9f7f698b…](https://explorer-studio.genlayer.com/tx/0x9f7f698b40efe177f9d448caa8667445759e8ae48cb0b67c30792c12d1a9999e) | ok |
-| 17 | r1-list | [0xdba993b1…](https://explorer-studio.genlayer.com/tx/0xdba993b18c616b410a186d662ecb0a7eacf7719b1ee4896670847db2b0cb5cb4) | ok |
-| 18 | r1-buy | [0x0ac4a01b…](https://explorer-studio.genlayer.com/tx/0x0ac4a01b8785e77ab99c82be54e70566e9a20520d308fee5c8fe7ed7ae06ddf9) | ok |
-| 19 | r2-list | [0x67997923…](https://explorer-studio.genlayer.com/tx/0x679979233b09babe02b5b7ff194af81d2028dda2ad8bc9d9bfa116f967ecf46c) | ok |
-| 20 | r2-buy | [0x993e6676…](https://explorer-studio.genlayer.com/tx/0x993e66767d889962d085d68d642404c9465e9ec1bec07c466982e5258063f251) | ok |
-| 21 | r3-list | [0xcf5314f8…](https://explorer-studio.genlayer.com/tx/0xcf5314f835e06adacf28496a11d62b1c89dbe17ba484e851033abefb2ff4919b) | ok |
-| 22 | r4-list | [0x57c99269…](https://explorer-studio.genlayer.com/tx/0x57c99269ec206e503877103292ab411bac44417c7ec271b67808c24f02ad9131) | ok |
-| 23 | r4-buy | [0x65040180…](https://explorer-studio.genlayer.com/tx/0x6504018057c8ca6d0409f1b7a024f1c926a42540f67c63bd41fb22064af745af) | ok |
-| 24 | neg3-stranger-list | [0xa3620138…](https://explorer-studio.genlayer.com/tx/0xa3620138e9167e9eab3b1c0421755b3775ea1ce9ef0579c70d588d6eb39e8d9e) | error-observed |
-| 25 | neg4-over-cap | [0x51065cc3…](https://explorer-studio.genlayer.com/tx/0x51065cc3907b9f699779038ed68e5c027060d24993d0eb4a6a948fa754fe5d65) | error-observed |
-| 26 | neg6-list | [0x84c26143…](https://explorer-studio.genlayer.com/tx/0x84c261431e47693cd81ae05764a7cb2cd5842f68ea89322d25f6e733e359a92c) | ok |
-| 27 | neg6-self-buy | [0x25d3dccc…](https://explorer-studio.genlayer.com/tx/0x25d3dcccfbb0db0392a0540d217b20bed482c7c2b4a3edd89ddd3329ec376172) | error-observed |
-| 28 | neg6-cancel | [0xb0fef64d…](https://explorer-studio.genlayer.com/tx/0xb0fef64d512e5d7cef20f09f11a107218133b161706c13369ddc08c84451917f) | ok |
-| 29 | neg5-not-listed | [0x2f1c47b3…](https://explorer-studio.genlayer.com/tx/0x2f1c47b39d5918d30cca83566e2fb58defeac68b20f49ca74c18b3dac0def877) | error-observed |
-| 30 | neg2-wrong-value | [0xb72b5a87…](https://explorer-studio.genlayer.com/tx/0xb72b5a8775f6019815cef93dabf9e7c542c154fb66460a182b6b722ec2663a5c) | error-observed |
-| 31 | neg1-unknown-event | [0xc297d702…](https://explorer-studio.genlayer.com/tx/0xc297d70258200f151e8ba82d87e0d639348e53901380fe0d3ec8b9a2c95ca97d) | error-observed |
-| 32 | neg13-early-settle-e3 | [0xb262990a…](https://explorer-studio.genlayer.com/tx/0xb262990ada7ba857f8d15d162376e34d59ca1304c6facd1ae6e3f2e0fc568c51) | error-observed |
-| 33 | s1-settle-e1 | [0x42939cc5…](https://explorer-studio.genlayer.com/tx/0x42939cc58d4dba64156e36ed673cb74b40415687d2b8e6314699dbcf6df1ed4f) | ok |
-| 34 | s2-settle-e2 | [0x578f3895…](https://explorer-studio.genlayer.com/tx/0x578f389519ead79f28786c5e783cb34e47dce5688ec39f12b446c7c27163b187) | ok |
-| 35 | s3-settle-e4 | [0xa525b48e…](https://explorer-studio.genlayer.com/tx/0xa525b48eae0dee915c5dcb731d747bb4550e581bb2e42660effc18f56f69b703) | ok |
-| 36 | neg18-rsch-stranger | [0x8a534add…](https://explorer-studio.genlayer.com/tx/0x8a534add11ebbc28cd452cebce6d9483a6bd537526b61e64e8fe94209cd4cd0b) | error-observed |
-| 37 | neg19-rsch-onsale | [0x340c12dd…](https://explorer-studio.genlayer.com/tx/0x340c12dda3cd8a41dd74e6adf59a854752b7790824b232adeebde303678bc945) | error-observed |
-| 38 | neg20-rsch-earlier | [0x0e76c594…](https://explorer-studio.genlayer.com/tx/0x0e76c594cc3cf77e4e5500ccd235d0d9e4cd578bbca9a5a1cec3a86e89e50b28) | error-observed |
-| 39 | neg21-rsch-settled-e1 | [0xa57d5899…](https://explorer-studio.genlayer.com/tx/0xa57d5899465f3c8214aa46087c6e764ffbf07d0d4f813aba4034f2778b8b56a6) | error-observed |
-| 40 | neg22-rsch-settled-e2 | [0xee9bfa8e…](https://explorer-studio.genlayer.com/tx/0xee9bfa8e203ee278d0630c7c10edda46204722c29ba9ff468e60e7cfff6a62d3) | error-observed |
-| 41 | neg23-rsch-bad-settle | [0x64ac2d8a…](https://explorer-studio.genlayer.com/tx/0x64ac2d8a512f9de490799a251db572a2f0e1e78a5f74ed0fc1cced16f2c7afca) | error-observed |
-| 42 | rsch1 | [0x3d55afee…](https://explorer-studio.genlayer.com/tx/0x3d55afee63ffb17f4cd35e7d578539c2e23eabdc14080ad6b67d5d430c9364ee) | ok |
-| 43 | rsch2 | [0x6542fa8d…](https://explorer-studio.genlayer.com/tx/0x6542fa8d9cf45d677b556266d70ecb0383e0c4a80fead7593a4cf3c597126354) | ok |
-| 44 | neg17-settle-after-rsch | [0x3e263e84…](https://explorer-studio.genlayer.com/tx/0x3e263e84c12c21e10fdd364dc3cedb5568ec45e0b9ce5e1735867ec121761915) | error-observed |
-| 45 | neg9-double-settle | [0x4bb32c5c…](https://explorer-studio.genlayer.com/tx/0x4bb32c5ccd59b88a69c75b38b642ed35114f3647940b2d46dd4f2b38a014612e) | error-observed |
-| 46 | neg11-buy-held | [0x5d1b2066…](https://explorer-studio.genlayer.com/tx/0x5d1b20664b8a877a13626490adc8c0a17a4662e09d3dc80e023a19f8d48c02dc) | error-observed |
-| 47 | neg10-list-refunded | [0xe8a4abc0…](https://explorer-studio.genlayer.com/tx/0xe8a4abc0ca18eacecb5e03c644c42a79dcafcc7a1ddc883903c185b988f28bc9) | error-observed |
-| 48 | neg7-stranger-withdraw | [0xba72d72a…](https://explorer-studio.genlayer.com/tx/0xba72d72a8fc962fcbd8ced6f1f7659a1224cd4d124e49f6648095c0e46dd7c25) | error-observed |
-| 49 | w-org | [0x265316e8…](https://explorer-studio.genlayer.com/tx/0x265316e881585c01fad78f81d8c0a4a7b51e8fe561ca0b89613b727236ac30ec) | ok |
-| 50 | w-art | [0x56650729…](https://explorer-studio.genlayer.com/tx/0x566507291ee5f32d545d5b0f61b2429ab6ab4cee6d7c9f4ed28c12e95b2972e1) | ok |
-| 51 | w-b1 | [0x4f17555d…](https://explorer-studio.genlayer.com/tx/0x4f17555d1f7cee481ea9aba6a616591ba056e6e7a29292de606091f8764f9400) | ok |
-| 52 | w-b2 | [0x60134cb1…](https://explorer-studio.genlayer.com/tx/0x60134cb15653f7a1ce2d568691c7292f0352050543d838100b1c4d969f5f24f8) | ok |
-| 53 | neg8-double-withdraw | [0xe391e084…](https://explorer-studio.genlayer.com/tx/0xe391e084538b45f70f86dbea0254e19539e78532eebc31083499a7ad544e0b67) | error-observed |
+## Mechanism
 
-## Final ledger (pre-registered in EXPECTED.md, confirmed by verify_evidence.mjs)
+EVENT_HELD needs positive dated evidence from both independently fetched fixed sources. Silence on cancellation is insufficient. Each validator reproduces the verdict and all fetch, identity, status and held flags. The supported positive records are dated past-performance prose, an original same-day first-night report with retrospective prose, a same-day original weekday-night past-performance report, or measured completed-gig spending paired with the target artist's dated table. Cancellation/postponement signals must concern the target venue. Conflicting or unavailable evidence leaves state unchanged. Deterministic code credits the exact escrow; pull withdrawals pay the entitled address.
 
-- 102 GEN in = 72 GEN withdrawn + 30 GEN escrow (E3 20 + E4 10), contract balance 30 GEN
-- Artist royalties paid: 3.2 GEN
-- Resale volume: 32 GEN
-- E1 Oasis Live '25: EVENT_HELD, 2 tickets sold, organizer paid 20 GEN
-- E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded the 10 GEN face price each (a resale buyer who paid 11 GEN gets 10 back)
-- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026 19:00 Nashville: ON_SALE, 2 tickets sold, 20 GEN escrowed, NOT settled (settlement timestamp 2026-12-10T06:00:00Z is in the future — the 20 GEN balance is live ticket escrow, not stranded value; an early settlement attempt was refused on-chain, neg13 TOO_EARLY)
-- E4 KATSEYE, Target Center, 7 Nov 2026: POSTPONED, 1 ticket sold, 10 GEN escrowed, settled once on-chain (settle_count 1), then rescheduled twice (2027-01-16, then 2027-02-20) — each reschedule kept the ticket, the holder and the 10 GEN escrow untouched and moved no money
-- Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3), #7 ACTIVE (B1, E4)
-- All wallet credits 0 after final withdrawals
+## Latest-final state
 
-## Adversarial cases (all on-chain)
+| Event | Artist | Current date | Status | Escrow GEN | Organizer credited |
+|---|---|---|---|---|---|
+| E1 | Oasis | 2025-07-25 | EVENT_HELD | 0 | true |
+| E2 | Future & Metro Boomin | 2024-08-06 | CANCELLED | 0 | false |
+| E3 | Pentatonix | 2026-12-09 | ON_SALE | 20 | false |
+| E4 | KATSEYE | 2027-02-20 | POSTPONED | 10 | false |
 
-| Case | What was tried | Expected | Observed |
-|------|---------------|----------|----------|
-| neg0 | OUT configures event 1 (not the creator) | NOT_CREATOR | error |
-| neg14 | P1 configures with a malformed address | BAD_ADDRESS | error |
-| neg12 | buy E1 before any event is configured | EVENT_NOT_CONFIGURED | error, 0 GEN sent |
-| neg1 | buy event 99 | EVENT_NOT_FOUND | error, 0 GEN sent |
-| neg2 | buy E1 with 0 GEN | VALUE_MUST_EQUAL_PRICE | error, 0 GEN sent |
-| neg3 | B2 lists T2 owned by B1 | NOT_TICKET_OWNER | error |
-| neg4 | list T1 at 12 GEN (above 11 cap) | PRICE_CAP | error |
-| neg5 | buy resale of unlisted T4 | TICKET_NOT_LISTED | error |
-| neg6 | B1 buys own T2 listing | SELF_PURCHASE | error, then listing cancelled |
-| neg7 | OUT withdraws with no credit | NO_CREDIT | error |
-| neg8 | ORG withdraws twice | NO_CREDIT | error |
-| neg9 | settle E1 twice | EVENT_ALREADY_SETTLED | error |
-| neg10 | list REFUNDED T3 | TICKET_NOT_ACTIVE | error |
-| neg11 | buy E1 after settlement | EVENT_NOT_ON_SALE | error, 0 GEN sent |
-| neg13 | settle E3 before its settlement timestamp (2026-11-12 < 2026-12-10T06:00:00Z) | TOO_EARLY | error, state unchanged |
-| neg15 | configure E1 with a settlement timestamp 1 hour late | BAD_SETTLE_AFTER_TS | error |
-| neg16 | configure E1 with an out-of-range UTC offset (9999) | BAD_TZ_OFFSET | error |
-| neg18 | OUT reschedules E4 (not the creator) | NOT_CREATOR | error |
-| neg19 | P1 reschedules E3 (ON_SALE, not postponed) | NOT_POSTPONED | error |
-| neg20 | P1 reschedules E4 to an earlier date (2026-11-01) | DATE_NOT_LATER | error |
-| neg21 | P1 reschedules E1 (already HELD) | NOT_POSTPONED | error |
-| neg22 | P1 reschedules E2 (already CANCELLED) | NOT_POSTPONED | error |
-| neg23 | P1 reschedules E4 with a settlement timestamp 1 second late | BAD_SETTLE_AFTER_TS | error |
-| neg17 | settle E4 after rescheduling (before the new 2027-02-21T06:00:00Z timestamp) | TOO_EARLY | error, state unchanged |
+102 GEN received = 72 GEN withdrawn + 30 GEN contract balance. Escrow: 30 GEN; royalties: 3.2 GEN; resale volume: 32 GEN.
 
-## Not covered on-chain (see EXPECTED.md)
+## Transactions
 
-- SOLD_OUT: no on-chain case (buying all 8 E3 tickets would close the live site's only buyable event); branch implemented + mock-covered.
-- UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed, mock-covered only.
-- E3 settlement: E3's real date is 2026-12-09 19:00 Nashville, in the future. It is not settled in this run by design; an early attempt is refused on-chain (neg13, TOO_EARLY). Its 20 GEN escrow stays open until its settlement timestamp (2026-12-10T06:00:00Z). The organizer key is retained offline by the project operator (never committed) so the organizer credit can be withdrawn after that settlement.
+| Label | Observed result | Signing surface | Transaction |
+|---|---|---|---|
+| neg0-not-creator | error-observed / NOT_CREATOR | SDK scripted regression | [0xb40a0efd1a6e111a5d952012e1073b33632872c72933f05795c78b93caf940d4](https://explorer-studio.genlayer.com/tx/0xb40a0efd1a6e111a5d952012e1073b33632872c72933f05795c78b93caf940d4) |
+| neg14-bad-address | error-observed / BAD_ADDRESS | SDK scripted regression | [0x89b718e05d4f728c84934b3a85b0e0bc016982d6cf24f7fc675f9ba26d61db6a](https://explorer-studio.genlayer.com/tx/0x89b718e05d4f728c84934b3a85b0e0bc016982d6cf24f7fc675f9ba26d61db6a) |
+| neg15-bad-settle-after | error-observed / BAD_SETTLE_AFTER_TS | SDK scripted regression | [0x8681a4e41069a5f4578e33b6d349334b664f1ffd5b4f7d590c7f4f2005efc548](https://explorer-studio.genlayer.com/tx/0x8681a4e41069a5f4578e33b6d349334b664f1ffd5b4f7d590c7f4f2005efc548) |
+| neg16-bad-tz-offset | error-observed / BAD_TZ_OFFSET | SDK scripted regression | [0xeb15c731bc9a4cd24da5966210a3381d684e81204310279dce159c939b52baf6](https://explorer-studio.genlayer.com/tx/0xeb15c731bc9a4cd24da5966210a3381d684e81204310279dce159c939b52baf6) |
+| neg12-buy-unconfigured | error-observed / EVENT_NOT_CONFIGURED | SDK scripted regression | [0xf0eedc00beb51e4ca4b9141b30c3efdd88c07f871657d7bf0791e63c7f703079](https://explorer-studio.genlayer.com/tx/0xf0eedc00beb51e4ca4b9141b30c3efdd88c07f871657d7bf0791e63c7f703079) |
+| cfg-e1 | ok | SDK scripted regression | [0x97d905ba57a05a8956a423f3c2d3a93cb1d8dc363276ec23a1fa5d9c5e6db6a2](https://explorer-studio.genlayer.com/tx/0x97d905ba57a05a8956a423f3c2d3a93cb1d8dc363276ec23a1fa5d9c5e6db6a2) |
+| cfg-e2 | ok | SDK scripted regression | [0x10702fc4590116c23a11f7bd9c226a989eb041c628ca8696ba8054077c2fe281](https://explorer-studio.genlayer.com/tx/0x10702fc4590116c23a11f7bd9c226a989eb041c628ca8696ba8054077c2fe281) |
+| cfg-e3 | ok | SDK scripted regression | [0x6b3167ab39b637bedcfd49a712e430e180217c62dfa72e263273b55f791fa95f](https://explorer-studio.genlayer.com/tx/0x6b3167ab39b637bedcfd49a712e430e180217c62dfa72e263273b55f791fa95f) |
+| cfg-e4 | ok | SDK scripted regression | [0x852fab21584f9426e4f9031706364e8f7f2e0664b362f7985433dac9184f9eb7](https://explorer-studio.genlayer.com/tx/0x852fab21584f9426e4f9031706364e8f7f2e0664b362f7985433dac9184f9eb7) |
+| t1-buy | ok | SDK scripted regression | [0xbb86bea75542ccaa3310ebd110f58df79028228aad47b16eb57782da4875ecdc](https://explorer-studio.genlayer.com/tx/0xbb86bea75542ccaa3310ebd110f58df79028228aad47b16eb57782da4875ecdc) |
+| t2-buy | ok | SDK scripted regression | [0x643054d10a1a719de20ea2f31b4c71b3258643b9209d0a789c45868b55da8c60](https://explorer-studio.genlayer.com/tx/0x643054d10a1a719de20ea2f31b4c71b3258643b9209d0a789c45868b55da8c60) |
+| t3-buy | ok | SDK scripted regression | [0x8c7c489fe4b31d4c3a1800bc7eced530aeae7627bdf575a5f8309d09ae7bcd7b](https://explorer-studio.genlayer.com/tx/0x8c7c489fe4b31d4c3a1800bc7eced530aeae7627bdf575a5f8309d09ae7bcd7b) |
+| t4-buy | ok | SDK scripted regression | [0xbba8227aee85877089a967284e64563163762fe0a0d8e5992cb2d4e1bd4bc63c](https://explorer-studio.genlayer.com/tx/0xbba8227aee85877089a967284e64563163762fe0a0d8e5992cb2d4e1bd4bc63c) |
+| t5-buy | ok | SDK scripted regression | [0x44519e3d219934a82538f754f365a4197f08211441662a614451500873914dc9](https://explorer-studio.genlayer.com/tx/0x44519e3d219934a82538f754f365a4197f08211441662a614451500873914dc9) |
+| t6-buy | ok | SDK scripted regression | [0x4cb443c40e215e9445249058bf4d78b73c91bcb202327cb1dbbdae119ccbfcd3](https://explorer-studio.genlayer.com/tx/0x4cb443c40e215e9445249058bf4d78b73c91bcb202327cb1dbbdae119ccbfcd3) |
+| t7-buy | ok | SDK scripted regression | [0xa87ba9bb83aec366eb36e85737bec420dd5a80a6d38a9ca7c632ecc134c3ae18](https://explorer-studio.genlayer.com/tx/0xa87ba9bb83aec366eb36e85737bec420dd5a80a6d38a9ca7c632ecc134c3ae18) |
+| r1-list | ok | SDK scripted regression | [0xd5a5cfbe69eab75f3db43de3e5c6a721749b0c98963321eb28030ec2d7e8dbc8](https://explorer-studio.genlayer.com/tx/0xd5a5cfbe69eab75f3db43de3e5c6a721749b0c98963321eb28030ec2d7e8dbc8) |
+| r1-buy | ok | SDK scripted regression | [0xa59ef49b3aff4cb32655f6d69bb34d655d20887170d639882973df5d8cb62a40](https://explorer-studio.genlayer.com/tx/0xa59ef49b3aff4cb32655f6d69bb34d655d20887170d639882973df5d8cb62a40) |
+| r2-list | ok | SDK scripted regression | [0xd8f531362f773fceb960895ce6455900be896a8b83bd2589b391052a7e8df362](https://explorer-studio.genlayer.com/tx/0xd8f531362f773fceb960895ce6455900be896a8b83bd2589b391052a7e8df362) |
+| r2-buy | ok | SDK scripted regression | [0x69e01c725b4aaafac4ed75d776c45ec991e64ebc7d2d4d0510f066114d36ad93](https://explorer-studio.genlayer.com/tx/0x69e01c725b4aaafac4ed75d776c45ec991e64ebc7d2d4d0510f066114d36ad93) |
+| r3-list | ok | SDK scripted regression | [0x4e89aa9fcf5a13c4d5443b3b927efeb8b6a76a77d3e145687390091ab7b84a1f](https://explorer-studio.genlayer.com/tx/0x4e89aa9fcf5a13c4d5443b3b927efeb8b6a76a77d3e145687390091ab7b84a1f) |
+| r4-list | ok | SDK scripted regression | [0xa915e874c21dd5550b336d0cfe07efac22d5e6d282f4ad19d1596482e2b81ec0](https://explorer-studio.genlayer.com/tx/0xa915e874c21dd5550b336d0cfe07efac22d5e6d282f4ad19d1596482e2b81ec0) |
+| r4-buy | ok | SDK scripted regression | [0x8ba0f550b8b3aa6c99b6fe8e496d07c8564f525f1b2f4371eebad990e3b037f1](https://explorer-studio.genlayer.com/tx/0x8ba0f550b8b3aa6c99b6fe8e496d07c8564f525f1b2f4371eebad990e3b037f1) |
+| neg3-stranger-list | error-observed / NOT_TICKET_OWNER | SDK scripted regression | [0x11ed41ed5ef9d4617fe0290ad5b1e7937214c265c9303ac4b15eb26f0bf34f39](https://explorer-studio.genlayer.com/tx/0x11ed41ed5ef9d4617fe0290ad5b1e7937214c265c9303ac4b15eb26f0bf34f39) |
+| neg4-over-cap | error-observed / PRICE_CAP | SDK scripted regression | [0xfe790dc27602c369462379a82f00e635a14bf710bb8de9e4cadf7a478eda9f21](https://explorer-studio.genlayer.com/tx/0xfe790dc27602c369462379a82f00e635a14bf710bb8de9e4cadf7a478eda9f21) |
+| neg6-list | ok | SDK scripted regression | [0x6a80a77f21c264a7e801a9f5b8fbea08420130b0058d19b0c45c00c01d22e859](https://explorer-studio.genlayer.com/tx/0x6a80a77f21c264a7e801a9f5b8fbea08420130b0058d19b0c45c00c01d22e859) |
+| neg6-self-buy | error-observed / SELF_PURCHASE | SDK scripted regression | [0xe56a205af7d8694026f9c379b902afc0f0a11754ed15cd0fcfd2d3946b004d65](https://explorer-studio.genlayer.com/tx/0xe56a205af7d8694026f9c379b902afc0f0a11754ed15cd0fcfd2d3946b004d65) |
+| neg6-cancel | ok | SDK scripted regression | [0x8312cc9cf61390b8ab2835af11fa691eb2cabc0ef9aedb64d2b4d27fdf65dfdc](https://explorer-studio.genlayer.com/tx/0x8312cc9cf61390b8ab2835af11fa691eb2cabc0ef9aedb64d2b4d27fdf65dfdc) |
+| neg5-not-listed | error-observed / TICKET_NOT_LISTED | SDK scripted regression | [0xa3c0d818f68ffaeec94cd7f4cf2d020562b71f55be5c4732857075dcdc884284](https://explorer-studio.genlayer.com/tx/0xa3c0d818f68ffaeec94cd7f4cf2d020562b71f55be5c4732857075dcdc884284) |
+| neg2-wrong-value | error-observed / VALUE_MUST_EQUAL_PRICE | SDK scripted regression | [0x1eac6525dc75a351ee40ba83afa727eefd3f588c4611c50a27783446e3e9cb0a](https://explorer-studio.genlayer.com/tx/0x1eac6525dc75a351ee40ba83afa727eefd3f588c4611c50a27783446e3e9cb0a) |
+| neg1-unknown-event | error-observed / EVENT_NOT_FOUND | SDK scripted regression | [0x91c1c2f8e76c277450cbde22ecd21f59abbe47fe6c904d0e930f97158882aa12](https://explorer-studio.genlayer.com/tx/0x91c1c2f8e76c277450cbde22ecd21f59abbe47fe6c904d0e930f97158882aa12) |
+| neg13-early-settle-e3 | error-observed / TOO_EARLY | SDK scripted regression | [0x497b7e2a1acf29b121ccf55a4d925e61fde87037b39e79eb4a6a1241f4b9b33a](https://explorer-studio.genlayer.com/tx/0x497b7e2a1acf29b121ccf55a4d925e61fde87037b39e79eb4a6a1241f4b9b33a) |
+| s1-settle-e1 | ok | SDK scripted regression | [0xff69bb3abf2a614055c1414aa3a446b5cf8931539aa41b1ef5dde56c45fbe97f](https://explorer-studio.genlayer.com/tx/0xff69bb3abf2a614055c1414aa3a446b5cf8931539aa41b1ef5dde56c45fbe97f) |
+| s2-settle-e2 | ok | SDK scripted regression | [0x3b0c4fca922c54592b125ea0f9690f0fb0a53be4e28d92b3c9a737f5371a1031](https://explorer-studio.genlayer.com/tx/0x3b0c4fca922c54592b125ea0f9690f0fb0a53be4e28d92b3c9a737f5371a1031) |
+| s3-settle-e4 | ok | SDK scripted regression | [0x67fdca5b94de3ba4ff11ede59503fc9fc6c8a69d3b1fd35a7584b1ae1b000376](https://explorer-studio.genlayer.com/tx/0x67fdca5b94de3ba4ff11ede59503fc9fc6c8a69d3b1fd35a7584b1ae1b000376) |
+| neg18-rsch-stranger | error-observed / NOT_CREATOR | SDK scripted regression | [0x1951f0ac469c4e544be815cc887ee42ec3b80cffff103ec063b00d3dc6748be2](https://explorer-studio.genlayer.com/tx/0x1951f0ac469c4e544be815cc887ee42ec3b80cffff103ec063b00d3dc6748be2) |
+| neg19-rsch-onsale | error-observed / NOT_POSTPONED | SDK scripted regression | [0x2183b47ddb014e331038d3c01f5752982ed82837cc7ee4835600b2f6a8bdd5b6](https://explorer-studio.genlayer.com/tx/0x2183b47ddb014e331038d3c01f5752982ed82837cc7ee4835600b2f6a8bdd5b6) |
+| neg20-rsch-earlier | error-observed / DATE_NOT_LATER | SDK scripted regression | [0x667241f213f75e8c05a88238e87dc6218a15e7a52b02e1b9245d0d1f59fd4e95](https://explorer-studio.genlayer.com/tx/0x667241f213f75e8c05a88238e87dc6218a15e7a52b02e1b9245d0d1f59fd4e95) |
+| neg21-rsch-settled-e1 | error-observed / NOT_POSTPONED | SDK scripted regression | [0x4306e58ca0fc068a8099ebd568902b28fe99263a191e91ed1c8e410172a3bc5c](https://explorer-studio.genlayer.com/tx/0x4306e58ca0fc068a8099ebd568902b28fe99263a191e91ed1c8e410172a3bc5c) |
+| neg22-rsch-settled-e2 | error-observed / NOT_POSTPONED | SDK scripted regression | [0x70fb16f00866bfea5e9f64602206fc37c0eb3130ab6336cb57506593132366a3](https://explorer-studio.genlayer.com/tx/0x70fb16f00866bfea5e9f64602206fc37c0eb3130ab6336cb57506593132366a3) |
+| neg23-rsch-bad-settle | error-observed / BAD_SETTLE_AFTER_TS | SDK scripted regression | [0x272cbed666afb38667f3b2397802f5d28b42500eefbfaa1289489cbeb8e79d9f](https://explorer-studio.genlayer.com/tx/0x272cbed666afb38667f3b2397802f5d28b42500eefbfaa1289489cbeb8e79d9f) |
+| rsch1 | ok | SDK scripted regression | [0x40c98798bf0029263433ae33e5f9837c0276f250ceeecfd8d222ee0740582f7a](https://explorer-studio.genlayer.com/tx/0x40c98798bf0029263433ae33e5f9837c0276f250ceeecfd8d222ee0740582f7a) |
+| rsch2 | ok | SDK scripted regression | [0x1f10f32f303c816f13acab555d65cce6e9e03093349996d21f88863ab3e02728](https://explorer-studio.genlayer.com/tx/0x1f10f32f303c816f13acab555d65cce6e9e03093349996d21f88863ab3e02728) |
+| neg17-settle-after-rsch | error-observed / TOO_EARLY | SDK scripted regression | [0xca5362ba89611a59ab54789f90430aabb4cfeadc19c385b821c049332b3f813e](https://explorer-studio.genlayer.com/tx/0xca5362ba89611a59ab54789f90430aabb4cfeadc19c385b821c049332b3f813e) |
+| neg9-double-settle | error-observed / EVENT_ALREADY_SETTLED | SDK scripted regression | [0x71e8ab24477568d40a90799dcb1add9b40c0f15c1b0fe73600f8bf82c84d20a4](https://explorer-studio.genlayer.com/tx/0x71e8ab24477568d40a90799dcb1add9b40c0f15c1b0fe73600f8bf82c84d20a4) |
+| neg11-buy-held | error-observed / EVENT_NOT_ON_SALE | SDK scripted regression | [0xa48d1382cfdb489fd0e2e3ee48fdc25ae161c7c43cc2669b34c9a96127adb069](https://explorer-studio.genlayer.com/tx/0xa48d1382cfdb489fd0e2e3ee48fdc25ae161c7c43cc2669b34c9a96127adb069) |
+| neg10-list-refunded | error-observed / TICKET_NOT_ACTIVE | SDK scripted regression | [0x72cd524559b0ee38205d4053db836f91c2b429b1a19b68881dc5e827a24c81d7](https://explorer-studio.genlayer.com/tx/0x72cd524559b0ee38205d4053db836f91c2b429b1a19b68881dc5e827a24c81d7) |
+| neg7-stranger-withdraw | error-observed / NO_CREDIT | SDK scripted regression | [0xb6670e08a728fc512e367b8649592f78c80691b3b1b898e279137b5e3791196b](https://explorer-studio.genlayer.com/tx/0xb6670e08a728fc512e367b8649592f78c80691b3b1b898e279137b5e3791196b) |
+| w-org | ok | SDK scripted regression | [0xd0de1b675b534f2a33622280dca3b7b3a918005236691e5654da4b6dd5d2f845](https://explorer-studio.genlayer.com/tx/0xd0de1b675b534f2a33622280dca3b7b3a918005236691e5654da4b6dd5d2f845) |
+| w-art | ok | SDK scripted regression | [0xa5448a6b8cc904ab6be5516725719a1a7fd2f60246e24075bf7e85f387354ea8](https://explorer-studio.genlayer.com/tx/0xa5448a6b8cc904ab6be5516725719a1a7fd2f60246e24075bf7e85f387354ea8) |
+| w-b1 | ok | SDK scripted regression | [0xc5c99e58e16f74e1499e8d3cde17be8b4cf577062f8d32585057b3678c9d4709](https://explorer-studio.genlayer.com/tx/0xc5c99e58e16f74e1499e8d3cde17be8b4cf577062f8d32585057b3678c9d4709) |
+| w-b2 | ok | SDK scripted regression | [0xc1f31f97f15f55f0a7c031f4d0a638e77922bd977823a3d1a3313cefb60a476c](https://explorer-studio.genlayer.com/tx/0xc1f31f97f15f55f0a7c031f4d0a638e77922bd977823a3d1a3313cefb60a476c) |
+| neg8-double-withdraw | error-observed / NO_CREDIT | SDK scripted regression | [0x2ece2c20f4293ffe4af3b21d7f7dc0719645d40263663b7f8de5e55ef5e3b0af](https://explorer-studio.genlayer.com/tx/0x2ece2c20f4293ffe4af3b21d7f7dc0719645d40263663b7f8de5e55ef5e3b0af) |
 
-## Browser write loop
+## Evidence scope
 
-Run on the live site with in-browser temporary test accounts
-(testnet GEN only, no real wallet). All transactions re-read
-live: FINALIZED + MAJORITY_AGREE + leader SUCCESS.
+The original V1.3 source, expectations and evidence are preserved in evidence/v1.3/. They prove only the old deployment. EXPECTED.md and EXPECTED_V15.md describe the prospective V1.5 run and were published before deployment. Off-chain source preflight is explicitly separate from validator consensus. Full latest-final data is in evidence/readback-v1.5.json; independent output in evidence/verification-v1.5.txt. Local fixture output is in evidence/mock-v1.5.txt, not a claim of live consensus.
 
-| Step | Transaction | Result |
-|------|-------------|--------|
-| b-buy | [0x79ad79a2…](https://explorer-studio.genlayer.com/tx/0x79ad79a26e7d70c0e2cb2364fadc2edfe9efac72916c0b3a5fff7d04ea6584a6) | ok |
-| b-list | [0xfb77fdd9…](https://explorer-studio.genlayer.com/tx/0xfb77fdd9183e8270d9a9c7a948ff1cf726556c8f8e49b40943fa8f84bb1de7b5) | ok |
-| b-buy-resale | [0x3d11ae5c…](https://explorer-studio.genlayer.com/tx/0x3d11ae5c2c393e11107683b67f04073e1add231157dd720dd9040342847a4384) | ok |
-| b-withdraw-seller | [0x492e5c5e…](https://explorer-studio.genlayer.com/tx/0x492e5c5e673c76facaa61685b9d9377f1cb9e17fe7813689e1cb4de5bd01cc86) | ok |
-| b-withdraw-artist | [0x9672dd17…](https://explorer-studio.genlayer.com/tx/0x9672dd173edbd61f03615636296ee7fc0899c981ce45074796fb926d2f67d79c) | ok |
+No new browser write transaction is recorded yet. Browser writes must be recorded on this deployment before a browser-write-loop claim is made.
 
+## Limits
 
-## Verify output
-
-```
-PASS byte parity (deployed code == repo source)
-PASS source sha matches deployment.json
-PASS deploy tx recorded
-PASS evidence file names the deployed contract
-PASS tx neg0-not-creator (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_CREATOR
-PASS tx neg14-bad-address (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_ADDRESS
-PASS tx neg15-bad-settle-after (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_SETTLE_AFTER_TS
-PASS tx neg16-bad-tz-offset (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_TZ_OFFSET
-PASS tx neg12-buy-unconfigured (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_CONFIGURED
-PASS tx cfg-e1 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx cfg-e2 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx cfg-e3 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx cfg-e4 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t1-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t2-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t3-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t4-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t5-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t6-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx t7-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r1-list (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r1-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r2-list (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r2-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r3-list (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r4-list (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx r4-buy (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx neg3-stranger-list (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_TICKET_OWNER
-PASS tx neg4-over-cap (scripted) FINALIZED+AGREE+ERROR with exact payload PRICE_CAP
-PASS tx neg6-list (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx neg6-self-buy (scripted) FINALIZED+AGREE+ERROR with exact payload SELF_PURCHASE
-PASS tx neg6-cancel (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx neg5-not-listed (scripted) FINALIZED+AGREE+ERROR with exact payload TICKET_NOT_LISTED
-PASS tx neg2-wrong-value (scripted) FINALIZED+AGREE+ERROR with exact payload VALUE_MUST_EQUAL_PRICE
-PASS tx neg1-unknown-event (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_FOUND
-PASS tx neg13-early-settle-e3 (scripted) FINALIZED+AGREE+ERROR with exact payload TOO_EARLY
-PASS tx s1-settle-e1 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx s1-settle-e1 verdict recorded as EVENT_HELD
-PASS tx s2-settle-e2 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx s2-settle-e2 verdict recorded as CANCELLED
-PASS tx s3-settle-e4 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx s3-settle-e4 verdict recorded as POSTPONED
-PASS tx neg18-rsch-stranger (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_CREATOR
-PASS tx neg19-rsch-onsale (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_POSTPONED
-PASS tx neg20-rsch-earlier (scripted) FINALIZED+AGREE+ERROR with exact payload DATE_NOT_LATER
-PASS tx neg21-rsch-settled-e1 (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_POSTPONED
-PASS tx neg22-rsch-settled-e2 (scripted) FINALIZED+AGREE+ERROR with exact payload NOT_POSTPONED
-PASS tx neg23-rsch-bad-settle (scripted) FINALIZED+AGREE+ERROR with exact payload BAD_SETTLE_AFTER_TS
-PASS tx rsch1 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx rsch2 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx neg17-settle-after-rsch (scripted) FINALIZED+AGREE+ERROR with exact payload TOO_EARLY
-PASS tx neg9-double-settle (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_ALREADY_SETTLED
-PASS tx neg11-buy-held (scripted) FINALIZED+AGREE+ERROR with exact payload EVENT_NOT_ON_SALE
-PASS tx neg10-list-refunded (scripted) FINALIZED+AGREE+ERROR with exact payload TICKET_NOT_ACTIVE
-PASS tx neg7-stranger-withdraw (scripted) FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
-PASS tx w-org (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx w-art (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx w-b1 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx w-b2 (scripted) FINALIZED+AGREE+SUCCESS
-PASS tx neg8-double-withdraw (scripted) FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
-
-browser write loop: 5 txs recorded, verifying live
-PASS browser file names the same contract
-PASS tx b-buy (browser) FINALIZED+AGREE+SUCCESS
-PASS tx b-list (browser) FINALIZED+AGREE+SUCCESS
-PASS tx b-buy-resale (browser) FINALIZED+AGREE+SUCCESS
-PASS tx b-withdraw-seller (browser) FINALIZED+AGREE+SUCCESS
-PASS tx b-withdraw-artist (browser) FINALIZED+AGREE+SUCCESS
-PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid, timestamps stored
-PASS E2 readback: CANCELLED, 2 sold, escrow 0, timestamps stored
-PASS E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, settle_count 1
-PASS E1 anchors are the probe-verified URLs
-PASS E2 anchors are the probe-verified URLs
-PASS E3 anchors are the probe-verified URLs
-PASS E4 anchors are the probe-verified URLs
-PASS E1 identity tokens are oasis + wembley
-PASS E2 identity tokens are metro boomin + bridgestone
-PASS E3 identity tokens are pentatonix + bridgestone
-PASS E4 identity tokens are katseye + target center
-PASS E3 timestamps: start 2026-12-09 19:00 CST, settle_after 2026-12-10T06:00:00Z
-PASS creator is the deployer P1
-PASS ticket 1 readback == EXPECTED.md (ACTIVE, owner 0x0d4b…)
-PASS ticket 2 readback == EXPECTED.md (ACTIVE, owner 0xc2c6…)
-PASS ticket 3 readback == EXPECTED.md (REFUNDED, owner 0xc2c6…)
-PASS ticket 4 readback == EXPECTED.md (REFUNDED, owner 0x0d4b…)
-PASS ticket 5 readback == EXPECTED.md (ACTIVE, owner 0x0d4b…)
-PASS ticket 6 readback == EXPECTED.md (ACTIVE, owner 0x0d4b…)
-PASS ticket 7 readback == EXPECTED.md (ACTIVE, owner 0xc2c6…)
-PASS credit P1 is 0 after withdrawals
-PASS credit ORG is 0 after withdrawals
-PASS credit ART is 0 after withdrawals
-PASS credit B1 is 0 after withdrawals
-PASS credit B2 is 0 after withdrawals
-PASS credit OUT is 0 after withdrawals
-PASS E3 readback (post-browser): ON_SALE, 3 sold, escrow 30 GEN, never settled
-PASS ticket 8 (browser buy) readback: ACTIVE, owned by the browser buyer
-PASS counts (post-browser): 4 events, 8 tickets
-PASS ledger (post-browser): 123 GEN in, 83 out, balance 40 GEN (= E3 30 + E4 10 escrow), escrow 40, royalties 4.3 GEN, resale volume 43 GEN
-PASS protocol is fairgate-1.3
-
-verify: 97 PASS, 0 FAIL, 53 scripted txs + 5 browser txs checked
-INDEPENDENT VERIFICATION PASS
-```
+The English extractor is deliberately narrow and can reject genuine events phrased differently. Two publishers can be wrong; agreement is not proof of real-world truth. Source pages may change or be unavailable. E3 is a future event and is not prematurely settled; E4 remains postponed/rescheduled. Their escrow is intentional, not stranded failed-call value. No venue-entry credential or off-chain ticket-delivery guarantee is claimed. Failed-payable negatives send zero value. Archived V1.4 observations retain the failed E1 calls and their unreleased escrow; its receipts never count as V1.5 acceptance. Its archived readback recorded 70 GEN escrow and 32 GEN withdrawable resale credits after the source outage. SOLD_OUT and fabricated-validator rejection are covered by local fixtures; they are not represented as successful live business cases.

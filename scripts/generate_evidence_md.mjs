@@ -1,211 +1,49 @@
-// Generate EVIDENCE.md and REVIEWER.md from the real evidence files.
-// Never hand-copy hashes: every hash in the output comes from
-// evidence/transactions.json / evidence/deployment.json as recorded
-// by the evidence run, and the ledger numbers come from a live
-// latest-final readback at generation time.
+// Generate product evidence from verified receipts and latest-final state.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {createClient} from 'genlayer-js';
+import {studionet} from 'genlayer-js/chains';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const EXPLORER = 'https://explorer-studio.genlayer.com';
-
-const deployment = JSON.parse(fs.readFileSync(path.join(REPO, 'evidence', 'deployment.json'), 'utf8'));
-const txFile = JSON.parse(fs.readFileSync(path.join(REPO, 'evidence', 'transactions.json'), 'utf8'));
-const txs = Array.isArray(txFile) ? txFile : txFile.transactions;
-let browserFile = null;
-try {
-  browserFile = JSON.parse(fs.readFileSync(path.join(REPO, 'docs', 'browser-transactions.json'), 'utf8'));
-} catch { browserFile = null; }
-const browserTxs = Array.isArray(browserFile?.transactions) ? browserFile.transactions : [];
-const txLink = (h) => `[${h.slice(0, 10)}…](${EXPLORER}/tx/${h})`;
-const addrLink = (a) => `[${a}](${EXPLORER}/address/${a})`;
-const browserRows = browserTxs.map((t) => `| ${t.label} | ${txLink(t.hash)} | ${t.result ?? 'ok'} |`).join('\n');
-const browserSection = browserTxs.length === 0
-  ? `## Browser write loop
-
-To be recorded on the live site (buy / list / buy-resale /
-seller withdraw / artist withdraw with transaction hashes) in
-docs/browser-transactions.json; this file is re-generated after
-the loop runs.
-`
-  : `## Browser write loop
-
-Run on the live site with in-browser temporary test accounts
-(testnet GEN only, no real wallet). All transactions re-read
-live: FINALIZED + MAJORITY_AGREE + leader SUCCESS.
-
-| Step | Transaction | Result |
-|------|-------------|--------|
-${browserRows}
-`;
-const src = fs.readFileSync(path.join(REPO, 'contracts', 'fairgate.py'));
-const sha = createHash('sha256').update(src).digest('hex');
-
-const { execSync } = await import('node:child_process');
-const verifyOut = execSync('node scripts/verify_evidence.mjs', { cwd: REPO, encoding: 'utf8' });
-const verifyPass = /PASS/.test(verifyOut);
-
-const rows = txs.map((t, i) => `| ${i + 1} | ${t.label} | ${txLink(t.hash)} | ${t.result ?? 'ok'} |`).join('\n');
-
-const evidenceMd = `# FairGate — Evidence
-
-- Contract: ${addrLink(deployment.contract_address)}
-- Deploy tx: ${txLink(deployment.deploy_tx)}
-- Source SHA-256: \`${sha}\` (${src.length} bytes, \`contracts/fairgate.py\`)
-- Network: GenLayer Stable Studionet (chain 61999)
-- Independent verification: \`node scripts/verify_evidence.mjs\` — ${verifyPass ? 'PASS (see output below)' : 'SEE OUTPUT BELOW'}
-- Mock tests: \`python3 tests/test_fairgate_mock.py\` — all pass
-
-## Evidence transactions (${txs.length})
-
-| # | Step | Transaction | Result |
-|---|------|-------------|--------|
-${rows}
-
-## Final ledger (pre-registered in EXPECTED.md, confirmed by verify_evidence.mjs)
-
-- 102 GEN in = 72 GEN withdrawn + 30 GEN escrow (E3 20 + E4 10), contract balance 30 GEN
-- Artist royalties paid: 3.2 GEN
-- Resale volume: 32 GEN
-- E1 Oasis Live '25: EVENT_HELD, 2 tickets sold, organizer paid 20 GEN
-- E2 Future & Metro Boomin: CANCELLED, 2 tickets sold, both holders refunded the 10 GEN face price each (a resale buyer who paid 11 GEN gets 10 back)
-- E3 Pentatonix, Bridgestone Arena, 9 Dec 2026 19:00 Nashville: ON_SALE, 2 tickets sold, 20 GEN escrowed, NOT settled (settlement timestamp 2026-12-10T06:00:00Z is in the future — the 20 GEN balance is live ticket escrow, not stranded value; an early settlement attempt was refused on-chain, neg13 TOO_EARLY)
-- E4 KATSEYE, Target Center, 7 Nov 2026: POSTPONED, 1 ticket sold, 10 GEN escrowed, settled once on-chain (settle_count 1), then rescheduled twice (2027-01-16, then 2027-02-20) — each reschedule kept the ticket, the holder and the 10 GEN escrow untouched and moved no money
-- Tickets: #1 ACTIVE (B2), #2 ACTIVE (B1), #3 REFUNDED (B1), #4 REFUNDED (B2), #5 ACTIVE (B2, E3), #6 ACTIVE (B2, E3), #7 ACTIVE (B1, E4)
-- All wallet credits 0 after final withdrawals
-
-## Adversarial cases (all on-chain)
-
-| Case | What was tried | Expected | Observed |
-|------|---------------|----------|----------|
-| neg0 | OUT configures event 1 (not the creator) | NOT_CREATOR | error |
-| neg14 | P1 configures with a malformed address | BAD_ADDRESS | error |
-| neg12 | buy E1 before any event is configured | EVENT_NOT_CONFIGURED | error, 0 GEN sent |
-| neg1 | buy event 99 | EVENT_NOT_FOUND | error, 0 GEN sent |
-| neg2 | buy E1 with 0 GEN | VALUE_MUST_EQUAL_PRICE | error, 0 GEN sent |
-| neg3 | B2 lists T2 owned by B1 | NOT_TICKET_OWNER | error |
-| neg4 | list T1 at 12 GEN (above 11 cap) | PRICE_CAP | error |
-| neg5 | buy resale of unlisted T4 | TICKET_NOT_LISTED | error |
-| neg6 | B1 buys own T2 listing | SELF_PURCHASE | error, then listing cancelled |
-| neg7 | OUT withdraws with no credit | NO_CREDIT | error |
-| neg8 | ORG withdraws twice | NO_CREDIT | error |
-| neg9 | settle E1 twice | EVENT_ALREADY_SETTLED | error |
-| neg10 | list REFUNDED T3 | TICKET_NOT_ACTIVE | error |
-| neg11 | buy E1 after settlement | EVENT_NOT_ON_SALE | error, 0 GEN sent |
-| neg13 | settle E3 before its settlement timestamp (2026-11-12 < 2026-12-10T06:00:00Z) | TOO_EARLY | error, state unchanged |
-| neg15 | configure E1 with a settlement timestamp 1 hour late | BAD_SETTLE_AFTER_TS | error |
-| neg16 | configure E1 with an out-of-range UTC offset (9999) | BAD_TZ_OFFSET | error |
-| neg18 | OUT reschedules E4 (not the creator) | NOT_CREATOR | error |
-| neg19 | P1 reschedules E3 (ON_SALE, not postponed) | NOT_POSTPONED | error |
-| neg20 | P1 reschedules E4 to an earlier date (2026-11-01) | DATE_NOT_LATER | error |
-| neg21 | P1 reschedules E1 (already HELD) | NOT_POSTPONED | error |
-| neg22 | P1 reschedules E2 (already CANCELLED) | NOT_POSTPONED | error |
-| neg23 | P1 reschedules E4 with a settlement timestamp 1 second late | BAD_SETTLE_AFTER_TS | error |
-| neg17 | settle E4 after rescheduling (before the new 2027-02-21T06:00:00Z timestamp) | TOO_EARLY | error, state unchanged |
-
-## Not covered on-chain (see EXPECTED.md)
-
-- SOLD_OUT: no on-chain case (buying all 8 E3 tickets would close the live site's only buyable event); branch implemented + mock-covered.
-- UNREACHABLE / SOURCES_DISAGREE settle outcomes: fail-closed, mock-covered only.
-- E3 settlement: E3's real date is 2026-12-09 19:00 Nashville, in the future. It is not settled in this run by design; an early attempt is refused on-chain (neg13, TOO_EARLY). Its 20 GEN escrow stays open until its settlement timestamp (2026-12-10T06:00:00Z). The organizer key is retained offline by the project operator (never committed) so the organizer credit can be withdrawn after that settlement.
-
-${browserSection}
-
-## Verify output
-
-\`\`\`
-${verifyOut.trim()}
-\`\`\`
-`;
-
-const reviewerMd = `# FairGate — Reviewer pack
-
-## Claim
-
-FairGate sells concert tickets as on-chain stubs with a hard resale
-cap (11 GEN on a 10 GEN face price) and a 10% artist royalty, and
-settles escrowed ticket money by consensus on whether the show was
-held, cancelled or postponed. Settlement is gated on an explicit
-UTC timestamp per event (the first second of the day after the show
-in the event's local time zone, derived by the contract from the
-start timestamp and the local UTC offset). A postponed event can be
-rescheduled to a later date without moving any money. Four real
-concerts, fixed in the contract: Oasis Live '25 at Wembley (HELD),
-Future & Metro Boomin at Bridgestone Arena, Nashville (CANCELLED),
-KATSEYE at Target Center, Minneapolis (POSTPONED, rescheduled to
-20 Feb 2027), and Pentatonix at Bridgestone Arena, Nashville,
-9 Dec 2026 (ON_SALE — live, unsettled).
-
-## Contract
-
-- Address: ${addrLink(deployment.contract_address)}
-- Deploy tx: ${txLink(deployment.deploy_tx)}
-- Source SHA-256: \`${sha}\`
-- Byte parity: \`node scripts/byte_parity.mjs\` (deployed code == repo source)
-
-## Fastest re-check (5 minutes)
-
-1. \`node scripts/byte_parity.mjs\` — deployed code matches \`contracts/fairgate.py\`.
-2. \`node scripts/verify_evidence.mjs\` — re-reads every evidence transaction live and re-checks the final readback against EXPECTED.md.
-3. Open the live site and wait for the FINALIZED readback: the three settled posters show their verdicts, the Pentatonix poster shows ON_SALE with tickets to buy, and the ledger shows 102 GEN in, 72 GEN out, 30 GEN escrow (E3 20 live + E4 10 postponed).
-
-## Anchors (the verdict reads these pages)
-
-| Event | Source A (venue official) | Source B (independent) |
-|-------|---------------------------|------------------------|
-| Oasis Live '25, Wembley, 25 Jul 2025 | http://www.wembleystadium.com/events/2025/OASIS | https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/ |
-| Future & Metro Boomin, Bridgestone Arena, 6 Aug 2024 | https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour | https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets |
-| KATSEYE, Target Center, 7 Nov 2026 | https://www.targetcenter.com/events/detail/katseye | https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm |
-| Pentatonix, Bridgestone Arena, 9 Dec 2026 | https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour | https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets |
-
-Verdict rule (deterministic, no LLM): each source is read through
-a scoped extractor — page title, meta content, JSON-LD structured
-event data and visible body text after removing navigation,
-footers, asides, scripts and recommended / related sections — so a
-cancel word in a footer or a recommended article about another
-event cannot flip the verdict. Each source must first confirm it
-is the right event (artist + venue named in the scoped text); then
-both sources fetched, neither contains
-"cancelled"/"canceled"/"postpone"/"reschedule" → EVENT_HELD.
-Both contain a cancel word → CANCELLED. Both contain a postpone word
-→ POSTPONED. A fetch failure, a failed identity check, or
-disagreement settles nothing. Settlement is also refused on-chain
-before the event's settlement timestamp (transaction Unix time
-compared against settle_after_ts): an early attempt fails with
-TOO_EARLY.
-
-## Evidence transactions
-
-| # | Step | Transaction |
-|---|------|-------------|
-${txs.map((t, i) => `| ${i + 1} | ${t.label} | ${txLink(t.hash)} |`).join('\n')}
-
-## Adversarial cases
-
-See EVIDENCE.md: 24 negatives, all with exact on-chain error codes
-(incl. NOT_CREATOR on configure and on reschedule, TOO_EARLY on
-early settlement, BAD_SETTLE_AFTER_TS on a wrong settlement
-timestamp, BAD_TZ_OFFSET, DATE_NOT_LATER, NOT_POSTPONED on
-rescheduling a settled or selling event, PRICE_CAP at 12 GEN,
-SELF_PURCHASE, EVENT_ALREADY_SETTLED, TICKET_NOT_ACTIVE,
-NO_CREDIT on double withdrawal). Failed payables were sent with
-0 GEN; the 30 GEN contract balance is exactly the live escrow
-(E3 20 + E4 10), not stranded value.
-
-## What this project does not prove
-
-- E3 (Pentatonix, 9 Dec 2026) is not settled in this run; its verdict
-  will be decided after its settlement timestamp (2026-12-10T06:00:00Z).
-  An early settlement attempt is refused on-chain (TOO_EARLY) and the
-  settle button stays disabled until that timestamp.
-- The verdict reads the live pages at settlement time; if a source
-  page is rewritten, the verdict follows the new text.
-- The on-chain ticket is a payment and settlement record, not a
-  venue entry credential.
-`;
-
-fs.writeFileSync(path.join(REPO, 'EVIDENCE.md'), evidenceMd);
-fs.writeFileSync(path.join(REPO, 'REVIEWER.md'), reviewerMd);
-console.log('wrote EVIDENCE.md (' + txs.length + ' txs) and REVIEWER.md; verify PASS:', verifyPass);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const readJson = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
+const deployment = readJson('evidence/deployment.json');
+const evidence = readJson('evidence/transactions.json');
+if (evidence.complete !== true || evidence.contract_address !== deployment.contract_address) throw new Error('INCOMPLETE_OR_MISMATCHED_EVIDENCE');
+const source = fs.readFileSync(path.join(root, 'contracts/fairgate.py'));
+const hash = createHash('sha256').update(source).digest('hex');
+if (hash !== deployment.source_sha256) throw new Error('SOURCE_HASH_MISMATCH');
+const tests = execFileSync('npm', ['test'], {cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024});
+const verification = execFileSync(process.execPath, ['scripts/verify_evidence.mjs'], {cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024});
+const summary = verification.match(/verify:\s*(\d+) PASS,\s*(\d+) FAIL/);
+if (!summary || Number(summary[2]) !== 0) throw new Error('VERIFICATION_SUMMARY_MISSING');
+const reader = createClient({chain: studionet});
+const read = async (functionName, args = []) => JSON.parse(await reader.readContract({address: deployment.contract_address, functionName, args, transactionHashVariant: 'latest-final'}));
+const names = Object.keys(deployment.wallets);
+const reads = await Promise.allSettled([read('get_all_events'), read('get_all_tickets'), read('get_counts'), ...names.map(name => read('get_credit', [deployment.wallets[name]]))]);
+for (const result of reads) if (result.status === 'rejected') throw result.reason;
+const [events, tickets, counts, ...credits] = reads.map(result => result.value);
+let browser = {transactions: []};
+try { browser = readJson('docs/browser-transactions.json'); } catch {}
+const browserTxs = Array.isArray(browser.transactions) ? browser.transactions : [];
+if (browserTxs.length && browser.contract_address !== deployment.contract_address) throw new Error('BROWSER_CONTRACT_MISMATCH');
+const now = new Date().toISOString();
+const txLink = hash => `[${hash}](https://explorer-studio.genlayer.com/tx/${hash})`;
+const gen = amount => Number(amount) / 1e18;
+const records = [...evidence.transactions.map(record => ({...record, surface: 'SDK scripted regression'})), ...browserTxs.map(record => ({...record, surface: record.signer_mode || 'unspecified'}))];
+const outcomes = events.map(event => `| E${event.event_id} | ${event.artist} | ${event.date_iso} | ${event.status} | ${gen(event.escrowed_wei)} | ${event.organizer_paid} |`).join('\n');
+const anchors = events.map(event => `| E${event.event_id} | ${event.source_a_url} | ${event.source_b_url} |`).join('\n');
+const rows = records.map(record => `| ${record.label} | ${record.result}${record.expected_error ? ' / ' + record.expected_error : ''} | ${record.surface} | ${txLink(record.hash)} |`).join('\n');
+const snapshot = {observed_at: now, network: 'Stable Studionet', chain_id: 61999, contract_address: deployment.contract_address, protocol: 'fairgate-1.5', source_sha256: hash, transactionHashVariant: 'latest-final', events, tickets, counts, credits: Object.fromEntries(names.map((name, i) => [name, credits[i]])), verification: {pass: Number(summary[1]), fail: 0, scripted_records: evidence.transactions.length, workflow_records: browserTxs.length}};
+fs.writeFileSync(path.join(root, 'evidence/readback-v1.5.json'), JSON.stringify(snapshot, null, 2) + '\n');
+fs.writeFileSync(path.join(root, 'evidence/verification-v1.5.txt'), verification);
+fs.writeFileSync(path.join(root, 'evidence/mock-v1.5.txt'), tests);
+fs.writeFileSync(path.join(root, 'evidence/source-status.json'), JSON.stringify({protocol: 'fairgate-1.5', source_file: 'contracts/fairgate.py', source_sha256: hash, deployed: true, contract_address: deployment.contract_address, deploy_tx: deployment.deploy_tx, byte_parity: true}, null, 2) + '\n');
+const ledger = `${gen(counts.total_received_wei)} GEN received = ${gen(counts.total_withdrawn_wei)} GEN withdrawn + ${gen(counts.contract_balance_wei)} GEN contract balance. Escrow: ${gen(counts.escrowed_wei)} GEN; royalties: ${gen(counts.total_royalties_wei)} GEN; resale volume: ${gen(counts.total_resale_volume_wei)} GEN.`;
+const mechanism = `EVENT_HELD needs positive dated evidence from both independently fetched fixed sources. Silence on cancellation is insufficient. Each validator reproduces the verdict and all fetch, identity, status and held flags. The supported positive records are dated past-performance prose, an original same-day first-night report with retrospective prose, a same-day original weekday-night past-performance report, or measured completed-gig spending paired with the target artist's dated table. Cancellation/postponement signals must concern the target venue. Conflicting or unavailable evidence leaves state unchanged. Deterministic code credits the exact escrow; pull withdrawals pay the entitled address.`;
+const limits = `The English extractor is deliberately narrow and can reject genuine events phrased differently. Two publishers can be wrong; agreement is not proof of real-world truth. Source pages may change or be unavailable. E3 is a future event and is not prematurely settled; E4 remains postponed/rescheduled. Their escrow is intentional, not stranded failed-call value. No venue-entry credential or off-chain ticket-delivery guarantee is claimed. Failed-payable negatives send zero value. Archived V1.4 observations retain the failed E1 calls and their unreleased escrow; its receipts never count as V1.5 acceptance. Its archived readback recorded 70 GEN escrow and 32 GEN withdrawable resale credits after the source outage. SOLD_OUT and fabricated-validator rejection are covered by local fixtures; they are not represented as successful live business cases.`;
+fs.writeFileSync(path.join(root, 'EVIDENCE.md'), `# FairGate V1.5 — reproducible evidence\n\n- Contract: ${deployment.contract_address}\n- Deployment transaction: ${txLink(deployment.deploy_tx)}\n- Canonical source SHA-256: ${hash} (${source.length} bytes)\n- Network: Stable Studionet, 61999\n- Independent live verification: ${summary[1]} PASS, 0 FAIL\n- Latest-final observation: ${now}\n\nDeployment and successful transaction checks require FINALIZED + MAJORITY_AGREE + leader SUCCESS. Negative calls require finalized majority agreement, the exact leader ERROR and unchanged state. Disagreement attempts are retained separately and are not business passes.\n\n## Mechanism\n\n${mechanism}\n\n## Latest-final state\n\n| Event | Artist | Current date | Status | Escrow GEN | Organizer credited |\n|---|---|---|---|---|---|\n${outcomes}\n\n${ledger}\n\n## Transactions\n\n| Label | Observed result | Signing surface | Transaction |\n|---|---|---|---|\n${rows}\n\n## Evidence scope\n\nThe original V1.3 source, expectations and evidence are preserved in evidence/v1.3/. They prove only the old deployment. EXPECTED.md and EXPECTED_V15.md describe the prospective V1.5 run and were published before deployment. Off-chain source preflight is explicitly separate from validator consensus. Full latest-final data is in evidence/readback-v1.5.json; independent output in evidence/verification-v1.5.txt. Local fixture output is in evidence/mock-v1.5.txt, not a claim of live consensus.\n\n${browserTxs.length ? 'The additional workflow records identify their actual signing surface. An auxiliary SDK withdrawal is not described as a browser action.' : 'No new browser write transaction is recorded yet. Browser writes must be recorded on this deployment before a browser-write-loop claim is made.'}\n\n## Limits\n\n${limits}\n`);
+fs.writeFileSync(path.join(root, 'REVIEWER.md'), `# FairGate V1.5 — technical review\n\n${mechanism}\n\n## Anchors frozen in canonical source\n\n| Event | Source A | Independent source B |\n|---|---|---|\n${anchors}\n\n## Reproduce\n\nRun npm test, npm run build, node scripts/byte_parity.mjs and npm run verify. The verifier re-reads deployment and all recorded transactions, binds each to this deployment and compares latest-final event, ticket, credit and aggregate state. Successful settlements must also return the expected verdict; E1 must return held_a=true and held_b=true with successful identified fetches.\n\nAddress: ${deployment.contract_address}. Deploy: ${txLink(deployment.deploy_tx)}. Source: ${hash}. Live verification: ${summary[1]} PASS, 0 FAIL.\n\n${ledger}\n\n## Limits\n\n${limits}\n`);
+console.log(`Generated V1.5 evidence: ${summary[1]} PASS, ${records.length} records, source ${hash}`);

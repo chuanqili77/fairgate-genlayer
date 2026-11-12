@@ -19,7 +19,7 @@
     "evidence": "node scripts/run_evidence.mjs",
     "postbuild": "node scripts/write_version.mjs",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "python3 tests/test_fairgate_mock.py",
+    "test": "python3 tests/test_fairgate_mock.py && node tests/test_tx_outcomes.mjs",
     "verify": "node scripts/verify_evidence.mjs",
     "check-clean": "node scripts/check_clean_text.mjs"
   },
