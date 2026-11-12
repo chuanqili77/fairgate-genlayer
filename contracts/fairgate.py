@@ -27,13 +27,18 @@ evidence. A future version with organizer-listed events would need
 a source-URL allowlist; v1 does not have one and does not claim one.
 
   E1 EVENT_HELD: Oasis Live '25, Wembley Stadium, London, 2025-07-25.
-     (a) venue official page:
-         http://www.wembleystadium.com/events/2025/OASIS
+     (a) Wembley Stadium official retrospective:
+         https://www.wembleystadium.com/news/2025/09/30/12/23/OASIS-BRING-THE-CURTAIN-DOWN-ON-RECORD-BREAKING-CONCERT-SEASON-AT-WEMBLEY-STADIUM
+         It states that Oasis brought the curtain down on the concert
+         season at Wembley and that the Oasis show was the band's
+         seventh at the stadium that summer.
      (b) Wembley Park district guide (independent operator, Quintain;
          not the venue, not the artist, not the promoter):
          https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/
-         It states in plain words: "Update: Oasis played Wembley
-         Stadium in 2025."
+         It states: "Oasis played Wembley Stadium in 2025." Both
+         sources therefore contain positive, past-tense evidence that
+         this event took place; the original event listing alone did
+         not establish that it had happened.
   E2 CANCELLED: Future & Metro Boomin – We Trust You Tour,
      Bridgestone Arena, Nashville, 2024-08-06 20:00.
      (a) venue official page:
@@ -108,12 +113,18 @@ exact equality, no tolerance. The rule:
     retryable)
   - both sources contain a cancel word -> CANCELLED
   - both sources contain a postpone word -> POSTPONED
-  - neither source contains either word -> EVENT_HELD
-  - anything else (sources disagree) -> SOURCES_DISAGREE
+  - both sources contain explicit past-tense evidence that the
+    identified event was performed / took place, and neither source
+    contains a cancel or postpone word -> EVENT_HELD
+  - absence of cancel/postpone words is NOT proof of an event being
+    held; without positive held evidence from both sources the result
+    is SOURCES_DISAGREE and escrow stays locked
     (no state change, retryable)
-HELD has no explicit "held" word on either source page: the rule
-defines HELD as "both sources fetched, both confirmed the event,
-neither says cancelled or postponed". The fetched page text is data,
+HELD requires a positive past-tense performance signal on each
+source page (for example "played", "performed", "took place", "was
+held", or "brought the curtain down"), in addition to the event
+identity check. A scheduled listing or silence about cancellation
+is never sufficient evidence to release escrow. The fetched page text is data,
 never instructions: injection text inside a page cannot change the
 verdict, because only the keyword flags and the identity tokens are
 examined — and a page that does not mention the event at all cannot
@@ -397,26 +408,34 @@ def _scoped_text(html):
 
 
 def _scan(html, id_a, id_b):
-    """Keyword flags + identity check on the SCOPED page text
-    (lowercased), never on the raw body.
+    """Outcome flags + identity check on scoped page text only.
 
-    Cancel words are the two past-tense spellings ("cancelled",
-    "canceled") — the forms real cancellation notices use. Postpone
-    words are the stems ("postpone", "reschedule"), which also match
-    "postponed", "postponement", "rescheduled", "rescheduling".
-    The bare stem "cancel" is deliberately NOT a keyword: it appears
-    in boilerplate ("cancellation policy") and would false-positive.
-    Identity requires the artist token AND the venue token for the
-    event to appear in the scoped text: a page that does not mention
-    the event cannot vote on its outcome, however many keywords it
-    happens to contain.
+    HELD is positive evidence, not the absence of a cancellation word.
+    It requires an explicit past-tense signal that a performance took
+    place (e.g. played, performed, took place, was held, or a completed
+    event retrospective). Scheduled / on-sale copy is not evidence.
     """
+    import re
     scoped = _scoped_text(html)
     low = scoped.lower()
     cancel = ('cancelled' in low) or ('canceled' in low)
     postpone = ('postpone' in low) or ('reschedule' in low)
+    held_patterns = (
+        r'\bplayed\b',
+        r'\bperformed\b',
+        r'\btook place\b',
+        r'\bwas held\b',
+        r'\bwere held\b',
+        r'\bwent ahead\b',
+        r'\bhas taken place\b',
+        r'\bhave taken place\b',
+        r'\bwas staged\b',
+        r'\bwere staged\b',
+        r'\bbrought the curtain down\b',
+    )
+    held = any(re.search(pattern, low) for pattern in held_patterns)
     identity = (id_a.lower() in low) and (id_b.lower() in low)
-    return cancel, postpone, identity
+    return cancel, postpone, held, identity
 
 
 def _fetch_once(url, id_a, id_b):
@@ -426,37 +445,44 @@ def _fetch_once(url, id_a, id_b):
         response = gl.nondet.web.request(url, method='GET')
     except Exception:
         return {'ok': False, 'cancel': False, 'postpone': False,
-                'identity': False}
+                'held': False, 'identity': False}
     if getattr(response, 'status', 0) != 200:
         return {'ok': False, 'cancel': False, 'postpone': False,
-                'identity': False}
+                'held': False, 'identity': False}
     body = response.body
     if isinstance(body, bytes):
         try:
             text = body.decode('utf-8', errors='ignore')
         except Exception:
             return {'ok': False, 'cancel': False, 'postpone': False,
-                    'identity': False}
+                    'held': False, 'identity': False}
     elif isinstance(body, str):
         text = body
     else:
         return {'ok': False, 'cancel': False, 'postpone': False,
-                'identity': False}
-    cancel, postpone, identity = _scan(text, id_a, id_b)
+                'held': False, 'identity': False}
+    cancel, postpone, held, identity = _scan(text, id_a, id_b)
     return {'ok': True, 'cancel': cancel, 'postpone': postpone,
-            'identity': identity}
+            'held': held, 'identity': identity}
 
 
 def _verdict_from(a, b):
     if not a['ok'] or not b['ok'] \
             or not a['identity'] or not b['identity']:
         return 'UNREACHABLE'
-    if a['cancel'] and b['cancel']:
+    # A held verdict requires explicit positive evidence from BOTH
+    # independent sources. Silence on cancellation is not proof.
+    if a['cancel'] and b['cancel'] \
+            and not (a['postpone'] or b['postpone']
+                     or a['held'] or b['held']):
         return 'CANCELLED'
-    if a['postpone'] and b['postpone']:
+    if a['postpone'] and b['postpone'] \
+            and not (a['cancel'] or b['cancel']
+                     or a['held'] or b['held']):
         return 'POSTPONED'
-    if not a['cancel'] and not b['cancel'] \
-            and not a['postpone'] and not b['postpone']:
+    if a['held'] and b['held'] \
+            and not (a['cancel'] or b['cancel']
+                     or a['postpone'] or b['postpone']):
         return 'EVENT_HELD'
     return 'SOURCES_DISAGREE'
 
@@ -468,18 +494,24 @@ def _validate_check(res):
     if verdict not in VERDICTS:
         fail('CHECK_VERDICT')
     for k in ('cancel_a', 'cancel_b', 'postpone_a', 'postpone_b',
-              'fetch_a_ok', 'fetch_b_ok', 'identity_a', 'identity_b'):
+              'held_a', 'held_b', 'fetch_a_ok', 'fetch_b_ok',
+              'identity_a', 'identity_b'):
         if not isinstance(res.get(k), bool):
             fail('CHECK_FLAG')
     ca, cb = res['cancel_a'], res['cancel_b']
     pa, pb = res['postpone_a'], res['postpone_b']
+    ha, hb = res['held_a'], res['held_b']
     fa, fb = res['fetch_a_ok'], res['fetch_b_ok']
     ia, ib = res['identity_a'], res['identity_b']
-    if verdict == 'CANCELLED' and not (ca and cb and ia and ib):
+    if verdict == 'CANCELLED' and not (ca and cb and ia and ib
+                                        and not ha and not hb
+                                        and not pa and not pb):
         fail('CHECK_CANCELLED')
-    if verdict == 'POSTPONED' and not (pa and pb and ia and ib):
+    if verdict == 'POSTPONED' and not (pa and pb and ia and ib
+                                        and not ha and not hb
+                                        and not ca and not cb):
         fail('CHECK_POSTPONED')
-    if verdict == 'EVENT_HELD' and (ca or cb or pa or pb
+    if verdict == 'EVENT_HELD' and (not ha or not hb or ca or cb or pa or pb
                                     or not fa or not fb
                                     or not ia or not ib):
         fail('CHECK_HELD')
@@ -488,6 +520,12 @@ def _validate_check(res):
     if verdict == 'SOURCES_DISAGREE' and (not fa or not fb
                                           or not ia or not ib):
         fail('CHECK_DISAGREE')
+    if verdict == 'SOURCES_DISAGREE':
+        agreed = ((ca and cb and not (ha or hb or pa or pb))
+                  or (pa and pb and not (ha or hb or ca or cb))
+                  or (ha and hb and not (ca or cb or pa or pb)))
+        if agreed:
+            fail('CHECK_DISAGREE')
     return res
 
 
@@ -499,6 +537,7 @@ def _run_check(url_a, url_b, id_a, id_b):
             'verdict': _verdict_from(a, b),
             'cancel_a': a['cancel'], 'cancel_b': b['cancel'],
             'postpone_a': a['postpone'], 'postpone_b': b['postpone'],
+            'held_a': a['held'], 'held_b': b['held'],
             'fetch_a_ok': a['ok'], 'fetch_b_ok': b['ok'],
             'identity_a': a['identity'], 'identity_b': b['identity'],
         })
@@ -519,13 +558,14 @@ def _run_check(url_a, url_b, id_a, id_b):
             return False
         return all(leader.get(k) == mine.get(k) for k in
                    ('verdict', 'cancel_a', 'cancel_b', 'postpone_a',
-                    'postpone_b', 'fetch_a_ok', 'fetch_b_ok',
+                    'postpone_b', 'held_a', 'held_b',
+                    'fetch_a_ok', 'fetch_b_ok',
                     'identity_a', 'identity_b'))
 
     return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
 
-@gl.evm.contract_interface
+@gl.evm.contract_interface@gl.evm.contract_interface
 class _Recipient:
     class View:
         pass
