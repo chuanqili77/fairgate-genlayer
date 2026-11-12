@@ -4,7 +4,7 @@ Live site: https://chuanqili77.github.io/fairgate-genlayer/
 
 FairGate combines fixed-price concert tickets, capped resale and event-outcome settlement on GenLayer Stable Studionet (61999). Tickets cost 10 GEN; resale is capped at 11 GEN with a 10% artist royalty rounded down in wei. Settlement records pull-payment credits for the organizer or current holders.
 
-Current canonical source: **fairgate-1.5, awaiting a matching product deployment and live evidence**. The V1.4 observations below concern the previous source and address. V1.5 fixes the inaccessible second E1 source; see [EXPECTED_V15.md](EXPECTED_V15.md).
+Current canonical source: **fairgate-1.5, deployed; live settlement evidence is being recorded**. Current contract: 0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE. Deployment 0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6 is FINALIZED + MAJORITY_AGREE + SUCCESS with byte-identical source. The V1.4 observations below concern the previous source and address. V1.5 fixes the inaccessible second E1 source; see [EXPECTED_V15.md](EXPECTED_V15.md).
 
 ## Positive-evidence settlement
 
