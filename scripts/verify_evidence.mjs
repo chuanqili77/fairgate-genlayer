@@ -182,7 +182,7 @@ ok('E1 anchors are the probe-verified URLs',
   && e1.source_b_url === (historical ? 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/' : 'https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html'), JSON.stringify(e1));
 ok('E2 anchors are the probe-verified URLs',
   e2.source_a_url === 'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour'
-  && e2.source_b_url === (historical ? 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets' : 'https://www.jambase.com/show/future-bridgestone-arena-20240806'), JSON.stringify(e2));
+  && e2.source_b_url === (historical ? 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets' : 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets'), JSON.stringify(e2));
 ok('E3 anchors are the probe-verified URLs',
   e3.source_a_url === 'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour'
   && e3.source_b_url === 'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets', JSON.stringify(e3));

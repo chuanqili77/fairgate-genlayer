@@ -1,7 +1,7 @@
 {
   "protocol": "fairgate-1.5",
   "source_file": "contracts/fairgate.py",
-  "source_sha256": "364fca5e264710b930039f644e4a4bd70b41a136693109329a0e9ae9dcdd4f9c",
+  "source_sha256": "0631af4e2b1590fce2e1caaf3a766aa580c9628d1737537d97410f3a3816799f",
   "deployed": false,
   "live_acceptance": false,
   "historical_protocol": "fairgate-1.4",

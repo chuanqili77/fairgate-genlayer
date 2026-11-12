@@ -11,7 +11,7 @@ Four fixed launch events and two fixed sources per event:
   report (Global) and The Independent's original same-day performance
   report (PA) supply independent positive proof of the first Wembley night.
 - E2: Future & Metro Boomin at Bridgestone Arena, 6 August 2024.
-  The venue and JamBase's dated concert record report cancellation.
+  The venue and do615's dated concert record report cancellation.
 - E3: Pentatonix at Bridgestone Arena, 9 December 2026. The venue and
   do615 calendar are schedule sources, not proof the show happened.
 - E4: KATSEYE at Target Center, 7 November 2026. The venue and iHeart
@@ -558,7 +558,7 @@ class FairGate(gl.Contract):
             '2024-08-06', '6 August 2024, 8:00 PM',
             'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour',
             'Bridgestone Arena — official event page',
-            'https://www.jambase.com/show/future-bridgestone-arena-20240806',
+            'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets',
             'JamBase — dated cancelled concert record',
             'metro boomin', 'bridgestone')
         e2['event_id'] = 2

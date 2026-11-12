@@ -30,7 +30,7 @@ The prospective plan remains unchanged in [EXPECTED.md](EXPECTED.md). Current tr
 | Event | Date | Fixed sources | Intended path |
 |---|---|---|---|
 | Oasis, Wembley Stadium | 25 July 2025 | Radio X; Lloyds Banking Group | Dual positive performance evidence; currently fails closed |
-| Future & Metro Boomin, Bridgestone Arena | 6 August 2024 | Venue; JamBase | Cancellation |
+| Future & Metro Boomin, Bridgestone Arena | 6 August 2024 | Venue; do615 | Cancellation |
 | Pentatonix, Bridgestone Arena | 9 December 2026 | Venue; do615 | Future sale; early settlement refused |
 | KATSEYE, Target Center | 7 November 2026 | Venue; iHeart | Postponement and later rescheduling |
 

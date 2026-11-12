@@ -4,9 +4,11 @@ This V1.5 plan supersedes the unsuccessful V1.4 run, without rewriting its expec
 
 Face price 10 GEN; resale cap 11 GEN; artist royalty 10%, rounded down in wei. Creator P1 configures organizer ORG and artist ART; B1/B2 are buyers and OUT tests permission rejection. Keys remain outside the repository. E3/E4 open escrow and its entitlement accounts must be retained until eventual settlement.
 
+GenVM source preflight also found JamBase unavailable. Before any V1.5 product transaction, E2 source B is restored to the original do615 dated cancellation page: its existing historical evidence and a new HTTP-200 GenVM body observation identify the exact cancellation. The failed JamBase diagnostic remains recorded.
+
 Frozen source anchors:
 - E1 (2025-07-25): Radio X original same-day first-night report and The Independent original same-day weekday-night performance report. Both must independently produce held=true.
-- E2 (2024-08-06): Bridgestone Arena cancellation and JamBase specific dated cancelled concert record.
+- E2 (2024-08-06): Bridgestone Arena cancellation and do615 specific dated cancelled concert record.
 - E3 (2026-12-09): venue and do615 schedule; no early settlement, irrespective of source availability.
 - E4 (2026-11-07): Target Center and iHeart venue-linked postponement report. Another city's cancellation cannot decide this show.
 
