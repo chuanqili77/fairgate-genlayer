@@ -168,7 +168,7 @@ check('bridgestone page: identity ok', scan(BRIDGESTONE, 'metro boomin', 'bridge
 
 DO615 = ("Cancelled - Future & Metro Boomin - We Trust You Tour. "
          "Past(08/6/2024). 8:00PM. Bridgestone Arena.")
-check('do615 page: cancel word present', scan(DO615, 'metro boomin', 'bridgestone')[0], True)
+check('legacy do615 snippet lacks venue-linked cancellation sentence', scan(DO615, 'metro boomin', 'bridgestone')[0], False)
 check('do615 page: no postpone word', scan(DO615, 'metro boomin', 'bridgestone')[1], False)
 check('do615 page: identity ok', scan(DO615, 'metro boomin', 'bridgestone')[2], True)
 
@@ -205,12 +205,12 @@ MUSICTIMES = ("KATSEYE Postpone Chicago and Minneapolis Shows. KATSEYE have "
               "affected performances were scheduled for Nov. 5 at Chicago's "
               "United Center and Nov. 7 at Minneapolis' Target Center. "
               "The label has made the decision to postpone the shows.")
-check('musictimes page: postpone word present', scan(MUSICTIMES, 'katseye', 'target center')[1], True)
+check('legacy snippet does not explicitly tie status to target venue', scan(MUSICTIMES, 'katseye', 'target center')[1], False)
 check('musictimes page: no cancel word', scan(MUSICTIMES, 'katseye', 'target center')[0], False)
 check('musictimes page: identity ok', scan(MUSICTIMES, 'katseye', 'target center')[2], True)
-check('E4 pair reads POSTPONED under the rule',
+check('ambiguous legacy E4 snippet fails closed',
       verdict_from((True, *scan(TARGETCENTER, 'katseye', 'target center')),
-                   (True, *scan(MUSICTIMES, 'katseye', 'target center'))), 'POSTPONED')
+                   (True, *scan(MUSICTIMES, 'katseye', 'target center'))), 'SOURCES_DISAGREE')
 
 POSTPONED_PAGE = ("We are sorry to announce that, due to planned strikes, "
                   "we have been forced to reschedule the two concerts.")
@@ -241,8 +241,8 @@ check('conflicting cancel and postpone signals fail closed',
 # --- 3. Identity: a stray cancel word on a page about another event cannot flip the verdict ---
 STRAY = ("See also: other cancelled shows this season. "
          "Oasis at Wembley Stadium was a great night.")
-check('stray cancel word on the RIGHT event page still counts (documented)',
-      scan(STRAY, 'oasis', 'wembley')[0], True)
+check('unrelated cancellation sentence cannot change target event',
+      scan(STRAY, 'oasis', 'wembley')[0], False)
 OTHER_EVENT = ("See also: other cancelled shows this season. "
                "Coldplay at the Etihad was a great night.")
 check('stray cancel word on a WRONG event page: identity fails',
@@ -434,9 +434,9 @@ CANC_A = """<html><head><title>CANCELLED: Future &amp; Metro Boomin | Bridgeston
 CANC_B = """<html><head><title>Cancelled - Future &amp; Metro Boomin</title></head><body>
 <main><h1>Future &amp; Metro Boomin</h1><p>Past event. Bridgestone Arena. Cancelled.</p></main>
 <aside><p>Recommended: a postponed concert</p></aside></body></html>"""
-check('(5b) cancelled pair still reads CANCELLED',
+check('(5b) unlinked cancellation snippet fails closed',
       verdict_from((True, *scan(CANC_A, 'metro boomin', 'bridgestone')),
-                   (True, *scan(CANC_B, 'metro boomin', 'bridgestone'))), 'CANCELLED')
+                   (True, *scan(CANC_B, 'metro boomin', 'bridgestone'))), 'SOURCES_DISAGREE')
 # JSON-LD structured status is read as event data, not as page noise.
 JSONLD = """<html><head><title>KATSEYE | Target Center</title>
 <script type="application/ld+json">{"@type":"Event","name":"KATSEYE","eventStatus":"https://schema.org/EventPostponed","location":{"@type":"Place","name":"Target Center"}}</script>
@@ -563,6 +563,48 @@ _GL.message.sender_address = organizer
 c.withdraw()
 check_raises('organizer cannot withdraw twice', c.withdraw)
 check('full state-machine ledger conserved', json.loads(c.get_counts())['contract_balance_wei'], 0)
+
+# Prospective source-type regressions. These are local fixtures, not receipts.
+news = '<meta content="2025-07-25T23:29:47" name="pubdate" itemprop="datePublished">' +        '<p>Oasis finally brought the reunion tour to Wembley, playing the first of seven dates.</p>'
+check('same-day original first-night report is dated positive evidence',
+      _NS['_scan'](news, 'oasis', 'wembley', '2025-07-25')[3], True)
+check('an update timestamp cannot replace original publication day',
+      _NS['_scan'](news.replace('pubdate', 'lastmod'), 'oasis', 'wembley', '2025-07-25')[3], False)
+check('wrong original publication day fails first-night shortcut',
+      _NS['_scan'](news.replace('2025-07-25T', '2025-07-26T'), 'oasis', 'wembley', '2025-07-25')[3], False)
+check('future first-night listing remains insufficient',
+      _NS['_scan'](news.replace('finally brought', 'will bring'), 'oasis', 'wembley', '2025-07-25')[3], False)
+check('entity apostrophes cannot split identity sentences',
+      _NS['_scan']('Oasis performed at London&#39;s Wembley on 25 July 2025.', 'oasis', 'wembley', '2025-07-25')[3], True)
+table = '<table><tr><th>Oasis gig - 25 July 2025</th></tr><tr><td>Spending inside Wembley Stadium</td></tr></table>'
+measurement = '<p>Spending reached over five million during Oasis first Wembley gig this year.</p>' + table
+check('dated completed-gig measured spending is positive evidence',
+      _NS['_scan'](measurement, 'oasis', 'wembley', '2025-07-25')[3], True)
+check('planned-gig table alone is insufficient',
+      _NS['_scan'](table, 'oasis', 'wembley', '2025-07-25')[3], False)
+check('projected spending cannot replace past observation',
+      _NS['_scan'](measurement.replace('spending reached', 'spending may reach').replace('Spending reached', 'Spending may reach'), 'oasis', 'wembley', '2025-07-25')[3], False)
+check('different dated gig table is insufficient',
+      _NS['_scan'](measurement.replace('25 July', '26 July'), 'oasis', 'wembley', '2025-07-25')[3], False)
+
+check('conditional completed-spending phrase cannot unlock escrow',
+      _NS['_scan'](measurement.replace('Spending reached', 'If spending reached'), 'oasis', 'wembley', '2025-07-25')[3], False)
+check('another act dated column cannot establish the target performance',
+      _NS['_scan'](measurement.replace('Oasis gig - 25 July', 'Dua Lipa gig - 25 July'), 'oasis', 'wembley', '2025-07-25')[3], False)
+
+raw_script = '<script>var snippet = "<script src=x>";</script><p>Oasis performed at Wembley on 25 July 2025.</p>'
+check('script tag text cannot consume the visible article',
+      _NS['_scan'](raw_script, 'oasis', 'wembley', '2025-07-25')[3], True)
+void_link = '<link href="/related.css"><p>Oasis performed at Wembley on 25 July 2025.</p>'
+check('asset URL words do not remove article text',
+      _NS['_scan'](void_link, 'oasis', 'wembley', '2025-07-25')[3], True)
+
+linked_cancel = 'Future and Metro Boomin at Bridgestone Arena has been cancelled.'
+linked_postpone = 'Target Center announced that the KATSEYE show was postponed.'
+other_city = 'KATSEYE cancelled Detroit. Target Center announced that the Minneapolis show was postponed.'
+check('two explicit target-venue cancellations refund', verdict_from((True, *scan(linked_cancel, 'metro boomin', 'bridgestone')), (True, *scan(linked_cancel, 'metro boomin', 'bridgestone'))), 'CANCELLED')
+check('another city cancellation cannot cancel the target venue', scan(other_city, 'katseye', 'target center')[0], False)
+check('two target-venue postponements keep escrow', verdict_from((True, *scan(linked_postpone, 'katseye', 'target center')), (True, *scan(other_city, 'katseye', 'target center'))), 'POSTPONED')
 
 print()
 if FAILURES:

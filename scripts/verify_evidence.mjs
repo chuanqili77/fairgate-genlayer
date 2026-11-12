@@ -149,17 +149,17 @@ ok('E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, se
   && e4.event_start_ts === 1803175200 && e4.settle_after_ts === 1803189600 && e4.tz_offset_min === -360
   && e4.date_iso === '2027-02-20', JSON.stringify(e4));
 ok('E1 anchors are the probe-verified URLs',
-  e1.source_a_url === 'http://www.wembleystadium.com/events/2025/OASIS'
-  && e1.source_b_url === 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/', JSON.stringify(e1));
+  e1.source_a_url === (historical ? 'http://www.wembleystadium.com/events/2025/OASIS' : 'https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/')
+  && e1.source_b_url === (historical ? 'https://wembleypark.com/things-to-do/ultimate-guide-to-oasis-at-wembley-stadium/' : 'https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html'), JSON.stringify(e1));
 ok('E2 anchors are the probe-verified URLs',
   e2.source_a_url === 'https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour'
-  && e2.source_b_url === 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets', JSON.stringify(e2));
+  && e2.source_b_url === (historical ? 'https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets' : 'https://www.jambase.com/show/future-bridgestone-arena-20240806'), JSON.stringify(e2));
 ok('E3 anchors are the probe-verified URLs',
   e3.source_a_url === 'https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour'
   && e3.source_b_url === 'https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets', JSON.stringify(e3));
 ok('E4 anchors are the probe-verified URLs',
   e4.source_a_url === 'https://www.targetcenter.com/events/detail/katseye'
-  && e4.source_b_url === 'https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm', JSON.stringify(e4));
+  && e4.source_b_url === (historical ? 'https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm' : 'https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/'), JSON.stringify(e4));
 ok('E1 identity tokens are oasis + wembley', e1.id_a === 'oasis' && e1.id_b === 'wembley', JSON.stringify(e1));
 ok('E2 identity tokens are metro boomin + bridgestone', e2.id_a === 'metro boomin' && e2.id_b === 'bridgestone', JSON.stringify(e2));
 ok('E3 identity tokens are pentatonix + bridgestone', e3.id_a === 'pentatonix' && e3.id_b === 'bridgestone', JSON.stringify(e3));
@@ -215,7 +215,7 @@ if (browserTxs.length === 0) {
     && counts.total_royalties_wei === 4300000000000000000
     && counts.total_resale_volume_wei === 43000000000000000000, JSON.stringify(counts));
 }
-ok('protocol is fairgate-1.3', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === 'fairgate-1.3');
+ok('protocol matches evidence scope', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === (historical ? 'fairgate-1.3' : 'fairgate-1.4'));
 
 console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} scripted txs + ${browserTxs.length} browser txs checked`);
 if (fail > 0) { console.log('failures:', failures.join(', ')); process.exit(1); }

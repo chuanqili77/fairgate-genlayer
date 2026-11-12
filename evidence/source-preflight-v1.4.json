@@ -1,0 +1,84 @@
+{
+  "observed_at": "2026-11-12T17:19:57.124892+00:00",
+  "scope": "Off-chain source availability and deterministic extraction only; not live validator consensus.",
+  "sources": [
+    {
+      "event_id": 1,
+      "source": "a",
+      "url": "https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/",
+      "http_status": 200,
+      "body_sha256": "fab1bd3c8d62169a13244468190ee0a43a72cd9f040c8c12aa797e64183d85e1",
+      "body_bytes": 83083,
+      "cancel": false,
+      "postpone": false,
+      "identity": true,
+      "held": true
+    },
+    {
+      "event_id": 1,
+      "source": "b",
+      "url": "https://www.lloydsbankinggroup.com/media/press-releases/2025/lloyds-bank-2025/oasis-fans-outspend-swifties.html",
+      "http_status": 200,
+      "body_sha256": "55916998b9274ce0f89a64fb87482d701c382050ccdb3b50b47454e6df5a9ec4",
+      "body_bytes": 315914,
+      "cancel": false,
+      "postpone": false,
+      "identity": true,
+      "held": true
+    },
+    {
+      "event_id": 2,
+      "source": "a",
+      "url": "https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour",
+      "http_status": 200,
+      "body_sha256": "fcf94b3d530c4a09ea2345b8b9ce3ac700fe2b534f9346ddfc5e24a3bf4e53c6",
+      "body_bytes": 105303,
+      "cancel": true,
+      "postpone": false,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 2,
+      "source": "b",
+      "url": "https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    },
+    {
+      "event_id": 3,
+      "source": "a",
+      "url": "https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour",
+      "http_status": 200,
+      "body_sha256": "d258cd63bb6fb5826569e3e7abc5f7522f046d128dfd065f506a308d1ad06b94",
+      "body_bytes": 101211,
+      "cancel": false,
+      "postpone": false,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 3,
+      "source": "b",
+      "url": "https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    },
+    {
+      "event_id": 4,
+      "source": "a",
+      "url": "https://www.targetcenter.com/events/detail/katseye",
+      "http_status": 200,
+      "body_sha256": "ff43ec3bf1a945dd1f31aff84ca07a6e7c58337e0a468c452a4384f4d98de07f",
+      "body_bytes": 137143,
+      "cancel": false,
+      "postpone": true,
+      "identity": true,
+      "held": false
+    },
+    {
+      "event_id": 4,
+      "source": "b",
+      "url": "https://www.musictimes.com/articles/113245/20261109/katseye-postpone-chicago-minneapolis-shows-megan-recovers-concussion.htm",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    }
+  ]
+}

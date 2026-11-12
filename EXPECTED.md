@@ -1,7 +1,9 @@
-# EXPECTED.md — FairGate evidence v1.3 (pre-registered BEFORE the run)
+# FairGate V1.4 prospective chain test plan
 
-Contract: FairGate, protocol `fairgate-1.3`, Stable Studionet (61999).
-Address: 0x8883831222208CcbAf34DAcb8ac08f167edA6c6C
+Published before the new V1.4 deployment and test transactions. This is a new run, not a revision of the historical V1.3 registration, which remains byte-identical in evidence/v1.3/EXPECTED.md. The ticket flows, permissions and expected ledger remain the same; canonical source and source anchors are different and require a fresh deployment.
+
+E1 sources are Radio X's original same-day report and Lloyds' dated measured-spending record; both must independently give held=true. E2 uses the venue and JamBase's specific dated concert record. E4 uses Target Center and iHeart's venue-linked postponement report. No source outage, absence of cancellation, conflicting status or Mock fixture can count as EVENT_HELD. E3 remains future-gated; source unavailability must never release its escrow.
+
 Deploy tx: 0xaaf1e0d5764a083372676cc667eb89bc8ddefa8cd624a80866ab597841e7ef3b
 Source SHA-256: dfca9b07359070883cf592df0b451dd8f7f4c37ea426760f50a2d0591c8775c5 (41,041 bytes, byte parity TRUE)
 Face price 10 GEN per ticket; resale cap 11 GEN (110%, cap included);
@@ -9,15 +11,15 @@ artist royalty 10% (price * 10 // 100 in wei, exact for whole-GEN prices).
 Four launch events, fixed in the contract source (see README for why
 they are fixed, and for the probe results behind the verdict rule).
 
-## Why v1.3 (v1.2 superseded, archived in evidence/v1.2/)
+## Why v1.4 (v1.2 superseded, archived in evidence/v1.2/)
 
 v1.2 (fairgate-1.2, 0x38b0aE26…) verified clean (byte parity TRUE,
 verify 78/78, ledger 113 in = 83 out + 30 balance) but had three
-defects that are fixed in v1.3:
+defects that are fixed in v1.4:
 
 1. The settlement gate compared UTC date strings against the event
    date. A show that starts in the evening local time could be
-   settled hours before the local day ended. v1.3 stores explicit
+   settled hours before the local day ended. v1.4 stores explicit
    Unix timestamps per event (event_start_ts, settle_after_ts) and
    the local UTC offset; the contract derives settle_after_ts
    itself as the first second of the day after the show in the
@@ -27,21 +29,21 @@ defects that are fixed in v1.3:
    now exactly 2026-12-10T06:00:00Z (2026-12-10 00:00 Nashville).
 2. A POSTPONED event had no safe way to move to a new date: the
    only path was re-settling it, which left the old date and the
-   old settlement timestamp in place. v1.3 adds reschedule_event
+   old settlement timestamp in place. v1.4 adds reschedule_event
    (creator only, POSTPONED only, new date later than the old date,
    new settlement timestamp re-derived and re-checked, tickets /
    holders / escrow untouched, no money released, re-reschedulable,
    settled or selling events refused, never reopens sales).
 3. The verdict scanned the whole raw page, so a cancelled word in a
    footer or a recommended article about another event could
-   influence the result. v1.3 reads only scoped text (page title,
+   influence the result. v1.4 reads only scoped text (page title,
    meta content, JSON-LD structured event data, visible body after
    removing navigation, footers, asides, scripts, styles and
    recommended / related sections). The identity check and the
    keyword flags run on that scoped text only. The E1/E2/E4
    verdicts are unchanged (re-proven on-chain in this run).
 
-v1.3 also makes the browser write loop a formal evidence file
+v1.4 also makes the browser write loop a formal evidence file
 (docs/browser-transactions.json, re-read live by the verify
 script) instead of a Markdown-only record. v1.2 history is
 preserved unchanged in evidence/v1.2/.
@@ -249,7 +251,7 @@ behavior on Studionet). Every failed-payable negative in this run
 can be stranded. The verify script re-reads the full state before
 and after each negative and fails the run if anything changed.
 
-## Not covered by on-chain evidence in v1.3
+## Not covered by on-chain evidence in v1.4
 
 - SOLD_OUT: no on-chain case. Buying all 8 E3 tickets would close
   the live site's only buyable event, so the sold-out path is

@@ -1,4 +1,4 @@
-// FairGate: full evidence run on Stable Studionet (61999), v1.3.
+// FairGate: full evidence run on Stable Studionet (61999), v1.4.
 // Pre-registered expectations: EXPECTED.md (written before this run).
 // 5 pre-configure negatives (incl. BAD_SETTLE_AFTER_TS on a wrong
 // settlement timestamp and BAD_TZ_OFFSET on an out-of-range offset)
@@ -97,7 +97,10 @@ async function collect(client, hash, label) {
   for (let i = 0; i < 3; i++) {
     try {
       const tx = await client.waitForTransactionReceipt({hash, status: 'FINALIZED', interval: 5000, retries: 12, fullTransaction: true});
-      console.log(label, 'status=', tx.status, 'result=', tx.result, 'leader=', leaderExec(tx), 'leader_error=', leaderError(tx));
+      console.log(label, 'status=', tx.status, 'result=', tx.result, 'leader=', leaderExec(tx), 'leader_error=', leaderExec(tx) === 'ERROR' ? leaderError(tx) : '');
+      const receiptDir = path.join(REPO, 'evidence', 'receipts');
+      fs.mkdirSync(receiptDir, {recursive: true});
+      fs.writeFileSync(path.join(receiptDir, hash + '.json'), JSON.stringify({label, hash, receipt: tx}, (_, value) => typeof value === 'bigint' ? value.toString() : value, 2));
       return tx;
     } catch (e) {
       console.log('tracking', label, 'attempt', i, e.shortMessage || e.message);
@@ -119,6 +122,8 @@ const reader = createClient({chain: studionet});
 console.log('contract:', ADDRESS);
 for (const k of Object.keys(accounts)) console.log(k, ':', accounts[k].address);
 
+const liveProtocol = await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'});
+if (liveProtocol !== 'fairgate-1.4') throw new Error('WRONG_PROTOCOL: ' + liveProtocol);
 const ev = cp.evidence || (cp.evidence = {done: {}, tickets: {}});
 const done = ev.done;
 const records = [];
@@ -183,6 +188,9 @@ for (const label of Object.keys(done).sort()) {
   else if (label.startsWith('neg')) records.push({label, hash, result: 'error-observed', expected_error: NEG_ERRORS[label]});
   else if (/-attempt-\d+$/.test(label)) records.push({label, hash, result: 'disagreed-retry'});
   else records.push({label, hash, result: 'ok'});
+}
+for (const [label, hash] of Object.entries(done)) {
+  if (/-attempt-\d+$/.test(label) && !records.some(record => record.hash === hash)) records.push({label, hash, result: 'disagreed-retry'});
 }
 if (records.length > 0) console.log('resumed:', records.length, 'txs already recorded from the checkpoint');
 function record(label, hash, result, extra = {}) {

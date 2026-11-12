@@ -1,14 +1,7 @@
-# FairGate V1.4 regression plan — not executed on-chain
+# FairGate V1.4 evidence rules and regression scope
 
-This is a new prospective plan, not a modification of the original V1.3 registration in evidence/v1.3/EXPECTED.md. No new deployment or executed test is asserted.
+The prospective live flow and exact ledger are in EXPECTED.md. Historical V1.3 expectations are preserved separately and are not used as evidence for V1.4.
 
-- A source with only a scheduled listing, no dated positive performance sentence: held flag false.
-- One source confirms a dated performance, the other does not: SOURCES_DISAGREE; event/tickets/credits/escrow unchanged.
-- Either source fails or lacks identity: UNREACHABLE; all state unchanged.
-- Prior performance or another configured date: no organizer credit.
-- Two independently fetched sources each affirm artist, venue and exact date, without conflicting status signals: EVENT_HELD; credit exact escrow once, then authorized pull withdrawal once.
-- Forged leader held flags or verdict: validator rejection; no settlement.
-- E1 current fixed retrospective and district guide do not confirm the exact configured date under the accepted pattern: funds must remain locked; do not relabel a general retrospective as sufficient evidence.
-- E2 cancellation and E4 postponement must preserve refund/locked-funds behavior. E3 stays gated until its real settlement timestamp. No artificial timestamp or fabricated source may substitute in live acceptance.
+Positive proof must be dated and identify the target act and venue. Supported records are explicit dated past performance prose; an original same-day first-night article paired with retrospective prose; or an actual measured-spending statement paired with that artist's dated gig table and venue-internal spending row. A planned table, projected spending, another act's dated column, an update timestamp, a prior performance or another date must fail closed.
 
-Live deployment and acceptance must be performed only after a credible exact-date E1 evidence path is available; otherwise no successful organizer-payout acceptance is possible with these anchors. Historical receipts and Mock fixtures cannot substitute.
+Both independent sources must satisfy the positive rule and contain no conflicting venue-linked status. Each validator re-fetches both and compares all flags. Contradiction, missing identity and unreachable sources move no money. The full Mock harness covers the shipped functions and state machine; only finalized successful real transactions plus latest-final state can establish live acceptance.
