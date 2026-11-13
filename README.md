@@ -68,3 +68,5 @@ Historical V1.3 and older deployments are retired and archived. Their receipts p
 The English extractor recognizes bounded evidence forms, not general semantic truth. Source outages, changed wording or disagreement can lock escrow; beneficiaries cannot replace frozen URLs. Publisher independence is not cryptographic proof of reality. E3 is not settled before 2026-12-10T06:00:00Z; E4 stays postponed/rescheduled. SOLD_OUT and forged-validator cases are local tests, not live business demonstrations. Tickets are payment records, not venue admission credentials. Failed-payable negatives use zero value because Studionet retains value on failed payable calls.
 
 The live E3 event remains writable. The fixed ledger assertions describe the recorded acceptance snapshot; later valid purchases can change latest-final totals. Finalized receipts and the timestamped archived readback remain independently checkable.
+
+Browser evidence: [actual JSON export](evidence/browser-ui-v1.5.json) and [ledger screenshot](evidence/browser-v1.5-final.jpg). The export retains canonical chain status values and includes all 58 evidence records.
