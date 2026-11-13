@@ -30,6 +30,8 @@ Settlement also requires the pinned transaction time to reach the first second a
 | 3 · Pentatonix | 2026-12-09 | ON_SALE | 30 |
 | 4 · KATSEYE | 2027-02-20 | POSTPONED | 10 |
 
+E4's 2027 date is an on-chain rescheduling test input, not a verified promoter announcement.
+
 The scripted phase recorded **102 GEN received = 72 GEN withdrawn + 30 GEN escrow/balance**. After the additional browser workflow, latest-final reads **123 GEN received = 83 GEN withdrawn + 40 GEN escrow/balance**, with 4.3 GEN royalties and 43 GEN resale volume. All role and browser-account pull credits are zero. The open escrow is E3 30 GEN plus E4 10 GEN.
 
 Independent live verification: **172 PASS, 0 FAIL**, covering deployment, 53 scripted transactions and five additional workflow transactions (four browser UI writes plus one auxiliary SDK artist withdrawal). Successful operations require FINALIZED + MAJORITY_AGREE + leader SUCCESS. Negative operations require the exact expected finalized agreed ERROR and unchanged state. A successfully executed fail-closed call is not a successful settlement.
@@ -68,3 +70,5 @@ Historical V1.3 and older deployments are retired and archived. Their receipts p
 The English extractor recognizes bounded evidence forms, not general semantic truth. Source outages, changed wording or disagreement can lock escrow; beneficiaries cannot replace frozen URLs. Publisher independence is not cryptographic proof of reality. E3 is not settled before 2026-12-10T06:00:00Z; E4 stays postponed/rescheduled. SOLD_OUT and forged-validator cases are local tests, not live business demonstrations. Tickets are payment records, not venue admission credentials. Failed-payable negatives use zero value because Studionet retains value on failed payable calls.
 
 The live E3 event remains writable. The fixed ledger assertions describe the recorded acceptance snapshot; later valid purchases can change latest-final totals. Finalized receipts and the timestamped archived readback remain independently checkable.
+
+Browser evidence: [actual JSON export](evidence/browser-ui-v1.5.json) and [ledger screenshot](evidence/browser-v1.5-final.jpg). The export retains canonical chain status values and includes all 58 evidence records.

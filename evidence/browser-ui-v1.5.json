@@ -1,0 +1,512 @@
+{
+  "contract": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
+  "readback_at": "2026-11-13T02:07:40.120Z",
+  "finalized": true,
+  "events": [
+    {
+      "artist": "Oasis",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "London",
+      "date_display": "25 July 2025",
+      "date_iso": "2025-07-25",
+      "escrowed_wei": 0,
+      "event_id": 1,
+      "event_start_ts": 1753466400,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "oasis",
+      "id_b": "wembley",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": true,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1753484400,
+      "settle_count": 1,
+      "source_a_label": "Radio X — same-day first-night report",
+      "source_a_url": "https://www.radiox.co.uk/artists/oasis/london-wembley-stadium-night-1-setlist-ozzy-osbourne-tribute/",
+      "source_b_label": "The Independent / PA — original same-day performance report",
+      "source_b_url": "https://www.independent.co.uk/bulletin/culture/oasis-tribute-ozzy-osbourne-wembley-b2796354.html",
+      "status": "EVENT_HELD",
+      "tickets_sold": 2,
+      "tickets_total": 8,
+      "tz_name": "Europe/London",
+      "tz_offset_min": 60,
+      "venue": "Wembley Stadium",
+      "verdict": "EVENT_HELD"
+    },
+    {
+      "artist": "Future & Metro Boomin",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "Nashville",
+      "date_display": "6 August 2024, 8:00 PM",
+      "date_iso": "2024-08-06",
+      "escrowed_wei": 0,
+      "event_id": 2,
+      "event_start_ts": 1722992400,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "metro boomin",
+      "id_b": "bridgestone",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": false,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1723006800,
+      "settle_count": 1,
+      "source_a_label": "Bridgestone Arena — official event page",
+      "source_a_url": "https://www.bridgestonearena.com/events/detail/future-metro-boomin-we-trust-you-tour",
+      "source_b_label": "do615 — dated cancelled concert record",
+      "source_b_url": "https://do615.com/events/2024/8/6/future-metro-boomin-we-trust-you-tour-tickets",
+      "status": "CANCELLED",
+      "tickets_sold": 2,
+      "tickets_total": 8,
+      "tz_name": "America/Chicago",
+      "tz_offset_min": -300,
+      "venue": "Bridgestone Arena",
+      "verdict": "CANCELLED"
+    },
+    {
+      "artist": "Pentatonix",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "Nashville",
+      "date_display": "9 December 2026, 7:00 PM",
+      "date_iso": "2026-12-09",
+      "escrowed_wei": 30000000000000000000,
+      "event_id": 3,
+      "event_start_ts": 1796864400,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "pentatonix",
+      "id_b": "bridgestone",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": false,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1796882400,
+      "settle_count": 0,
+      "source_a_label": "Bridgestone Arena — official event page",
+      "source_a_url": "https://www.bridgestonearena.com/events/detail/pentatonix-christmas-in-the-city-tour",
+      "source_b_label": "do615 — Nashville independent event calendar",
+      "source_b_url": "https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets",
+      "status": "ON_SALE",
+      "tickets_sold": 3,
+      "tickets_total": 8,
+      "tz_name": "America/Chicago",
+      "tz_offset_min": -360,
+      "venue": "Bridgestone Arena",
+      "verdict": ""
+    },
+    {
+      "artist": "KATSEYE",
+      "artist_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "city": "Minneapolis",
+      "date_display": "20 February 2027, 8:00 PM",
+      "date_iso": "2027-02-20",
+      "escrowed_wei": 10000000000000000000,
+      "event_id": 4,
+      "event_start_ts": 1803175200,
+      "face_price_gen": 10,
+      "face_price_wei": 10000000000000000000,
+      "id_a": "katseye",
+      "id_b": "target center",
+      "max_resale_gen": 11,
+      "organizer": "0x6e7a5c58340bbee8f411792f19262c6a495c44ce",
+      "organizer_paid": false,
+      "parties_set": true,
+      "royalty_pct": 10,
+      "settle_after_ts": 1803189600,
+      "settle_count": 1,
+      "source_a_label": "Target Center — official event page (\"KATSEYE - POSTPONED\")",
+      "source_a_url": "https://www.targetcenter.com/events/detail/katseye",
+      "source_b_label": "iHeart — Target Center postponement announcement report",
+      "source_b_url": "https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/",
+      "status": "POSTPONED",
+      "tickets_sold": 1,
+      "tickets_total": 8,
+      "tz_name": "America/Chicago",
+      "tz_offset_min": -360,
+      "venue": "Target Center",
+      "verdict": "POSTPONED"
+    }
+  ],
+  "tickets": [
+    {
+      "event_id": 1,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 1
+    },
+    {
+      "event_id": 1,
+      "owner": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 2
+    },
+    {
+      "event_id": 2,
+      "owner": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "REFUNDED",
+      "ticket_id": 3
+    },
+    {
+      "event_id": 2,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "REFUNDED",
+      "ticket_id": 4
+    },
+    {
+      "event_id": 3,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 5
+    },
+    {
+      "event_id": 3,
+      "owner": "0x71e160eb38403dc84f90e6616c5c8fae92a4eaf5",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 6
+    },
+    {
+      "event_id": 4,
+      "owner": "0x74ba28b71c6fdad13dde8c80af563f380cce282c",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 7
+    },
+    {
+      "event_id": 3,
+      "owner": "0x57b9bda811b6c8611e6a19482571717b8f413f2d",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 8
+    }
+  ],
+  "counts": {
+    "contract_balance_wei": 40000000000000000000,
+    "escrowed_wei": 40000000000000000000,
+    "event_count": 4,
+    "ticket_count": 8,
+    "total_received_wei": 123000000000000000000,
+    "total_resale_volume_wei": 43000000000000000000,
+    "total_royalties_wei": 4300000000000000000,
+    "total_withdrawn_wei": 83000000000000000000
+  },
+  "my_credit_wei": null,
+  "my_transactions": [
+    {
+      "hash": "0x6bdf3255bce0535bf9b0f594573026d8c6c3f6203652a3280e15e63d36780aa4",
+      "label": "withdraw",
+      "savedAt": "2026-11-13T01:51:35.499Z",
+      "result": "success"
+    }
+  ],
+  "evidence_transactions": [
+    {
+      "hash": "0xb40a0efd1a6e111a5d952012e1073b33632872c72933f05795c78b93caf940d4",
+      "label": "neg0-not-creator",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x89b718e05d4f728c84934b3a85b0e0bc016982d6cf24f7fc675f9ba26d61db6a",
+      "label": "neg14-bad-address",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x8681a4e41069a5f4578e33b6d349334b664f1ffd5b4f7d590c7f4f2005efc548",
+      "label": "neg15-bad-settle-after",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xeb15c731bc9a4cd24da5966210a3381d684e81204310279dce159c939b52baf6",
+      "label": "neg16-bad-tz-offset",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xf0eedc00beb51e4ca4b9141b30c3efdd88c07f871657d7bf0791e63c7f703079",
+      "label": "neg12-buy-unconfigured",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x97d905ba57a05a8956a423f3c2d3a93cb1d8dc363276ec23a1fa5d9c5e6db6a2",
+      "label": "cfg-e1",
+      "status": "ok"
+    },
+    {
+      "hash": "0x10702fc4590116c23a11f7bd9c226a989eb041c628ca8696ba8054077c2fe281",
+      "label": "cfg-e2",
+      "status": "ok"
+    },
+    {
+      "hash": "0x6b3167ab39b637bedcfd49a712e430e180217c62dfa72e263273b55f791fa95f",
+      "label": "cfg-e3",
+      "status": "ok"
+    },
+    {
+      "hash": "0x852fab21584f9426e4f9031706364e8f7f2e0664b362f7985433dac9184f9eb7",
+      "label": "cfg-e4",
+      "status": "ok"
+    },
+    {
+      "hash": "0xbb86bea75542ccaa3310ebd110f58df79028228aad47b16eb57782da4875ecdc",
+      "label": "t1-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0x643054d10a1a719de20ea2f31b4c71b3258643b9209d0a789c45868b55da8c60",
+      "label": "t2-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0x8c7c489fe4b31d4c3a1800bc7eced530aeae7627bdf575a5f8309d09ae7bcd7b",
+      "label": "t3-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0xbba8227aee85877089a967284e64563163762fe0a0d8e5992cb2d4e1bd4bc63c",
+      "label": "t4-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0x44519e3d219934a82538f754f365a4197f08211441662a614451500873914dc9",
+      "label": "t5-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0x4cb443c40e215e9445249058bf4d78b73c91bcb202327cb1dbbdae119ccbfcd3",
+      "label": "t6-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0xa87ba9bb83aec366eb36e85737bec420dd5a80a6d38a9ca7c632ecc134c3ae18",
+      "label": "t7-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0xd5a5cfbe69eab75f3db43de3e5c6a721749b0c98963321eb28030ec2d7e8dbc8",
+      "label": "r1-list",
+      "status": "ok"
+    },
+    {
+      "hash": "0xa59ef49b3aff4cb32655f6d69bb34d655d20887170d639882973df5d8cb62a40",
+      "label": "r1-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0xd8f531362f773fceb960895ce6455900be896a8b83bd2589b391052a7e8df362",
+      "label": "r2-list",
+      "status": "ok"
+    },
+    {
+      "hash": "0x69e01c725b4aaafac4ed75d776c45ec991e64ebc7d2d4d0510f066114d36ad93",
+      "label": "r2-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0x4e89aa9fcf5a13c4d5443b3b927efeb8b6a76a77d3e145687390091ab7b84a1f",
+      "label": "r3-list",
+      "status": "ok"
+    },
+    {
+      "hash": "0xa915e874c21dd5550b336d0cfe07efac22d5e6d282f4ad19d1596482e2b81ec0",
+      "label": "r4-list",
+      "status": "ok"
+    },
+    {
+      "hash": "0x8ba0f550b8b3aa6c99b6fe8e496d07c8564f525f1b2f4371eebad990e3b037f1",
+      "label": "r4-buy",
+      "status": "ok"
+    },
+    {
+      "hash": "0x11ed41ed5ef9d4617fe0290ad5b1e7937214c265c9303ac4b15eb26f0bf34f39",
+      "label": "neg3-stranger-list",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xfe790dc27602c369462379a82f00e635a14bf710bb8de9e4cadf7a478eda9f21",
+      "label": "neg4-over-cap",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x6a80a77f21c264a7e801a9f5b8fbea08420130b0058d19b0c45c00c01d22e859",
+      "label": "neg6-list",
+      "status": "ok"
+    },
+    {
+      "hash": "0xe56a205af7d8694026f9c379b902afc0f0a11754ed15cd0fcfd2d3946b004d65",
+      "label": "neg6-self-buy",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x8312cc9cf61390b8ab2835af11fa691eb2cabc0ef9aedb64d2b4d27fdf65dfdc",
+      "label": "neg6-cancel",
+      "status": "ok"
+    },
+    {
+      "hash": "0xa3c0d818f68ffaeec94cd7f4cf2d020562b71f55be5c4732857075dcdc884284",
+      "label": "neg5-not-listed",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x1eac6525dc75a351ee40ba83afa727eefd3f588c4611c50a27783446e3e9cb0a",
+      "label": "neg2-wrong-value",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x91c1c2f8e76c277450cbde22ecd21f59abbe47fe6c904d0e930f97158882aa12",
+      "label": "neg1-unknown-event",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x497b7e2a1acf29b121ccf55a4d925e61fde87037b39e79eb4a6a1241f4b9b33a",
+      "label": "neg13-early-settle-e3",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xff69bb3abf2a614055c1414aa3a446b5cf8931539aa41b1ef5dde56c45fbe97f",
+      "label": "s1-settle-e1",
+      "status": "ok"
+    },
+    {
+      "hash": "0x3b0c4fca922c54592b125ea0f9690f0fb0a53be4e28d92b3c9a737f5371a1031",
+      "label": "s2-settle-e2",
+      "status": "ok"
+    },
+    {
+      "hash": "0x67fdca5b94de3ba4ff11ede59503fc9fc6c8a69d3b1fd35a7584b1ae1b000376",
+      "label": "s3-settle-e4",
+      "status": "ok"
+    },
+    {
+      "hash": "0x1951f0ac469c4e544be815cc887ee42ec3b80cffff103ec063b00d3dc6748be2",
+      "label": "neg18-rsch-stranger",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x2183b47ddb014e331038d3c01f5752982ed82837cc7ee4835600b2f6a8bdd5b6",
+      "label": "neg19-rsch-onsale",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x667241f213f75e8c05a88238e87dc6218a15e7a52b02e1b9245d0d1f59fd4e95",
+      "label": "neg20-rsch-earlier",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x4306e58ca0fc068a8099ebd568902b28fe99263a191e91ed1c8e410172a3bc5c",
+      "label": "neg21-rsch-settled-e1",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x70fb16f00866bfea5e9f64602206fc37c0eb3130ab6336cb57506593132366a3",
+      "label": "neg22-rsch-settled-e2",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x272cbed666afb38667f3b2397802f5d28b42500eefbfaa1289489cbeb8e79d9f",
+      "label": "neg23-rsch-bad-settle",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x40c98798bf0029263433ae33e5f9837c0276f250ceeecfd8d222ee0740582f7a",
+      "label": "rsch1",
+      "status": "ok"
+    },
+    {
+      "hash": "0x1f10f32f303c816f13acab555d65cce6e9e03093349996d21f88863ab3e02728",
+      "label": "rsch2",
+      "status": "ok"
+    },
+    {
+      "hash": "0xca5362ba89611a59ab54789f90430aabb4cfeadc19c385b821c049332b3f813e",
+      "label": "neg17-settle-after-rsch",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x71e8ab24477568d40a90799dcb1add9b40c0f15c1b0fe73600f8bf82c84d20a4",
+      "label": "neg9-double-settle",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xa48d1382cfdb489fd0e2e3ee48fdc25ae161c7c43cc2669b34c9a96127adb069",
+      "label": "neg11-buy-held",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x72cd524559b0ee38205d4053db836f91c2b429b1a19b68881dc5e827a24c81d7",
+      "label": "neg10-list-refunded",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xb6670e08a728fc512e367b8649592f78c80691b3b1b898e279137b5e3791196b",
+      "label": "neg7-stranger-withdraw",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0xd0de1b675b534f2a33622280dca3b7b3a918005236691e5654da4b6dd5d2f845",
+      "label": "w-org",
+      "status": "ok"
+    },
+    {
+      "hash": "0xa5448a6b8cc904ab6be5516725719a1a7fd2f60246e24075bf7e85f387354ea8",
+      "label": "w-art",
+      "status": "ok"
+    },
+    {
+      "hash": "0xc5c99e58e16f74e1499e8d3cde17be8b4cf577062f8d32585057b3678c9d4709",
+      "label": "w-b1",
+      "status": "ok"
+    },
+    {
+      "hash": "0xc1f31f97f15f55f0a7c031f4d0a638e77922bd977823a3d1a3313cefb60a476c",
+      "label": "w-b2",
+      "status": "ok"
+    },
+    {
+      "hash": "0x2ece2c20f4293ffe4af3b21d7f7dc0719645d40263663b7f8de5e55ef5e3b0af",
+      "label": "neg8-double-withdraw",
+      "status": "error-observed"
+    },
+    {
+      "hash": "0x08ee5e65a08a8e8edf333c6ce4267055af768d28ef7a5fb615796bd54cf76a98",
+      "label": "b-buy · browser",
+      "status": "ok"
+    },
+    {
+      "hash": "0x97d0e862042872a129f58a2dd9a4c48a36c7ad9dafe1d3b0450ba656dd0a65ba",
+      "label": "b-list · browser",
+      "status": "ok"
+    },
+    {
+      "hash": "0x405d777869c98126bd2191f96278e9f9d14396c0d00891190f278749c0137ba9",
+      "label": "b-buy-resale · browser",
+      "status": "ok"
+    },
+    {
+      "hash": "0x6bdf3255bce0535bf9b0f594573026d8c6c3f6203652a3280e15e63d36780aa4",
+      "label": "b-withdraw-seller · browser",
+      "status": "ok"
+    },
+    {
+      "hash": "0xb69221d16571176750c359eafbca888faf522f3ae5f739ca1d423471f713c607",
+      "label": "b-withdraw-artist · SDK",
+      "status": "ok"
+    }
+  ]
+}

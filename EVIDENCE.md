@@ -96,3 +96,5 @@ The additional workflow records identify their actual signing surface. An auxili
 ## Limits
 
 The English extractor is deliberately narrow and can reject genuine events phrased differently. Two publishers can be wrong; agreement is not proof of real-world truth. Source pages may change or be unavailable. E3 is a future event and is not prematurely settled; E4 remains postponed/rescheduled. Their escrow is intentional, not stranded failed-call value. No venue-entry credential or off-chain ticket-delivery guarantee is claimed. Failed-payable negatives send zero value. Archived V1.4 observations retain the failed E1 calls and their unreleased escrow; its receipts never count as V1.5 acceptance. Its archived readback recorded 70 GEN escrow and 32 GEN withdrawable resale credits after the source outage. SOLD_OUT and fabricated-validator rejection are covered by local fixtures; they are not represented as successful live business cases.
+
+Browser evidence: [actual JSON export](evidence/browser-ui-v1.5.json) and [ledger screenshot](evidence/browser-v1.5-final.jpg). The export retains canonical chain status values and includes all 58 evidence records.
