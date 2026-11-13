@@ -128,7 +128,7 @@ export function clearPendingTx(hash: string) {
   } catch { /* ignore */ }
 }
 
-// ---- My transaction history: append-only, this browser tab only ----
+// ---- My transaction history: retained in this browser profile ----
 // Pending txs are cleared once FINALIZED, so they cannot back the
 // ticket detail afterwards. Every hash this tab sends is also kept
 // here so a ticket can always link its real transactions. Nothing

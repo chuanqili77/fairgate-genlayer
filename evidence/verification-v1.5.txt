@@ -121,7 +121,23 @@ PASS tx w-b2 (scripted) FINALIZED+AGREE+SUCCESS
 PASS tx neg8-double-withdraw (scripted) targets this deployment
 PASS tx neg8-double-withdraw (scripted) FINALIZED+AGREE+ERROR with exact payload NO_CREDIT
 
-browser write loop: not yet run — scripted checks above are the complete result for now
+additional workflow: 5 txs recorded, verifying live
+PASS browser file names the same contract
+PASS tx b-buy (browser) targets this deployment
+PASS tx b-buy (browser) matches its recorded signer
+PASS tx b-buy (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-list (browser) targets this deployment
+PASS tx b-list (browser) matches its recorded signer
+PASS tx b-list (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-buy-resale (browser) targets this deployment
+PASS tx b-buy-resale (browser) matches its recorded signer
+PASS tx b-buy-resale (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-withdraw-seller (browser) targets this deployment
+PASS tx b-withdraw-seller (browser) matches its recorded signer
+PASS tx b-withdraw-seller (browser) FINALIZED+AGREE+SUCCESS
+PASS tx b-withdraw-artist (auxiliary SDK) targets this deployment
+PASS tx b-withdraw-artist (auxiliary SDK) matches its recorded signer
+PASS tx b-withdraw-artist (auxiliary SDK) FINALIZED+AGREE+SUCCESS
 PASS E1 readback: EVENT_HELD, 2 sold, escrow 0, organizer paid, timestamps stored
 PASS E2 readback: CANCELLED, 2 sold, escrow 0, timestamps stored
 PASS E4 readback: POSTPONED, 1 sold, escrow 10 GEN, rescheduled to 2027-02-20, settle_count 1
@@ -148,10 +164,14 @@ PASS credit ART is 0 after withdrawals
 PASS credit B1 is 0 after withdrawals
 PASS credit B2 is 0 after withdrawals
 PASS credit OUT is 0 after withdrawals
-PASS E3 readback (scripted): ON_SALE, 2 sold, escrow 20 GEN, never settled
-PASS counts (scripted): 4 events, 7 tickets
-PASS ledger (scripted): 102 GEN in, 72 out, balance 30 GEN (= E3 20 + E4 10 escrow), escrow 30, royalties 3.2 GEN, resale volume 32 GEN
+PASS E3 readback (post-browser): ON_SALE, 3 sold, escrow 30 GEN, never settled
+PASS ticket 8 (browser buy) readback: ACTIVE, owned by the browser buyer
+PASS ticket 8 belongs to the recorded resale buyer
+PASS browser account has no remaining pull credit: 0x0322bbc10db4427fdb4a891d3c17d9d3781035be
+PASS browser account has no remaining pull credit: 0x57b9bda811b6c8611e6a19482571717b8f413f2d
+PASS counts (post-browser): 4 events, 8 tickets
+PASS ledger (post-browser): 123 GEN in, 83 out, balance 40 GEN (= E3 30 + E4 10 escrow), escrow 40, royalties 4.3 GEN, resale volume 43 GEN
 PASS protocol matches evidence scope
 
-verify: 152 PASS, 0 FAIL, 53 scripted txs + 0 browser txs checked
+verify: 172 PASS, 0 FAIL, 53 scripted txs + 5 additional workflow txs checked
 INDEPENDENT VERIFICATION PASS

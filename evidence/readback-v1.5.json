@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-11-12T19:23:17.121Z",
+  "observed_at": "2026-11-13T01:55:47.670Z",
   "network": "Stable Studionet",
   "chain_id": 61999,
   "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
@@ -77,7 +77,7 @@
       "city": "Nashville",
       "date_display": "9 December 2026, 7:00 PM",
       "date_iso": "2026-12-09",
-      "escrowed_wei": 20000000000000000000,
+      "escrowed_wei": 30000000000000000000,
       "event_id": 3,
       "event_start_ts": 1796864400,
       "face_price_gen": 10,
@@ -96,7 +96,7 @@
       "source_b_label": "do615 — Nashville independent event calendar",
       "source_b_url": "https://do615.com/events/2026/12/9/pentatonix-christmas-in-the-city-tour-tickets",
       "status": "ON_SALE",
-      "tickets_sold": 2,
+      "tickets_sold": 3,
       "tickets_total": 8,
       "tz_name": "America/Chicago",
       "tz_offset_min": -360,
@@ -192,17 +192,25 @@
       "resale_price_wei": 0,
       "status": "ACTIVE",
       "ticket_id": 7
+    },
+    {
+      "event_id": 3,
+      "owner": "0x57b9bda811b6c8611e6a19482571717b8f413f2d",
+      "resale_price_gen": 0,
+      "resale_price_wei": 0,
+      "status": "ACTIVE",
+      "ticket_id": 8
     }
   ],
   "counts": {
-    "contract_balance_wei": 30000000000000000000,
-    "escrowed_wei": 30000000000000000000,
+    "contract_balance_wei": 40000000000000000000,
+    "escrowed_wei": 40000000000000000000,
     "event_count": 4,
-    "ticket_count": 7,
-    "total_received_wei": 102000000000000000000,
-    "total_resale_volume_wei": 32000000000000000000,
-    "total_royalties_wei": 3200000000000000000,
-    "total_withdrawn_wei": 72000000000000000000
+    "ticket_count": 8,
+    "total_received_wei": 123000000000000000000,
+    "total_resale_volume_wei": 43000000000000000000,
+    "total_royalties_wei": 4300000000000000000,
+    "total_withdrawn_wei": 83000000000000000000
   },
   "credits": {
     "P1": {
@@ -231,9 +239,9 @@
     }
   },
   "verification": {
-    "pass": 152,
+    "pass": 172,
     "fail": 0,
     "scripted_records": 53,
-    "workflow_records": 0
+    "workflow_records": 5
   }
 }

@@ -15,9 +15,9 @@ EVENT_HELD needs positive dated evidence from both independently fetched fixed s
 
 Run npm test, npm run build, node scripts/byte_parity.mjs and npm run verify. The verifier re-reads deployment and all recorded transactions, binds each to this deployment and compares latest-final event, ticket, credit and aggregate state. Successful settlements must also return the expected verdict; E1 must return held_a=true and held_b=true with successful identified fetches.
 
-Address: 0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE. Deploy: [0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6](https://explorer-studio.genlayer.com/tx/0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6). Source: bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991. Live verification: 152 PASS, 0 FAIL.
+Address: 0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE. Deploy: [0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6](https://explorer-studio.genlayer.com/tx/0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6). Source: bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991. Live verification: 172 PASS, 0 FAIL.
 
-102 GEN received = 72 GEN withdrawn + 30 GEN contract balance. Escrow: 30 GEN; royalties: 3.2 GEN; resale volume: 32 GEN.
+123 GEN received = 83 GEN withdrawn + 40 GEN contract balance. Escrow: 40 GEN; royalties: 4.3 GEN; resale volume: 43 GEN.
 
 ## Limits
 

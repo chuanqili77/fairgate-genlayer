@@ -1,6 +1,77 @@
 {
   "network": "Stable Studionet",
   "chain_id": 61999,
-  "contract_address": null,
-  "transactions": []
+  "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
+  "complete": true,
+  "note": "Four live browser UI writes plus one auxiliary SDK artist withdrawal, with each signing surface identified separately.",
+  "transactions": [
+    {
+      "label": "b-buy",
+      "hash": "0x08ee5e65a08a8e8edf333c6ce4267055af768d28ef7a5fb615796bd54cf76a98",
+      "result": "ok",
+      "signer_mode": "browser-temporary-account",
+      "signer_address": "0x0322bbc10db4427fdb4a891d3c17d9d3781035be",
+      "function_name": "buy_ticket",
+      "args": [
+        3
+      ],
+      "value_wei": "10000000000000000000",
+      "ui_reload_while_pending": true
+    },
+    {
+      "label": "b-list",
+      "hash": "0x97d0e862042872a129f58a2dd9a4c48a36c7ad9dafe1d3b0450ba656dd0a65ba",
+      "result": "ok",
+      "signer_mode": "browser-temporary-account",
+      "signer_address": "0x0322bbc10db4427fdb4a891d3c17d9d3781035be",
+      "function_name": "list_resale",
+      "args": [
+        8,
+        11
+      ],
+      "value_wei": "0"
+    },
+    {
+      "label": "b-buy-resale",
+      "hash": "0x405d777869c98126bd2191f96278e9f9d14396c0d00891190f278749c0137ba9",
+      "result": "ok",
+      "signer_mode": "browser-temporary-account",
+      "signer_address": "0x57b9bda811b6c8611e6a19482571717b8f413f2d",
+      "function_name": "buy_resale",
+      "args": [
+        8
+      ],
+      "value_wei": "11000000000000000000"
+    },
+    {
+      "label": "b-withdraw-seller",
+      "hash": "0x6bdf3255bce0535bf9b0f594573026d8c6c3f6203652a3280e15e63d36780aa4",
+      "result": "ok",
+      "signer_mode": "browser-temporary-account",
+      "signer_address": "0x0322bbc10db4427fdb4a891d3c17d9d3781035be",
+      "function_name": "withdraw",
+      "args": [],
+      "value_wei": "0",
+      "withdrawn_wei": "9900000000000000000"
+    },
+    {
+      "label": "b-withdraw-artist",
+      "hash": "0xb69221d16571176750c359eafbca888faf522f3ae5f739ca1d423471f713c607",
+      "result": "ok",
+      "signer_mode": "auxiliary-sdk",
+      "signer_address": "0x3ddb3056171770ca4842b88e3f2fc8e3f0074c95",
+      "function_name": "withdraw",
+      "args": [],
+      "value_wei": "0",
+      "withdrawn_wei": "1100000000000000000"
+    }
+  ],
+  "ui_checks": {
+    "cold_start_unconfirmed": true,
+    "export_disabled_before_finalized_readback": true,
+    "english_chinese_controls": true,
+    "pending_reload_tracks_same_hash": true,
+    "canonical_EVENT_HELD_preserved_in_export": true,
+    "readback_retry_recovered": true
+  }
 }
