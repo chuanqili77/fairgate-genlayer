@@ -72,3 +72,9 @@ The English extractor recognizes bounded evidence forms, not general semantic tr
 The live E3 event remains writable. The fixed ledger assertions describe the recorded acceptance snapshot; later valid purchases can change latest-final totals. Finalized receipts and the timestamped archived readback remain independently checkable.
 
 Browser evidence: [actual JSON export](evidence/browser-ui-v1.5.json) and [ledger screenshot](evidence/browser-v1.5-final.jpg). The export retains canonical chain status values and includes all 58 evidence records.
+
+## Continued use
+
+The current deployment has four fixed event slots; it is not an open event factory. Remaining E3 tickets can still be bought and resold, and settlement becomes eligible only after its configured event day. Holders and organizers can withdraw any credits created by later valid settlements.
+
+For a later concert programme, the maintenance plan is a separately versioned deployment with independently checked, date-specific source pairs, configuration before sales, and the same escrow and withdrawal checks. This is prospective work, not a capability to add events to the current contract. Published deployment records and access to withdrawals on earlier contracts must remain available. Source availability and evidence wording require monitoring; monitoring alone cannot authorize a payout or replace frozen URLs.
