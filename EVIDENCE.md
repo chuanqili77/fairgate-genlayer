@@ -4,8 +4,8 @@
 - Deployment transaction: [0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6](https://explorer-studio.genlayer.com/tx/0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6)
 - Canonical source SHA-256: bb3b2798db8e7a2a094d86a64a0ca21a0619e89852f361d816a32fd920e11991 (38397 bytes)
 - Network: Stable Studionet, 61999
-- Independent live verification: 152 PASS, 0 FAIL
-- Latest-final observation: 2026-11-12T19:23:17.121Z
+- Independent live verification: 172 PASS, 0 FAIL
+- Latest-final observation: 2026-11-13T01:55:47.670Z
 
 Deployment and successful transaction checks require FINALIZED + MAJORITY_AGREE + leader SUCCESS. Negative calls require finalized majority agreement, the exact leader ERROR and unchanged state. Disagreement attempts are retained separately and are not business passes.
 
@@ -19,10 +19,10 @@ EVENT_HELD needs positive dated evidence from both independently fetched fixed s
 |---|---|---|---|---|---|
 | E1 | Oasis | 2025-07-25 | EVENT_HELD | 0 | true |
 | E2 | Future & Metro Boomin | 2024-08-06 | CANCELLED | 0 | false |
-| E3 | Pentatonix | 2026-12-09 | ON_SALE | 20 | false |
+| E3 | Pentatonix | 2026-12-09 | ON_SALE | 30 | false |
 | E4 | KATSEYE | 2027-02-20 | POSTPONED | 10 | false |
 
-102 GEN received = 72 GEN withdrawn + 30 GEN contract balance. Escrow: 30 GEN; royalties: 3.2 GEN; resale volume: 32 GEN.
+123 GEN received = 83 GEN withdrawn + 40 GEN contract balance. Escrow: 40 GEN; royalties: 4.3 GEN; resale volume: 43 GEN.
 
 ## Transactions
 
@@ -81,12 +81,17 @@ EVENT_HELD needs positive dated evidence from both independently fetched fixed s
 | w-b1 | ok | SDK scripted regression | [0xc5c99e58e16f74e1499e8d3cde17be8b4cf577062f8d32585057b3678c9d4709](https://explorer-studio.genlayer.com/tx/0xc5c99e58e16f74e1499e8d3cde17be8b4cf577062f8d32585057b3678c9d4709) |
 | w-b2 | ok | SDK scripted regression | [0xc1f31f97f15f55f0a7c031f4d0a638e77922bd977823a3d1a3313cefb60a476c](https://explorer-studio.genlayer.com/tx/0xc1f31f97f15f55f0a7c031f4d0a638e77922bd977823a3d1a3313cefb60a476c) |
 | neg8-double-withdraw | error-observed / NO_CREDIT | SDK scripted regression | [0x2ece2c20f4293ffe4af3b21d7f7dc0719645d40263663b7f8de5e55ef5e3b0af](https://explorer-studio.genlayer.com/tx/0x2ece2c20f4293ffe4af3b21d7f7dc0719645d40263663b7f8de5e55ef5e3b0af) |
+| b-buy | ok | browser-temporary-account | [0x08ee5e65a08a8e8edf333c6ce4267055af768d28ef7a5fb615796bd54cf76a98](https://explorer-studio.genlayer.com/tx/0x08ee5e65a08a8e8edf333c6ce4267055af768d28ef7a5fb615796bd54cf76a98) |
+| b-list | ok | browser-temporary-account | [0x97d0e862042872a129f58a2dd9a4c48a36c7ad9dafe1d3b0450ba656dd0a65ba](https://explorer-studio.genlayer.com/tx/0x97d0e862042872a129f58a2dd9a4c48a36c7ad9dafe1d3b0450ba656dd0a65ba) |
+| b-buy-resale | ok | browser-temporary-account | [0x405d777869c98126bd2191f96278e9f9d14396c0d00891190f278749c0137ba9](https://explorer-studio.genlayer.com/tx/0x405d777869c98126bd2191f96278e9f9d14396c0d00891190f278749c0137ba9) |
+| b-withdraw-seller | ok | browser-temporary-account | [0x6bdf3255bce0535bf9b0f594573026d8c6c3f6203652a3280e15e63d36780aa4](https://explorer-studio.genlayer.com/tx/0x6bdf3255bce0535bf9b0f594573026d8c6c3f6203652a3280e15e63d36780aa4) |
+| b-withdraw-artist | ok | auxiliary-sdk | [0xb69221d16571176750c359eafbca888faf522f3ae5f739ca1d423471f713c607](https://explorer-studio.genlayer.com/tx/0xb69221d16571176750c359eafbca888faf522f3ae5f739ca1d423471f713c607) |
 
 ## Evidence scope
 
 The original V1.3 source, expectations and evidence are preserved in evidence/v1.3/. They prove only the old deployment. EXPECTED.md and EXPECTED_V15.md describe the prospective V1.5 run and were published before deployment. Off-chain source preflight is explicitly separate from validator consensus. Full latest-final data is in evidence/readback-v1.5.json; independent output in evidence/verification-v1.5.txt. Local fixture output is in evidence/mock-v1.5.txt, not a claim of live consensus.
 
-No new browser write transaction is recorded yet. Browser writes must be recorded on this deployment before a browser-write-loop claim is made.
+The additional workflow records identify their actual signing surface. An auxiliary SDK withdrawal is not described as a browser action.
 
 ## Limits
 

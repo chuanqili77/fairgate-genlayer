@@ -34,7 +34,7 @@ function normalizeEvidence(data: unknown): EvTx[] {
     .filter((x: any) => typeof x?.hash === 'string')
     .map((x: any) => ({
       hash: String(x.hash),
-      label: String(x.label ?? x.name ?? x.step ?? '—'),
+      label: String(x.label ?? x.name ?? x.step ?? '—') + (x.signer_mode === 'auxiliary-sdk' ? ' · SDK' : x.signer_mode === 'browser-temporary-account' ? ' · browser' : ''),
       status: String(x.status ?? x.result ?? (x.finalized === false ? 'ERROR' : 'FINALIZED')),
     }));
 }
@@ -99,11 +99,17 @@ export default function App() {
   useEffect(() => {
     const p = checkParity();
     if (p.missing.length || p.extra.length) console.warn('i18n parity', p);
-    loadDeployment().then(async (d) => { setDeployment(d); setPending(loadPendingTxs()); setMyTxs(loadMyTxs()); await refresh(); }).catch((e) => setErr(String(e?.message || e)));
-    fetch('./transactions.json', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (d) setEvidenceTxs(normalizeEvidence(d)); })
-      .catch(() => { /* evidence file not published yet */ });
+    loadDeployment().then(async (d) => {
+      setDeployment(d); setPending(loadPendingTxs()); setMyTxs(loadMyTxs());
+      void Promise.allSettled(['transactions.json', 'browser-transactions.json'].map(async (file) => {
+        const response = await fetch('./' + file, {cache: 'no-store'});
+        return response.ok ? response.json() : null;
+      })).then((results) => {
+        const rows = results.flatMap((r) => r.status === 'fulfilled' && r.value?.contract_address?.toLowerCase() === d.contract_address.toLowerCase() ? normalizeEvidence(r.value) : []);
+        setEvidenceTxs(rows.filter((row, i) => rows.findIndex((other) => other.hash === row.hash) === i));
+      });
+      await refresh();
+    }).catch((e) => setErr(String(e?.message || e)));
   }, [refresh]);
 
   useEffect(() => { refreshCredit(wallet); }, [wallet, refreshCredit, readback]);

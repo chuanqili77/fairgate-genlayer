@@ -114,11 +114,23 @@ async function checkTxRecord(rec, kind) {
     ok(`tx ${rec.label} (${kind}) re-read FINALIZED`, false, String(e?.message || e));
     return;
   }
+  // Keep newly observed finalized receipts without rewriting archived bytes.
+  if (!historical && /^0x[0-9a-fA-F]{64}$/.test(rec.hash) && [7, 'FINALIZED'].includes(tx.status)) {
+    const receiptPath = path.join(REPO, 'evidence', 'receipts', rec.hash + '.json');
+    if (!fs.existsSync(receiptPath)) {
+      fs.mkdirSync(path.dirname(receiptPath), {recursive: true});
+      fs.writeFileSync(receiptPath, JSON.stringify({label: rec.label, hash: rec.hash, receipt: tx}, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2) + '\n');
+    }
+  }
   const finalized = [7, 'FINALIZED'].includes(tx.status);
   const agreed = [6, 'MAJORITY_AGREE'].includes(tx.result);
   const leader = leaderReceipt(tx);
   const target = String(tx.to_address || tx.to || tx.transaction?.to_address || tx.transaction?.to || '').toLowerCase();
   ok(`tx ${rec.label} (${kind}) targets this deployment`, target === ADDRESS.toLowerCase(), target);
+  if (rec.signer_address) {
+    const sender = String(tx.from_address || tx.from || '').toLowerCase();
+    ok(`tx ${rec.label} (${kind}) matches its recorded signer`, sender === rec.signer_address.toLowerCase(), sender);
+  }
   if (rec.result === 'ok') {
     ok(`tx ${rec.label} (${kind}) FINALIZED+AGREE+SUCCESS`, finalized && agreed && leader?.execution_result === 'SUCCESS',
       `status=${tx.status} result=${tx.result} leader=${leader?.execution_result}`);
@@ -153,9 +165,9 @@ for (const rec of txs.transactions) await checkTxRecord(rec, 'scripted');
 if (browserTxs.length === 0) {
   console.log('\nbrowser write loop: not yet run — scripted checks above are the complete result for now');
 } else {
-  console.log(`\nbrowser write loop: ${browserTxs.length} txs recorded, verifying live`);
+  console.log(`\nadditional workflow: ${browserTxs.length} txs recorded, verifying live`);
   ok('browser file names the same contract', browser.contract_address === ADDRESS, String(browser.contract_address));
-  for (const rec of browserTxs) await checkTxRecord(rec, 'browser');
+  for (const rec of browserTxs) await checkTxRecord(rec, rec.signer_mode === 'auxiliary-sdk' ? 'auxiliary SDK' : 'browser');
 }
 
 // 3. Final readback vs EXPECTED.md (latest-final reads).
@@ -235,6 +247,12 @@ if (browserTxs.length === 0) {
   const t8 = await read('get_ticket', [8]);
   ok('ticket 8 (browser buy) readback: ACTIVE, owned by the browser buyer',
     t8.status === 'ACTIVE' && typeof t8.owner === 'string' && t8.owner.startsWith('0x'), JSON.stringify(t8));
+  const resaleBuyer = browserTxs.find(r => r.label === 'b-buy-resale')?.signer_address;
+  if (resaleBuyer) ok('ticket 8 belongs to the recorded resale buyer', t8.owner.toLowerCase() === resaleBuyer.toLowerCase());
+  for (const address of new Set(browserTxs.filter(r => r.signer_mode === 'browser-temporary-account').map(r => r.signer_address))) {
+    const credit = await read('get_credit', [address]);
+    ok('browser account has no remaining pull credit: ' + address, credit.credit_wei === 0);
+  }
   ok('counts (post-browser): 4 events, 8 tickets',
     counts.event_count === 4 && counts.ticket_count === 8, JSON.stringify(counts));
   ok('ledger (post-browser): 123 GEN in, 83 out, balance 40 GEN (= E3 30 + E4 10 escrow), escrow 40, royalties 4.3 GEN, resale volume 43 GEN',
@@ -246,6 +264,6 @@ if (browserTxs.length === 0) {
 }
 ok('protocol matches evidence scope', (await reader.readContract({address: ADDRESS, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final'})) === (historical ? 'fairgate-1.3' : 'fairgate-1.5'));
 
-console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} scripted txs + ${browserTxs.length} browser txs checked`);
+console.log(`\nverify: ${pass} PASS, ${fail} FAIL, ${txs.transactions.length} scripted txs + ${browserTxs.length} additional workflow txs checked`);
 if (fail > 0) { console.log('failures:', failures.join(', ')); process.exit(1); }
 console.log('INDEPENDENT VERIFICATION PASS');

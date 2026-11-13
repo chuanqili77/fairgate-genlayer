@@ -5,5 +5,14 @@
   "deployed": true,
   "contract_address": "0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE",
   "deploy_tx": "0x8e962c49ad96e71b34cd6d80f4af6f3f4da47473cba59a8a17af0257ccafacd6",
-  "byte_parity": true
+  "byte_parity": true,
+  "validation": {
+    "independent_live_pass": 172,
+    "independent_live_fail": 0,
+    "scripted_transactions": 53,
+    "browser_ui_transactions": 4,
+    "auxiliary_sdk_transactions": 1,
+    "python_named_checks": 168,
+    "node_assertions": 14
+  }
 }
