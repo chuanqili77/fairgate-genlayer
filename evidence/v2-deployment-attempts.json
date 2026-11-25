@@ -1,0 +1,8 @@
+[
+  {
+    "hash": "0x9963fdd99b0103cdf679c60cb68198b94963bebcc6b181fe64ece344a3f8fb09",
+    "status": "FINALIZED",
+    "execution": "ERROR",
+    "reason": "Constructor assigned an inferred TreeMap to a typed uint32 index. The corrected constructor uses generated storage initialization."
+  }
+]

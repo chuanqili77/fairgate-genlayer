@@ -1,0 +1,8 @@
+{
+  "network": "Stable Studionet",
+  "chain_id": 61999,
+  "contract_address": "0x7e509d240Cb2aa2390960fE7DE2E01803319A104",
+  "deploy_tx": "0xaf0deb2af516b0b0c6bffb36db666b2899e41ebfbdaa69a903d574182ad4741e",
+  "source_file": "contracts/fairgate_v2.py",
+  "source_sha256": "09f0a9e907ce075e505f748e9b81bd1aa0223cbb7ea72762af0731b7b41c9d3d"
+}

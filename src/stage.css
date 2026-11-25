@@ -1,0 +1,62 @@
+:root{color-scheme:dark}
+body{background:#080716}
+.fg{position:relative;isolation:isolate;min-height:100vh;background:linear-gradient(180deg,#0a071ce0,#13102b9e 45%,#080716 85%);overflow:hidden}
+.fg:before{content:"";position:absolute;inset:0 0 auto;height:min(950px,120vh);z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 56%,#ad6cff38,transparent 52%),linear-gradient(135deg,#1c174630,transparent 60%)}
+.fg .marquee,.fg main,.fg footer{position:relative}
+.fg .marquee{background:#0b0925be;border-color:#9679ed58}
+.fg h1{letter-spacing:-.07em;text-shadow:0 0 36px #ab80ff77}
+.fg .btn-primary{background:#d4ff51;color:#202612;border-color:#d4ff51}
+.fg main section{background:#14102ae6;border:1px solid #a289ed42;border-radius:14px;padding:clamp(14px,3vw,32px);min-width:0}
+.fg [hidden]{display:none!important}
+.stage-layout{position:relative;display:grid;grid-template-columns:minmax(145px,1fr) minmax(260px,2.65fr) minmax(130px,1fr);gap:clamp(12px,2vw,30px);align-items:center;padding:clamp(13px,3vw,40px) 0;min-height:390px}
+.event-track{display:grid;gap:8px;max-height:300px;overflow:auto;padding:3px}
+.event-track button{display:flex;gap:10px;align-items:center;min-width:0;text-align:left;color:#f6f4ff;background:#181433e8;border:1px solid #ac90e240;border-radius:8px;padding:12px;cursor:pointer}
+.event-track button[aria-pressed=true]{border-color:#d4ff51;box-shadow:inset 3px 0 #d4ff51,0 0 18px #d4ff5125}
+.event-track small{display:block;color:#c7bbdc;font-size:.72rem}
+.track-id{font:700 .7rem monospace;color:#d4ff51}
+.ticket-stage{perspective:1000px;position:relative;padding:24px 4%;text-align:center}
+.ticket-stage:before{content:"";position:absolute;inset:75% 4% 3%;border:1px solid #ae8fff95;border-radius:50%;box-shadow:0 0 34px #8359ff,inset 0 0 20px #4beaff25;transform:rotateX(60deg);pointer-events:none}
+.ticket-model{display:block;width:100%;aspect-ratio:2/1;min-height:180px;background:none;border:0;padding:0;position:relative;transform-style:preserve-3d;transform:rotateX(var(--pitch,9deg)) rotateY(var(--yaw,-12deg)) rotateZ(-4deg);transition:transform .32s ease;cursor:pointer;color:#160d32}
+.ticket-model.ticket-flipped{transform:rotateX(var(--pitch,0deg)) rotateY(calc(180deg + var(--yaw,0deg))) rotateZ(-3deg)}
+.ticket-face{position:absolute;inset:0;display:grid;grid-template-columns:1fr minmax(50px,23%);text-align:left;border-radius:12px;backface-visibility:hidden;background:repeating-linear-gradient(118deg,#ffffff00 0 11px,#ffffff28 12px 13px),linear-gradient(125deg,#f9ecff 0%,#b3acf2 35%,#c9faff 60%,#e7aeff);border:2px solid #e2ddff;box-shadow:0 13px 35px #09051e9c,0 0 24px #9b7fff85;overflow:hidden}
+.ticket-reverse{transform:rotateY(180deg);background:linear-gradient(140deg,#eef3ff,#cfeda6)}
+.ticket-content,.ticket-tear{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:8px;padding:clamp(8px,2vw,24px);font-size:clamp(.65rem,1.3vw,.9rem)}
+.ticket-content strong{font-size:clamp(1.15rem,4vw,3.8rem);line-height:.95;letter-spacing:-.055em;text-transform:uppercase;overflow-wrap:anywhere;font-weight:950}
+.ticket-eyebrow,.ticket-tear,.stage-meter>span{font:800 .72rem monospace;letter-spacing:.08em}
+.ticket-tear{border-left:2px dashed #371d6c70;align-items:center}
+.ticket-bars{width:80%;height:26px;background:repeating-linear-gradient(90deg,#220e49 0 2px,transparent 2px 4px,#220e49 4px 5px,transparent 5px 8px)}
+.flip-note{color:#d0c7f2;font-size:.8rem;position:relative;margin:26px 0 0}
+.stage-meter{border:1px solid #aa89fa66;border-radius:12px;padding:clamp(10px,2vw,23px);background:#140f30df;overflow-wrap:anywhere}
+.stage-meter strong{display:block;font-size:clamp(1.5rem,4vw,3.2rem);color:#d4ff51}.stage-meter small{font-size:.75rem}.stage-meter meter{width:100%;accent-color:#d4ff51}.stage-meter div{font:bold .73rem monospace;color:#b5e9ff}
+.desk-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 0 20px}.desk-nav a{margin-inline-start:auto}.desk-nav [aria-pressed=true]{border-color:#d4ff51;color:#d4ff51}
+.organizer-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.organizer-fields label{display:grid;gap:4px}.organizer-fields input{min-width:0;padding:10px;background:#100d2b;color:#fff;border:1px solid #9781da8c;border-radius:7px}
+.fg .poster-wall{grid-template-columns:minmax(0,1fr)}.fg .poster{min-width:0}.fg .poster-band{background:linear-gradient(110deg,#432a79,#191643)}
+@media(max-width:800px){.stage-layout{grid-template-columns:1fr 1fr;min-height:0}.event-track{grid-column:1/-1;grid-auto-flow:column;grid-auto-columns:minmax(145px,45%);overflow:auto}.ticket-stage{padding:14px 3px}.stage-meter{min-width:0}.ticket-model{min-height:135px}}
+@media(max-width:500px){.stage-layout{grid-template-columns:minmax(0,1fr)}.stage-meter{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:6px}.stage-meter p{margin:0}.organizer-fields{grid-template-columns:1fr}.desk-nav a{margin-inline-start:0}}
+@media(prefers-reduced-motion:reduce){.ticket-model{transition:none}}
+.fg:before{height:min(1050px,120vh);background:linear-gradient(180deg,#0807171a 5%,#08071722 54%,#080716 99%),url('./media/fairgate-stage.webp') center 35%/cover no-repeat}
+.fg .marquee{backdrop-filter:blur(14px);border-bottom:1px solid #ad91ff55}
+.fg .desk-nav{border-top:1px solid #b695ff55;border-bottom:1px solid #b695ff3d;margin-bottom:14px;background:linear-gradient(90deg,#1c164ae0,#1810388f,transparent);padding-inline:10px}
+.fg .poster-body,.fg .ledger-tile,.fg .stub,.fg .market-row{background:linear-gradient(130deg,#1a173a,#12102a);border-color:#a28aee54}
+.fg .settle-box{border-color:#ad96fb68}.fg .alert-err{background:#332b14;color:#ffe488;border-color:#d2a542}
+.fg button:focus-visible,.fg a:focus-visible,.fg input:focus-visible{outline:2px solid #a0f1ff;outline-offset:3px}
+.fg{--paper:#0b091e;--paper-2:#171332;--ink:#f3eeff;--ink-dim:#c2b8da;--line:#806baa69;--red:#d4ff51;--red-dark:#a4e9ff;--green:#baf68f;--amber:#ffda83;--grey:#c7b9da;color:var(--ink);max-width:1440px;padding-inline:clamp(14px,3.5vw,54px)}
+.fg .marquee{padding:20px clamp(8px,1.5vw,22px) 13px;border-radius:0 0 14px 14px}
+.fg .marquee h1{font-size:clamp(2.65rem,6vw,5.1rem);color:#f6eeff}
+.fg .marquee .intro{font-size:.87rem;color:#cfcae7}
+.fg .btn-ghost,.fg .btn-small{border-color:#ad94e78c;border-radius:7px}
+.fg .btn-primary:hover:not(:disabled){background:#a4e9ff;color:#141427;border-color:#a4e9ff}
+.fg .btn-warn{background:#ffda83;color:#382708}
+.fg .alert-ok{background:#273d25;color:#c5f5b4}
+.fg main section{margin-top:12px}
+.fg main h2{border-bottom:1px solid #a28aee54}
+.fg .stub-right input,.fg .temp-row input{background:#181431;color:var(--ink);border:1px solid #a28aee88;max-width:100%}
+.fg .status-stamp.stamp-cancelled,.fg .verdict-block .stamp-cancelled{color:#ffdb8e}
+.track-state{margin-inline-start:auto;flex:none;width:6px;height:6px;border-radius:50%;background:#ac95f3;box-shadow:0 0 9px #a590fa}
+.event-track button[aria-pressed=true] .track-state{background:#d4ff51;box-shadow:0 0 10px #d4ff51}
+.test-wallet-panel{margin:9px 0 0;color:#d7ceef}
+.test-wallet-panel summary{font-size:.83rem;cursor:pointer;width:fit-content}
+.stage-meter button{margin-top:12px;font-size:.72rem;text-transform:none}
+.fg .desk-nav button[aria-pressed=true]{background:#d4ff51;color:#201b2b;border-color:#d4ff51}
+.ticket-stage{max-width:740px}
+.no-motion .ticket-model{transition:none}

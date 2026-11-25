@@ -1,0 +1,5 @@
+
+✓ Lint passed (3 checks)
+✓ Validation passed
+  Contract: FairGate
+  Methods: 16 (8 view, 8 write)

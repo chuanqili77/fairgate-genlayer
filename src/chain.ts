@@ -6,8 +6,8 @@
 // before any escrowed funds can depend on it (see App.tsx). No private
 // keys are uploaded by the app. The temp key lives in this tab's
 // sessionStorage; an explicit backup download saves a local JSON file.
-import { createClient, createAccount, generatePrivateKey } from 'genlayer-js';
-import { studionet } from 'genlayer-js/chains';
+import { createClient, createAccount, generatePrivateKey } from 'genlayer-js-v2';
+import { studionet } from 'genlayer-js-v2/chains';
 
 export const CHAIN_ID = 61999;
 export const CHAIN_ID_HEX = '0xf22f';
@@ -18,9 +18,10 @@ export const FACE_PRICE_GEN = 10;
 export const MAX_RESALE_GEN = 11;
 
 export interface Deployment { contract_address: string; deploy_tx: string; source_sha256: string; network: string; chain_id: number }
+export const LEGACY = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('legacy');
 export let DEPLOYMENT: Deployment | null = null;
 export async function loadDeployment(): Promise<Deployment> {
-  const res = await fetch('./deployment.json', { cache: 'no-store' });
+  const res = await fetch(LEGACY ? './deployment.json' : './deployment-v2.json', { cache: 'no-store' });
   if (!res.ok) throw new Error('deployment.json not served (' + res.status + ')');
   DEPLOYMENT = (await res.json()) as Deployment;
   if (!/^0x[0-9a-fA-F]{40}$/.test(DEPLOYMENT.contract_address || '')) {
@@ -192,7 +193,7 @@ export function leaderPayload(tx: any) {
   return '';
 }
 export function txGood(tx: any) {
-  return [7, 'FINALIZED'].includes(tx.status) && [6, 'MAJORITY_AGREE'].includes(tx.result) && leaderExecution(tx) === 'SUCCESS';
+  return [7, 'FINALIZED'].includes(tx.status) && (tx.result_name === 'MAJORITY_AGREE' || [6, 'MAJORITY_AGREE'].includes(tx.result)) && leaderExecution(tx) === 'SUCCESS';
 }
 
 export function injectedProvider(): any {
@@ -294,9 +295,15 @@ export async function sendWriteOnly(wallet: Wallet, functionName: string, args: 
   await ensureInjectedChain(wallet);
   if (functionName !== 'withdraw') {
     const protocol = await reader.readContract({address: contractAddress() as `0x${string}`, functionName: 'get_protocol', args: [], transactionHashVariant: 'latest-final' as any});
-    if (protocol !== 'fairgate-1.5') throw new Error('DEPLOYMENT_UPDATE_REQUIRED: fairgate-1.5 required before new sales or settlement; existing withdrawals remain available.');
+    if (protocol !== (LEGACY ? 'fairgate-1.5' : 'fairgate-2.0')) throw new Error('DEPLOYMENT_UPDATE_REQUIRED');
   }
-  const hash = await wallet.client.writeContract({ address: contractAddress() as `0x${string}`, functionName, args, value, leaderOnly: false });
+  const quote = await reader.estimateTransactionFees();
+  const fees = { distribution: quote.distribution, feeValue: quote.feeValue };
+  if (wallet.provider) {
+    const accounts = await wallet.provider.request({ method: 'eth_accounts' });
+    if (accounts[0]?.toLowerCase() !== wallet.address) throw new Error('WALLET_ACCOUNT_CHANGED');
+  }
+  const hash = await wallet.client.writeContract({ fees, address: contractAddress() as `0x${string}`, functionName, args, value, leaderOnly: false });
   return hash as string;
 }
 export async function sendWrite(wallet: Wallet, functionName: string, args: any[], value = 0n) {

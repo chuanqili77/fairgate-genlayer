@@ -1,0 +1,45 @@
+{
+  "contract_address": "0x7e509d240Cb2aa2390960fE7DE2E01803319A104",
+  "transactions": [
+    {
+      "label": "Browser organizer created event 4",
+      "hash": "0xb5668bd8d882570d90d362b7a8a1344db5bf13de4c9924edd18a092f3422aa68",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "signer": "0x6bb6F54fb351aCb817940077FAf4aC36B839A508",
+      "signer_mode": "browser-temporary-account"
+    }
+  ],
+  "event": {
+    "artist": "KATSEYE",
+    "artist_address": "0x4f6eabf46dda0399e01af019e6d6c104850c4717",
+    "city": "Minneapolis",
+    "date_display": "2026-11-07",
+    "date_iso": "2026-11-07",
+    "escrowed_wei": 0,
+    "event_id": 4,
+    "event_start_ts": 1794103200,
+    "face_price_gen": 10,
+    "face_price_wei": 10000000000000000000,
+    "id_a": "KATSEYE",
+    "id_b": "Target Center",
+    "max_resale_gen": 11,
+    "organizer": "0x6bb6f54fb351acb817940077faf4ac36b839a508",
+    "organizer_paid": false,
+    "parties_set": true,
+    "royalty_pct": 10,
+    "settle_after_ts": 1794117600,
+    "settle_count": 0,
+    "source_a_label": "www.targetcenter.com",
+    "source_a_url": "https://www.targetcenter.com/events/detail/katseye",
+    "source_b_label": "www.iheart.com",
+    "source_b_url": "https://www.iheart.com/content/2026-11-06-katseye-postpones-mores-shows-as-megan-skiendiel-recovers-from-concussion/",
+    "status": "ON_SALE",
+    "tickets_sold": 0,
+    "tickets_total": 8,
+    "tz_name": "UTC offset -360 min",
+    "tz_offset_min": -360,
+    "venue": "Target Center",
+    "verdict": ""
+  }
+}

@@ -8,7 +8,7 @@
 // translated text next to them is only a gloss.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  MAX_RESALE_GEN,
+  MAX_RESALE_GEN, LEGACY,
   loadDeployment, contractAddress, explorerTx, explorerAddress,
   readAll, readMyCredit,
   savePendingTx, loadPendingTxs, clearPendingTx,
@@ -22,6 +22,9 @@ import {
 import type { EventRec, TicketRec, Counts, Wallet, PendingTx, MyTx } from './chain';
 import { getLang, setLang, t, checkParity } from './i18n';
 import type { Lang } from './i18n';
+import Stage from './Stage';
+import Organizer from './Organizer';
+import './stage.css';
 
 const STATIC_MODE = new URLSearchParams(window.location.search).has('static');
 
@@ -35,7 +38,7 @@ function normalizeEvidence(data: unknown): EvTx[] {
     .map((x: any) => ({
       hash: String(x.hash),
       label: String(x.label ?? x.name ?? x.step ?? '—') + (x.signer_mode === 'auxiliary-sdk' ? ' · SDK' : x.signer_mode === 'browser-temporary-account' ? ' · browser' : ''),
-      status: String(x.status ?? x.result ?? (x.finalized === false ? 'ERROR' : 'FINALIZED')),
+      status: String(x.status ?? x.result ?? (x.finalized === false ? 'ERROR' : 'FINALIZED')) + (x.execution ? ' / ' + x.execution : ''),
     }));
 }
 
@@ -69,6 +72,13 @@ export default function App() {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
+  const [selection, setSelection] = useState<number>();
+  const [desk, setDesk] = useState('events');
+  const activeEvent = events.find(event => event.event_id === selection) ?? events[0];
+  const zh = lang === 'zh';
+  const desks = zh ? [['events','票房'],['tickets','持票'],['market','转售'],['ledger','账本'],['evidence','证据']] : [['events','Box office'],['tickets','My tickets'],['market','Resale'],['ledger','Ledger'],['evidence','Evidence']];
+  if (!LEGACY) desks.push(['organizer', zh ? '主办方' : 'Organizer']);
+
   const tracking = useRef(new Set<string>());
 
   const tr = useCallback((k: string) => t(lang, k), [lang]);
@@ -101,7 +111,7 @@ export default function App() {
     if (p.missing.length || p.extra.length) console.warn('i18n parity', p);
     loadDeployment().then(async (d) => {
       setDeployment(d); setPending(loadPendingTxs()); setMyTxs(loadMyTxs());
-      void Promise.allSettled(['transactions.json', 'browser-transactions.json'].map(async (file) => {
+      void Promise.allSettled((LEGACY ? ['transactions.json', 'browser-transactions.json'] : ['v2-transactions.json', 'v2-browser.json']).map(async (file) => {
         const response = await fetch('./' + file, {cache: 'no-store'});
         return response.ok ? response.json() : null;
       })).then((results) => {
@@ -117,7 +127,7 @@ export default function App() {
   const finishTransaction = useCallback(async (hash: string, label: string, receipt: any) => {
     if (![7, 'FINALIZED'].includes(receipt.status)) throw new TxUnknownError(hash);
     const success = txGood(receipt);
-    const disagreed = [5, 'MAJORITY_DISAGREE'].includes(receipt.result);
+    const disagreed = receipt.result_name === 'MAJORITY_DISAGREE' || [5, 'MAJORITY_DISAGREE'].includes(receipt.result);
     const outcome = leaderReturn(receipt);
     const noChange = success && outcome?.changed === false && ['UNREACHABLE', 'SOURCES_DISAGREE'].includes(outcome.verdict);
     saveMyTx(hash, label, noChange ? 'no-state-change' : success ? 'success' : disagreed ? 'disagreed' : 'error');
@@ -126,6 +136,10 @@ export default function App() {
     setMyTxs(loadMyTxs());
     const readbackOk = await refresh();
     await refreshCredit(wallet);
+    if (success && readbackOk && label === 'create_event' && Number.isSafeInteger(outcome?.event_id)) {
+      setSelection(outcome.event_id);
+      setDesk('events');
+    }
     if (noChange) setNotice(tr('app.noStateChange') + ' · ' + outcome.verdict + ': ' + hash);
     else if (success) setNotice(tr(readbackOk ? 'app.done' : 'app.finalizedReadbackPending') + ': ' + hash);
     else {
@@ -296,7 +310,8 @@ export default function App() {
         {err && <p className="alert alert-err" role="alert">{err}</p>}
         {notice && <p className="alert alert-ok">{notice}</p>}
         {!wallet && (
-          <>
+          <details className="test-wallet-panel">
+            <summary>{zh ? '临时测试钱包' : 'Temporary test wallet'}</summary>
             <p className="temp-row">
               <button className="btn btn-ghost" onClick={useTempAccount}>{tr('app.tempAccount')}</button>
               <span className="small dim">{tr('app.tempNote')}</span>
@@ -320,19 +335,29 @@ export default function App() {
                 }}
               >{tr('app.restoreBtn')}</button>
             </p>
-          </>
+          </details>
         )}
       </header>
 
       <main>
-        <section aria-labelledby="posters-h">
+        <Stage events={events} selected={activeEvent} select={id => { setSelection(id); setDesk('events'); }} lang={lang} onEvidence={() => { if (activeEvent) setExpanded(e => ({ ...e, [activeEvent.event_id]: true })); setDesk('events'); requestAnimationFrame(() => document.getElementById('selected-sources')?.scrollIntoView({block:'nearest'})); }} />
+        <nav className="desk-nav" aria-label={zh ? '业务工作台' : 'Workspaces'}>
+          {desks.map(([id,label]) => <button type="button" className="btn btn-ghost" key={id} aria-pressed={desk === id} onClick={() => setDesk(id)}>{label}</button>)}
+          <a href={LEGACY ? './' : '?legacy=1'}>{LEGACY ? 'V2' : 'V1.5 · ' + (zh ? '旧版提款' : 'legacy withdrawals')}</a>
+        </nav>
+        {!LEGACY && <section hidden={desk !== 'organizer'} aria-labelledby="organizer-h">
+          <h2 id="organizer-h">{zh ? '开放新场次' : 'Open a box office'}</h2>
+          <Organizer zh={zh} disabled={!finalized || !!busy.create} onCreate={args => doWrite('create_event', 'create', 'create_event', args, 0n, false)} />
+        </section>}
+        <section hidden={desk !== 'events'} aria-labelledby="posters-h">
           <h2 id="posters-h">{tr('app.postersTitle')}</h2>
           <p className="section-sub">{tr('app.postersSub')}</p>
           <div className="poster-wall">
-            {events.map((ev) => {
+            {events.filter(ev => ev.event_id === activeEvent?.event_id).map((ev) => {
               const status = ev.status === 'EVENT_HELD' ? 'HELD' : ev.status;
               const soldOut = ev.tickets_sold >= ev.tickets_total;
               const settled = status === 'HELD' || status === 'CANCELLED' || status === 'POSTPONED';
+              const terminal = status === 'HELD' || status === 'CANCELLED';
               // Time gate, enforced on-chain with Unix timestamps:
               // the contract refuses any settlement before
               // settle_after_ts (first second of the day after the
@@ -381,13 +406,13 @@ export default function App() {
                       {tr('app.sourcesTitle')} {expanded[ev.event_id] ? '▴' : '▾'}
                     </button>
                     {expanded[ev.event_id] && (
-                      <div className="settle-box">
+                      <div className="settle-box" id="selected-sources">
                         <p className="small"><strong>{tr('app.sourceA')}:</strong> <a href={ev.source_a_url} target="_blank" rel="noreferrer">{ev.source_a_label}</a></p>
                         <p className="small"><strong>{tr('app.sourceB')}:</strong> <a href={ev.source_b_url} target="_blank" rel="noreferrer">{ev.source_b_label}</a></p>
                         <p className="small dim">{tr('app.verdictRule')}</p>
                         <button
                           className="btn btn-warn btn-block"
-                          disabled={!finalized || settled || tooEarly || !!busy['settle-' + ev.event_id]}
+                          disabled={!finalized || terminal || tooEarly || !!busy['settle-' + ev.event_id]}
                           onClick={() => doWrite('settle_event ' + ev.event_id, 'settle-' + ev.event_id, 'settle_event', [ev.event_id], 0n, false)}
                         >
                           {busy['settle-' + ev.event_id] ? tr('app.settling') : tr('app.settle')}
@@ -412,7 +437,7 @@ export default function App() {
           </div>
         </section>
 
-        <section aria-labelledby="stubs-h">
+        <section hidden={desk !== 'tickets'} aria-labelledby="stubs-h">
           <h2 id="stubs-h">{tr('app.stubsTitle')}</h2>
           <p className="section-sub">{tr('app.stubsSub')}</p>
           {!wallet && <p className="dim">{tr('app.connectToSeeStubs')}</p>}
@@ -486,7 +511,7 @@ export default function App() {
           </div>
         </section>
 
-        <section aria-labelledby="market-h">
+        <section hidden={desk !== 'market'} aria-labelledby="market-h">
           <h2 id="market-h">{tr('app.marketTitle')}</h2>
           <p className="section-sub">{tr('app.marketSub')}</p>
           {listings.length === 0 && <p className="dim">{tr('app.noListings')}</p>}
@@ -515,7 +540,7 @@ export default function App() {
           </div>
         </section>
 
-        <section aria-labelledby="ledger-h">
+        <section hidden={desk !== 'ledger'} aria-labelledby="ledger-h">
           <h2 id="ledger-h">{tr('app.ledgerTitle')}</h2>
           <div className="ledger-grid">
             <div className="ledger-tile"><span>{tr('app.received')}</span><strong className="mono">{counts ? dash(gen(counts.total_received_wei)) : '—'} GEN</strong></div>
@@ -529,7 +554,7 @@ export default function App() {
           </div>
         </section>
 
-        <section aria-labelledby="how-h">
+        <section hidden={desk !== 'evidence'} aria-labelledby="how-h">
           <h2 id="how-h">{tr('app.howTitle')}</h2>
           <ol className="how-list">
             <li>{tr('app.how1')}</li>
@@ -539,7 +564,7 @@ export default function App() {
           </ol>
         </section>
 
-        <section aria-labelledby="evidence-h">
+        <section hidden={desk !== 'evidence'} aria-labelledby="evidence-h">
           <h2 id="evidence-h">{tr('app.evidenceTitle')}</h2>
           <p className="section-sub">{tr('app.evidenceSub')}</p>
           <h3>{tr('app.machineView')}</h3>

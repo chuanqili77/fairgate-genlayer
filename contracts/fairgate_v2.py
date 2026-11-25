@@ -1,0 +1,840 @@
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+"""FairGate v2: bounded, independently administered concert box offices."""
+from genlayer import *
+import json
+from datetime import datetime, timezone
+
+GEN_WEI = 1000000000000000000  # 1 GEN = 10^18 wei
+FACE_PRICE_GEN = 10
+MAX_RESALE_GEN = 11  # 110% of face value, cap included
+ROYALTY_PCT = 10
+TICKETS_PER_EVENT = 8
+
+VERDICTS = ['EVENT_HELD', 'CANCELLED', 'POSTPONED', 'UNREACHABLE',
+            'SOURCES_DISAGREE']
+TERMINAL = ['EVENT_HELD', 'CANCELLED']
+
+
+def fail(s):
+    raise gl.vm.UserError(s)
+
+
+def packed(x):
+    return json.dumps(x, sort_keys=True, separators=(',', ':'))
+
+
+_REMOVE_CLASS = ('recommend', 'related', 'sidebar', 'more-events',
+                 'upcoming', 'you-may-also', 'also-like', 'trending',
+                 'newsletter', 'other-events', 'similar', 'footer',
+                 'site-footer', 'page-footer')
+_SKIP_TAGS = ('nav', 'footer', 'aside', 'script', 'style')
+
+
+def _strip_tags(fragment):
+    """Visible text of an HTML fragment: tags removed, whitespace
+    collapsed. Pure str operations only."""
+    out = []
+    i = 0
+    n = len(fragment)
+    while i < n:
+        c = fragment[i]
+        if c == '<':
+            j = fragment.find('>', i)
+            if j == -1:
+                break
+            out.append(' ')
+            i = j + 1
+        else:
+            out.append(c)
+            i += 1
+    text = ' '.join(''.join(out).split())
+    for entity, value in (("&#39;", "'"), ("&#x27;", "'"), ("&apos;", "'"),
+                          ('&quot;', '"'), ('&nbsp;', ' '), ('&amp;', '&')):
+        text = text.replace(entity, value)
+    return text
+
+
+def _ld_strings(raw):
+    """All string values of a JSON-LD block, joined. A block that
+    does not parse is returned raw: its text may still carry a
+    structured status such as EventPostponed."""
+    try:
+        data = json.loads(raw)
+    except Exception:
+        return raw
+    parts = []
+
+    def walk(x):
+        if isinstance(x, str):
+            parts.append(x)
+        elif isinstance(x, dict):
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+
+    walk(data)
+    return ' '.join(parts)
+
+
+def _meta_text(html):
+    """content="..." values of <meta> tags (title, description,
+    keywords): the page's own structured summary of what it is
+    about. Meta keywords on the Wembley Oasis page, for example,
+    read "OASIS LIVE '25 WEMBLEY STADIUM" — both identity tokens
+    for a page whose visible body is rendered by JavaScript."""
+    low = html.lower()
+    parts = []
+    pos = 0
+    while True:
+        mi = low.find('<meta', pos)
+        if mi == -1:
+            break
+        gt = low.find('>', mi)
+        if gt == -1:
+            break
+        tag = html[mi:gt + 1]
+        ci = tag.lower().find('content=')
+        if ci != -1:
+            q = tag[ci + 8:ci + 9]
+            if q in ('"', "'"):
+                end = tag.find(q, ci + 9)
+                if end != -1:
+                    parts.append(tag[ci + 9:end])
+        pos = gt + 1
+    return ' '.join(parts)
+
+
+def _remove_unwanted(html):
+    """Remove navigation, footers, asides, scripts, styles and
+    recommended / related / sidebar sections from the raw page,
+    keeping the rest. Balanced-block removal with same-tag nesting
+    tracked, so a recommended block that contains inner divs is
+    removed whole. Pure str operations only."""
+    import re
+    low = html.lower()
+    n = len(html)
+    out = []
+    i = 0
+    skip = []
+    while i < n:
+        lt = html.find('<', i)
+        if lt == -1:
+            if not skip:
+                out.append(html[i:])
+            break
+        if not skip:
+            out.append(html[i:lt])
+        if html.startswith('<!--', lt):
+            end = html.find('-->', lt + 4)
+            i = n if end == -1 else end + 3
+            continue
+        gt = html.find('>', lt)
+        if gt == -1:
+            break
+        inner = html[lt + 1:gt].strip()
+        if inner.startswith('/'):
+            name = inner[1:].split()[0].lower() \
+                if inner[1:].split() else ''
+            if skip and skip[-1] == name:
+                skip.pop()
+            i = gt + 1
+            continue
+        parts = inner.split()
+        name = parts[0].lower().rstrip('/') if parts else ''
+        self_close = inner.endswith('/') or name in ('area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr')
+        if skip:
+            if name == skip[-1] and not self_close:
+                skip.append(name)
+            i = gt + 1
+            continue
+        if name in ('script', 'style'):
+            # Raw-text elements terminate at their closing tag. Strings in
+            # JavaScript may contain '<script' and must not increase nesting.
+            end = low.find('</' + name, gt + 1)
+            close = html.find('>', end) if end != -1 else -1
+            i = n if close == -1 else close + 1
+            continue
+        if name in _SKIP_TAGS:
+            if not self_close:
+                skip.append(name)
+            i = gt + 1
+            continue
+        attrs = low[lt:gt + 1]
+        section_attrs = ' '.join(re.findall(r'''\b(?:class|id)\s*=\s*["']([^"']*)["']''', attrs))
+        if any(k in section_attrs for k in _REMOVE_CLASS):
+            if not self_close:
+                skip.append(name)
+            i = gt + 1
+            continue
+        out.append(html[lt:gt + 1])
+        i = gt + 1
+    return ''.join(out)
+
+
+def _scoped_text(html):
+    """The text a verdict may be based on: page title + meta
+    content + JSON-LD structured event data + visible body text
+    after unwanted sections are removed. Everything else on the
+    page (nav, footer, recommended articles, scripts) is excluded
+    before any keyword is counted."""
+    low = html.lower()
+    title = ''
+    ti = low.find('<title')
+    if ti != -1:
+        gt = low.find('>', ti)
+        te = low.find('</title>', gt) if gt != -1 else -1
+        if gt != -1 and te != -1:
+            title = _strip_tags(html[gt + 1:te])
+    ld_texts = []
+    pos = 0
+    while True:
+        si = low.find('<script', pos)
+        if si == -1:
+            break
+        gt = low.find('>', si)
+        if gt == -1:
+            break
+        tag_head = low[si:gt + 1]
+        se = low.find('</script>', gt)
+        if se == -1:
+            break
+        if 'application/ld+json' in tag_head:
+            ld_texts.append(_ld_strings(html[gt + 1:se]))
+        pos = se + len('</script>')
+    body_text = _strip_tags(_remove_unwanted(html))
+    return _strip_tags(' '.join([title, _meta_text(html)] + ld_texts + [body_text]))
+
+
+def _scan(html, id_a, id_b, event_date=""):
+    """Outcome flags + identity check on scoped page text only.
+
+    HELD is positive evidence, not the absence of a cancellation word.
+    It requires an explicit past-tense signal that a performance took
+    place (e.g. played, performed, took place, was held, or a completed
+    event retrospective). Scheduled / on-sale copy is not evidence.
+    """
+    import re
+    scoped = _scoped_text(html)
+    low = scoped.lower()
+    # A status word about another venue on the same news page must not
+    # change this event. Scope adverse-status sentences to the venue.
+    status_sentences = [sentence for sentence in re.split(r'[.!?;]+', low)
+                        if id_b.lower() in sentence]
+    cancel = any('cancelled' in sentence or 'canceled' in sentence
+                 for sentence in status_sentences)
+    postpone = any('postpone' in sentence or 'reschedule' in sentence
+                   for sentence in status_sentences)
+    held_patterns = (
+        r'\bplayed\b',
+        r'\bperformed\b',
+        r'\btook place\b',
+        r'\bwas held\b',
+        r'\bwere held\b',
+        r'\bwent ahead\b',
+        r'\bhas taken place\b',
+        r'\bhave taken place\b',
+        r'\bwas staged\b',
+        r'\bwere staged\b',
+        r'\bbrought the curtain down\b',
+        r'\bfinally brought\b.{0,100}\breunion tour\b',
+    )
+    # Evidence must describe the identified act at the identified venue
+    # in the same sentence. A different performance elsewhere on a page
+    # does not authorize release. Negated, conditional and future copy
+    # is deliberately rejected even if a past-tense token is present.
+    date_patterns = ()
+    if event_date:
+        year, month, day = event_date.split('-')
+        names = ('january', 'february', 'march', 'april', 'may', 'june',
+                 'july', 'august', 'september', 'october', 'november', 'december')
+        name = names[int(month) - 1]
+        d = str(int(day))
+        date_patterns = (re.escape(event_date),
+            r'\b' + d + r'(?:st|nd|rd|th)?\s+' + name + r'\s+' + year + r'\b',
+            r'\b' + name + r'\s+' + d + r'(?:st|nd|rd|th)?[,]?\s+' + year + r'\b')
+
+    # Positive prose is visible page text, not metadata values concatenated
+    # into a sentence. In particular a last-modified timestamp is not an
+    # event date. Cancellation/identity remain conservative scoped flags.
+    performance_text = _strip_tags(_remove_unwanted(html)).lower()
+    held = False
+    for sentence in re.split(r'[.!?;]+', performance_text):
+        if id_a.lower() not in sentence or id_b.lower() not in sentence:
+            continue
+        if re.search(r'\b(?:not|never|no|neither|nor|if|unless|would|could|might|will)\b', sentence):
+            continue
+        if event_date:
+            dated_sentence = any(re.search(pattern, sentence) for pattern in date_patterns)
+            # A same-day dated news report may identify its completed first
+            # performance in prose and its calendar day in publication metadata.
+            # Require the original article timestamp, not an updated timestamp,
+            # plus explicit first-night retrospective prose in this sentence.
+            article_day = re.search(
+                r'<meta(?=[^>]*(?:(?:property|name)=[\"\']article:published_time[\"\']|name=[\"\']pubdate[\"\']))'
+                + r'(?=[^>]*content=[\"\']' + re.escape(event_date) + r't)[^>]*>', html.lower())
+            dated_report = article_day and 'first of seven' in sentence \
+                and re.search(r'\bfinally brought\b.{0,100}\breunion tour\b', sentence)
+            # A same-day news report can bind an explicit past performance
+            # "on Friday night" to its ORIGINAL publication date. Require the
+            # configured day's weekday, exact publication day, and no relative
+            # reference to an earlier week. An updated timestamp is insufficient.
+            weekday = datetime.strptime(event_date, '%Y-%m-%d').strftime('%A').lower()
+            dated_weeknight = article_day and re.search(
+                r'\bon ' + weekday + r' night(?:,|$)', sentence) and not re.search(
+                r'\b(?:last|previous|earlier|ago|before)\b', sentence)
+            if not dated_sentence and not dated_report and not dated_weeknight:
+                continue
+        if any(re.search(pattern, sentence) for pattern in held_patterns):
+            held = True
+            break
+    if event_date and id_a.lower() in low and id_b.lower() in low:
+        # A retrospective measured-spending report is an independent completed
+        # event record. Require both the past observation about this act's first
+        # venue gig and an explicit dated table for that gig at the venue.
+        # A schedule, forecast or ticket-sales total cannot satisfy this rule.
+        compact = performance_text.replace('’', "'")
+        measured_pattern = (r'\bspending reached over[^.]{0,60}\bduring\s+'
+                            + re.escape(id_a.lower()) + r"'?s?\s+first\s+"
+                            + re.escape(id_b.lower()) + r'\s+gig\s+this year')
+        measured = any(re.search(measured_pattern, sentence)
+                       and not re.search(r'\b(?:not|never|no|if|unless|would|could|might|will)\b', sentence)
+                       for sentence in re.split(r'[.!?;]+', compact))
+        for table in re.findall(r'<table\b[^>]*>.*?</table>', html.lower(), re.S):
+            table_text = _strip_tags(table)
+            if (measured and id_a.lower() in table_text
+                    and ('spending inside ' + id_b.lower()) in table_text
+                    and any(re.search(re.escape(id_a.lower()) + r'\s+gig\s*[-–]?\s*' + pattern, table_text)
+                            for pattern in date_patterns)):
+                held = True
+                break
+    identity = (id_a.lower() in low) and (id_b.lower() in low)
+    return cancel, postpone, identity, held
+
+
+def _fetch_once(url, id_a, id_b, event_date=""):
+    """One validator's independent fetch + scan. Never raises: a
+    fetch failure is reported as ok=False."""
+    try:
+        response = gl.nondet.web.request(url, method='GET')
+    except Exception:
+        return {'ok': False, 'cancel': False, 'postpone': False,
+                'held': False, 'identity': False}
+    if getattr(response, 'status', 0) != 200:
+        return {'ok': False, 'cancel': False, 'postpone': False,
+                'held': False, 'identity': False}
+    body = response.body
+    if isinstance(body, bytes):
+        try:
+            text = body.decode('utf-8', errors='ignore')
+        except Exception:
+            return {'ok': False, 'cancel': False, 'postpone': False,
+                    'held': False, 'identity': False}
+    elif isinstance(body, str):
+        text = body
+    else:
+        return {'ok': False, 'cancel': False, 'postpone': False,
+                'held': False, 'identity': False}
+    cancel, postpone, identity, held = _scan(text, id_a, id_b, event_date)
+    return {'ok': True, 'cancel': cancel, 'postpone': postpone,
+            'held': held, 'identity': identity}
+
+
+def _verdict_from(a, b):
+    if not a['ok'] or not b['ok'] \
+            or not a['identity'] or not b['identity']:
+        return 'UNREACHABLE'
+    # A held verdict requires explicit positive evidence from BOTH
+    # independent sources. Silence on cancellation is not proof.
+    if a['cancel'] and b['cancel'] \
+            and not (a['postpone'] or b['postpone']
+                     or a['held'] or b['held']):
+        return 'CANCELLED'
+    if a['postpone'] and b['postpone'] \
+            and not (a['cancel'] or b['cancel']
+                     or a['held'] or b['held']):
+        return 'POSTPONED'
+    if a['held'] and b['held'] \
+            and not (a['cancel'] or b['cancel']
+                     or a['postpone'] or b['postpone']):
+        return 'EVENT_HELD'
+    return 'SOURCES_DISAGREE'
+
+
+def _validate_check(res):
+    if not isinstance(res, dict):
+        fail('CHECK_RESULT')
+    verdict = res.get('verdict')
+    if verdict not in VERDICTS:
+        fail('CHECK_VERDICT')
+    for k in ('cancel_a', 'cancel_b', 'postpone_a', 'postpone_b',
+              'held_a', 'held_b', 'fetch_a_ok', 'fetch_b_ok',
+              'identity_a', 'identity_b'):
+        if not isinstance(res.get(k), bool):
+            fail('CHECK_FLAG')
+    a = {
+        'ok': res['fetch_a_ok'], 'identity': res['identity_a'],
+        'cancel': res['cancel_a'], 'postpone': res['postpone_a'],
+        'held': res['held_a']}
+    b = {'ok': res['fetch_b_ok'], 'identity': res['identity_b'],
+         'cancel': res['cancel_b'], 'postpone': res['postpone_b'],
+         'held': res['held_b']}
+    if verdict != _verdict_from(a, b):
+        fail('CHECK_' + verdict.replace('EVENT_', ''))
+    return res
+
+
+def _run_check(url_a, url_b, id_a, id_b, event_date=""):
+    def leader_fn():
+        a = _fetch_once(url_a, id_a, id_b, event_date)
+        b = _fetch_once(url_b, id_a, id_b, event_date)
+        return _validate_check({
+            'verdict': _verdict_from(a, b),
+            'cancel_a': a['cancel'], 'cancel_b': b['cancel'],
+            'postpone_a': a['postpone'], 'postpone_b': b['postpone'],
+            'held_a': a['held'], 'held_b': b['held'],
+            'fetch_a_ok': a['ok'], 'fetch_b_ok': b['ok'],
+            'identity_a': a['identity'], 'identity_b': b['identity'],
+        })
+
+    def validator_fn(result):
+        if not isinstance(result, gl.vm.Return):
+            try:
+                leader_fn()
+            except Exception:
+                return True
+            return False
+        try:
+            mine = leader_fn()
+        except Exception:
+            return False
+        try:
+            leader = _validate_check(result.calldata)
+        except Exception:
+            return False
+        return all(leader.get(k) == mine.get(k) for k in
+                   ('verdict', 'cancel_a', 'cancel_b', 'postpone_a',
+                    'postpone_b', 'held_a', 'held_b',
+                    'fetch_a_ok', 'fetch_b_ok',
+                    'identity_a', 'identity_b'))
+
+    return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
+
+
+@gl.evm.contract_interface
+class _Recipient:
+    class View:
+        pass
+
+    class Write:
+        pass
+
+
+def _event(artist, venue, city, date_iso, date_display,
+           source_a_url, source_a_label, source_b_url, source_b_label,
+           id_a, id_b):
+    return {
+        'event_id': 0, 'artist': artist, 'venue': venue, 'city': city,
+        'date_iso': date_iso, 'date_display': date_display,
+        'event_start_ts': 0, 'settle_after_ts': 0,
+        'tz_offset_min': 0, 'tz_name': '',
+        'source_a_url': source_a_url, 'source_a_label': source_a_label,
+        'source_b_url': source_b_url, 'source_b_label': source_b_label,
+        'id_a': id_a, 'id_b': id_b,
+        'face_price_gen': FACE_PRICE_GEN,
+        'face_price_wei': FACE_PRICE_GEN * GEN_WEI,
+        'max_resale_gen': MAX_RESALE_GEN, 'royalty_pct': ROYALTY_PCT,
+        'tickets_total': TICKETS_PER_EVENT, 'tickets_sold': 0,
+        'status': 'ON_SALE', 'verdict': '', 'settle_count': 0,
+        'escrowed_wei': 0, 'organizer': '', 'artist_address': '',
+        'parties_set': False, 'organizer_paid': False,
+    }
+
+
+def _derive_settle_after(event_start_ts, tz_offset_min):
+    """The first second of the day after the show, in the event's
+    own local time zone, as a UTC Unix timestamp. The offset is
+    minutes east of UTC (Nashville in December, CST: -360). The
+    caller supplies the offset; the contract derives the timestamp
+    itself and refuses any other value, so an early settlement
+    timestamp cannot be smuggled in. Offset range is UTC-12 to
+    UTC+14. Integer arithmetic only; // floors, which is what the
+    local-day computation needs."""
+    if not isinstance(event_start_ts, int) \
+            or isinstance(event_start_ts, bool) \
+            or event_start_ts <= 0:
+        fail('BAD_START_TS')
+    if not isinstance(tz_offset_min, int) \
+            or isinstance(tz_offset_min, bool) \
+            or tz_offset_min < -720 or tz_offset_min > 840:
+        fail('BAD_TZ_OFFSET')
+    local_day = (event_start_ts + tz_offset_min * 60) // 86400
+    return (local_day + 1) * 86400 - tz_offset_min * 60
+
+
+def _source_host(url):
+    if not url.startswith('https://') or len(url) > 350 or any(
+            ord(c) < 33 or ord(c) > 126 or c in '#?\\' for c in url):
+        fail('BAD_SOURCE_URL')
+    host, separator, path = url[8:].partition('/')
+    approved = {
+        'www.radiox.co.uk': '/artists/',
+        'www.independent.co.uk': '/bulletin/culture/',
+        'www.bridgestonearena.com': '/events/detail/',
+        'do615.com': '/events/',
+        'www.targetcenter.com': '/events/detail/',
+        'www.iheart.com': '/content/',
+    }
+    prefix = approved.get(host, '')
+    if not separator or not prefix or not ('/' + path).startswith(prefix):
+        fail('SOURCE_NOT_APPROVED')
+    if any(segment in ('.', '..') for segment in path.split('/')) or '%' in path:
+        fail('BAD_SOURCE_URL')
+    return host
+
+
+class FairGate(gl.Contract):
+    events: TreeMap[str, str]
+    tickets: TreeMap[str, str]
+    credits: TreeMap[str, str]
+    creator: str
+    next_event_id: u32
+    event_tickets: TreeMap[str, u32]
+    next_ticket_id: u32
+    total_received: u256
+    total_withdrawn: u256
+    total_royalties: u256
+    total_resale_volume: u256
+
+    def __init__(self):
+        self.events = TreeMap()
+        self.tickets = TreeMap()
+        self.credits = TreeMap()
+        self.creator = str(gl.message.sender_address).lower()
+        self.next_event_id = u32(1)
+        self.next_ticket_id = u32(1)
+        self.total_received = u256(0)
+        self.total_withdrawn = u256(0)
+        self.total_royalties = u256(0)
+        self.total_resale_volume = u256(0)
+    def _load_event(self, event_id):
+        raw = self.events.get(str(event_id), '')
+        if not raw:
+            fail('EVENT_NOT_FOUND')
+        return json.loads(raw)
+
+    def _save_event(self, e):
+        self.events[str(e['event_id'])] = packed(e)
+        return packed(e)
+
+    def _load_ticket(self, ticket_id):
+        raw = self.tickets.get(str(ticket_id), '')
+        if not raw:
+            fail('TICKET_NOT_FOUND')
+        return json.loads(raw)
+
+    def _save_ticket(self, t):
+        self.tickets[str(t['ticket_id'])] = packed(t)
+        return packed(t)
+
+    def _credit(self, addr):
+        raw = self.credits.get(addr, '')
+        return int(raw) if raw else 0
+
+    def _add_credit(self, addr, amount):
+        self.credits[addr] = str(self._credit(addr) + int(amount))
+
+    @gl.public.write
+    def create_event(self, artist: str, venue: str, city: str,
+                     artist_address: str, start_ts: int, offset: int,
+                     source_a: str, source_b: str) -> str:
+        if int(self.next_event_id) > 32:
+            fail('EVENT_LIMIT')
+        if any(not text.strip() or len(text) > 100 for text in (artist, venue, city)):
+            fail('BAD_EVENT_LABEL')
+        artist_address = artist_address.lower()
+        if len(artist_address) != 42 or not artist_address.startswith('0x') or any(
+                c not in '0123456789abcdef' for c in artist_address[2:]) or int(artist_address[2:], 16) == 0:
+            fail('BAD_ADDRESS')
+        host_a, host_b = _source_host(source_a), _source_host(source_b)
+        if host_a == host_b:
+            fail('SOURCE_HOSTS_MUST_DIFFER')
+        cutoff = _derive_settle_after(start_ts, offset)
+        if start_ts > 4102444800:
+            fail('BAD_START_TS')
+        date_iso = datetime.fromtimestamp(start_ts + offset * 60, timezone.utc).date().isoformat()
+        e = _event(artist.strip(), venue.strip(), city.strip(), date_iso, date_iso,
+                   source_a, host_a, source_b, host_b, artist.strip(), venue.strip())
+        e['event_id'] = int(self.next_event_id)
+        e['organizer'] = str(gl.message.sender_address).lower()
+        e['artist_address'] = artist_address
+        e['event_start_ts'] = start_ts
+        e['settle_after_ts'] = cutoff
+        e['tz_offset_min'] = offset
+        e['tz_name'] = 'UTC offset ' + str(offset) + ' min'
+        e['parties_set'] = True
+        self.next_event_id = self.next_event_id + u32(1)
+        return self._save_event(e)
+
+    @gl.public.write
+    def reschedule_event(self, event_id: int, new_start_ts: int,
+                         new_settle_after_ts: int,
+                         new_tz_offset_min: int, new_date_iso: str,
+                         new_date_display: str, new_tz_name: str) -> str:
+        """Move a POSTPONED event to a later date. Creator only.
+        The event stays POSTPONED (ticket sales never reopen) and
+        tickets, holders and escrow are untouched: no money is
+        released by rescheduling. The new settlement timestamp is
+        re-derived from the new start and offset and refused unless
+        it matches; the new start must be later than the old start.
+        A rescheduled event can be rescheduled again. Settled or
+        still-selling events cannot be rescheduled."""
+        sender = str(gl.message.sender_address).lower()
+        e = self._load_event(event_id)
+        if sender != e['organizer']:
+            fail('NOT_ORGANIZER')
+        if not e['parties_set']:
+            fail('EVENT_NOT_CONFIGURED')
+        if e['status'] != 'POSTPONED':
+            fail('NOT_POSTPONED')
+        if not isinstance(new_start_ts, int) \
+                or isinstance(new_start_ts, bool) \
+                or int(new_start_ts) <= int(e['event_start_ts']):
+            fail('DATE_NOT_LATER')
+        if not isinstance(new_settle_after_ts, int) \
+                or isinstance(new_settle_after_ts, bool):
+            fail('BAD_SETTLE_AFTER_TS')
+        expected = _derive_settle_after(new_start_ts,
+                                        new_tz_offset_min)
+        if int(new_settle_after_ts) != expected:
+            fail('BAD_SETTLE_AFTER_TS')
+        if int(new_settle_after_ts) <= int(new_start_ts):
+            fail('BAD_SETTLE_AFTER_TS')
+        if not isinstance(new_date_iso, str) \
+                or len(new_date_iso) != 10:
+            fail('BAD_DATE')
+        if new_start_ts > 4102444800 or new_date_iso != datetime.fromtimestamp(new_start_ts + new_tz_offset_min * 60, timezone.utc).date().isoformat():
+            fail('BAD_DATE')
+        if not isinstance(new_date_display, str) \
+                or not 1 <= len(new_date_display) <= 64:
+            fail('BAD_DATE')
+        if not isinstance(new_tz_name, str) \
+                or not 1 <= len(new_tz_name) <= 64:
+            fail('BAD_TZ_NAME')
+        e['event_start_ts'] = int(new_start_ts)
+        e['settle_after_ts'] = int(new_settle_after_ts)
+        e['tz_offset_min'] = int(new_tz_offset_min)
+        e['tz_name'] = new_tz_name
+        e['date_iso'] = new_date_iso
+        e['date_display'] = new_date_display
+        return self._save_event(e)
+
+    @gl.public.write.payable
+    def buy_ticket(self, event_id: int) -> str:
+        e = self._load_event(event_id)
+        if not e['parties_set']:
+            fail('EVENT_NOT_CONFIGURED')
+        if e['status'] != 'ON_SALE':
+            fail('EVENT_NOT_ON_SALE')
+        if int(e['tickets_sold']) >= int(e['tickets_total']):
+            fail('SOLD_OUT')
+        if gl.message.value != u256(int(e['face_price_wei'])):
+            fail('VALUE_MUST_EQUAL_PRICE')
+        buyer = str(gl.message.sender_address).lower()
+        ticket_id = int(self.next_ticket_id)
+        self.next_ticket_id = u32(ticket_id + 1)
+        self.total_received = self.total_received + u256(int(e['face_price_wei']))
+        e['tickets_sold'] = int(e['tickets_sold']) + 1
+        e['escrowed_wei'] = int(e['escrowed_wei']) + int(e['face_price_wei'])
+        if int(e['tickets_sold']) >= int(e['tickets_total']):
+            e['status'] = 'SOLD_OUT'
+        self._save_event(e)
+        self.event_tickets[str(event_id) + ":" + str(e["tickets_sold"])] = u32(ticket_id)
+        t = {
+            'ticket_id': ticket_id, 'event_id': int(event_id),
+            'owner': buyer, 'status': 'ACTIVE',
+            'resale_price_gen': 0, 'resale_price_wei': 0,
+        }
+        return self._save_ticket(t)
+
+    @gl.public.write
+    def list_resale(self, ticket_id: int, price_gen: int) -> str:
+        t = self._load_ticket(ticket_id)
+        sender = str(gl.message.sender_address).lower()
+        if sender != t['owner']:
+            fail('NOT_TICKET_OWNER')
+        if t['status'] != 'ACTIVE':
+            fail('TICKET_NOT_ACTIVE')
+        e = self._load_event(int(t['event_id']))
+        if e['status'] not in ('ON_SALE', 'SOLD_OUT', 'POSTPONED'):
+            fail('EVENT_SETTLED')
+        if not isinstance(price_gen, int) or isinstance(price_gen, bool) \
+                or price_gen < 1:
+            fail('PRICE')
+        if price_gen > int(e['max_resale_gen']):
+            fail('PRICE_CAP')
+        t['status'] = 'LISTED'
+        t['resale_price_gen'] = int(price_gen)
+        t['resale_price_wei'] = int(price_gen) * GEN_WEI
+        return self._save_ticket(t)
+
+    @gl.public.write
+    def cancel_resale(self, ticket_id: int) -> str:
+        t = self._load_ticket(ticket_id)
+        sender = str(gl.message.sender_address).lower()
+        if sender != t['owner']:
+            fail('NOT_TICKET_OWNER')
+        if t['status'] != 'LISTED':
+            fail('TICKET_NOT_LISTED')
+        t['status'] = 'ACTIVE'
+        t['resale_price_gen'] = 0
+        t['resale_price_wei'] = 0
+        return self._save_ticket(t)
+
+    @gl.public.write.payable
+    def buy_resale(self, ticket_id: int) -> str:
+        t = self._load_ticket(ticket_id)
+        if t['status'] != 'LISTED':
+            fail('TICKET_NOT_LISTED')
+        sender = str(gl.message.sender_address).lower()
+        if sender == t['owner']:
+            fail('SELF_PURCHASE')
+        e = self._load_event(int(t['event_id']))
+        if e['status'] not in ('ON_SALE', 'SOLD_OUT', 'POSTPONED'):
+            fail('EVENT_SETTLED')
+        if gl.message.value != u256(int(t['resale_price_wei'])):
+            fail('VALUE_MUST_EQUAL_PRICE')
+        price = int(t['resale_price_wei'])
+        royalty = price * int(e['royalty_pct']) // 100
+        seller_amount = price - royalty
+        self._add_credit(t['owner'], seller_amount)
+        self._add_credit(e['artist_address'], royalty)
+        self.total_received = self.total_received + u256(price)
+        self.total_royalties = self.total_royalties + u256(royalty)
+        self.total_resale_volume = self.total_resale_volume + u256(price)
+        t['owner'] = sender
+        t['status'] = 'ACTIVE'
+        t['resale_price_gen'] = 0
+        t['resale_price_wei'] = 0
+        return self._save_ticket(t)
+
+    @gl.public.write
+    def settle_event(self, event_id: int) -> str:
+        e = self._load_event(event_id)
+        if e['status'] in ('EVENT_HELD', 'CANCELLED'):
+            fail('EVENT_ALREADY_SETTLED')
+        # Time gate, enforced on-chain with Unix timestamps: the
+        # transaction datetime (GenLayer-native, deterministic —
+        # every validator re-executing the transaction sees the
+        # same pinned datetime) must be at or after the event's
+        # settlement timestamp. No UTC date strings are compared.
+        # An unconfigured event has no settlement timestamp and
+        # cannot settle.
+        if not e['parties_set'] or int(e['settle_after_ts']) <= 0:
+            fail('EVENT_NOT_CONFIGURED')
+        tx_ts = int(datetime.now(timezone.utc).timestamp())
+        if tx_ts < int(e['settle_after_ts']):
+            fail('TOO_EARLY')
+        checked = _run_check(e['source_a_url'], e['source_b_url'],
+                             e['id_a'], e['id_b'], e['date_iso'])
+        verdict = checked['verdict']
+        if verdict in ('UNREACHABLE', 'SOURCES_DISAGREE'):
+            # Fail-closed: literally no state change. Settlement can
+            # be retried; no money moves; the verdict is only in the
+            # returned value, not stored.
+            return packed({'event_id': int(event_id), 'verdict': verdict,
+                           'changed': False, **checked})
+        e['settle_count'] = int(e['settle_count']) + 1
+        e['verdict'] = verdict
+        if verdict == 'EVENT_HELD':
+            e['status'] = 'EVENT_HELD'
+            self._add_credit(e['organizer'], int(e['escrowed_wei']))
+            e['organizer_paid'] = True
+            e['escrowed_wei'] = 0
+        elif verdict == 'CANCELLED':
+            e['status'] = 'CANCELLED'
+            refund = int(e['face_price_wei'])
+            for i in range(1, int(e['tickets_sold']) + 1):
+                ticket_id = self.event_tickets[str(event_id) + ":" + str(i)]
+                t = self._load_ticket(ticket_id)
+                if t['status'] in ('ACTIVE', 'LISTED'):
+                    self._add_credit(t['owner'], refund)
+                    t['status'] = 'REFUNDED'
+                    t['resale_price_gen'] = 0
+                    t['resale_price_wei'] = 0
+                    self._save_ticket(t)
+            e['escrowed_wei'] = 0
+        else:  # POSTPONED
+            e['status'] = 'POSTPONED'
+        self._save_event(e)
+        return packed({'event_id': int(event_id), 'verdict': verdict,
+                       'changed': True, **checked})
+
+    @gl.public.write
+    def withdraw(self) -> str:
+        sender = str(gl.message.sender_address).lower()
+        amount = self._credit(sender)
+        if amount <= 0:
+            fail('NO_CREDIT')
+        self.credits[sender] = '0'
+        self.total_withdrawn = self.total_withdrawn + u256(amount)
+        _Recipient(Address(sender)).emit_transfer(value=u256(amount))
+        return packed({'sender': sender, 'withdrawn_wei': amount})
+
+    @gl.public.view
+    def get_protocol(self) -> str:
+        return 'fairgate-2.0'
+
+    @gl.public.view
+    def get_creator(self) -> str:
+        return self.creator
+
+    @gl.public.view
+    def get_event(self, event_id: int) -> str:
+        return self.events.get(str(event_id), '')
+
+    @gl.public.view
+    def get_all_events(self) -> str:
+        out = []
+        for i in range(1, int(self.next_event_id)):
+            raw = self.events.get(str(i), '')
+            if raw:
+                out.append(json.loads(raw))
+        return packed(out)
+
+    @gl.public.view
+    def get_ticket(self, ticket_id: int) -> str:
+        return self.tickets.get(str(ticket_id), '')
+
+    @gl.public.view
+    def get_all_tickets(self) -> str:
+        out = []
+        for i in range(1, int(self.next_ticket_id)):
+            raw = self.tickets.get(str(i), '')
+            if raw:
+                out.append(json.loads(raw))
+        return packed(out)
+
+    @gl.public.view
+    def get_credit(self, address: str) -> str:
+        return packed({'address': address.lower(),
+                       'credit_wei': self._credit(address.lower())})
+
+    @gl.public.view
+    def get_counts(self) -> str:
+        escrowed = 0
+        for i in range(1, int(self.next_event_id)):
+            raw = self.events.get(str(i), '')
+            if raw:
+                escrowed += int(json.loads(raw)['escrowed_wei'])
+        return packed({
+            'event_count': int(self.next_event_id) - 1,
+            'ticket_count': int(self.next_ticket_id) - 1,
+            'total_received_wei': int(self.total_received),
+            'total_withdrawn_wei': int(self.total_withdrawn),
+            'contract_balance_wei': int(self.balance),
+            'escrowed_wei': escrowed,
+            'total_royalties_wei': int(self.total_royalties),
+            'total_resale_volume_wei': int(self.total_resale_volume),
+        })

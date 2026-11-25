@@ -2,6 +2,10 @@
 
 Live site: https://chuanqili77.github.io/fairgate-genlayer/
 
+**Milestone v2** introduces self-service organizer box offices, independently scoped event escrow and a redesigned concert desk. See the [Milestone change log](MILESTONE.md) and [v2 deployment](evidence/deployment-v2.json).
+
+The remainder of this README records the accepted **v1.5** release. Its [legacy desk](https://chuanqili77.github.io/fairgate-genlayer/?legacy=1) continues to expose the original state and withdrawal action.
+
 FairGate combines fixed-price concert tickets, capped resale and event-outcome settlement on GenLayer Stable Studionet (61999). Tickets cost 10 GEN; resale is capped at 11 GEN with a 10% artist royalty rounded down in wei. Settlement creates pull-payment credits for the organizer or current holders; the entitled address withdraws them.
 
 ## Contract
