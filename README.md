@@ -4,11 +4,43 @@ Live site: https://chuanqili77.github.io/fairgate-genlayer/
 
 **Milestone v2** introduces self-service organizer box offices, independently scoped event escrow and a redesigned concert desk. See the [Milestone change log](MILESTONE.md) and [v2 deployment](evidence/deployment-v2.json).
 
-The remainder of this README records the accepted **v1.5** release. Its [legacy desk](https://chuanqili77.github.io/fairgate-genlayer/?legacy=1) continues to expose the original state and withdrawal action.
-
 FairGate combines fixed-price concert tickets, capped resale and event-outcome settlement on GenLayer Stable Studionet (61999). Tickets cost 10 GEN; resale is capped at 11 GEN with a 10% artist royalty rounded down in wei. Settlement creates pull-payment credits for the organizer or current holders; the entitled address withdraws them.
 
-## Contract
+## Current deployment — v2
+
+- Protocol: **fairgate-2.0**
+- Address: [0x7e509d240Cb2aa2390960fE7DE2E01803319A104](https://explorer-studio.genlayer.com/address/0x7e509d240Cb2aa2390960fE7DE2E01803319A104)
+- Deploy: [0xaf0deb2af516b0b0c6bffb36db666b2899e41ebfbdaa69a903d574182ad4741e](https://explorer-studio.genlayer.com/tx/0xaf0deb2af516b0b0c6bffb36db666b2899e41ebfbdaa69a903d574182ad4741e)
+- Source SHA-256: `09f0a9e907ce075e505f748e9b81bd1aa0223cbb7ea72762af0731b7b41c9d3d`
+- Chain: Stable Studionet, **61999**; RPC: https://studio.genlayer.com/api
+- Canonical source: [contracts/fairgate_v2.py](contracts/fairgate_v2.py)
+
+The v2 organizer desk allows the signing wallet to create an independent box office. Each event has its own organizer, tickets, frozen source URLs and escrow. Buyers can purchase, resell, inspect consensus settlement and withdraw credits. The validator checks two approved sources independently; unavailable or conflicting evidence leaves funds unchanged.
+
+The recorded v2 snapshot contains four events, six primary tickets, one completed resale and four withdrawals. The ledger reconciles 71 GEN received = 51 GEN withdrawn + 20 GEN active escrow. See [recorded transactions](evidence/v2-transactions.json), [browser creation receipt](evidence/v2-browser.json), [state readback](evidence/v2-readback.json) and [failed deployment attempt](evidence/v2-deployment-attempts.json).
+
+### Verify v2
+
+```sh
+npm ci
+npm test
+npx tsc --noEmit
+npm run build
+npm run check-clean
+node scripts/verify_v2.mjs
+```
+
+The last command reads the existing deployment, recorded receipts and terminal event states without broadcasting.
+
+### V2 scope and limitations
+
+The deployment is bounded to 32 events and eight tickets per event. It accepts two distinct hostnames from six approved publishers: Radio X, The Independent, Bridgestone Arena, do615, Target Center and iHeart. It does not authenticate an organizer's real-world affiliation or establish editorial independence. Duplicate listings of the same published event are possible. The textual matcher is deliberately bounded; changed wording, source outages or disagreement may delay settlement. Tickets are testnet payment records, not venue-entry credentials. Organizer-only rescheduling is a contract method, not a browser action; the recorded v2 evidence demonstrates rejection of a foreign organizer, not a successful rescheduling transaction. Earlier balances, tickets and permissions do not migrate.
+
+## Legacy v1.5 — historical deployment and evidence
+
+The accepted baseline is [`6a81d5be523ea813ded7d1660707bc9f988e1c83`](https://github.com/chuanqili77/fairgate-genlayer/tree/6a81d5be523ea813ded7d1660707bc9f988e1c83). The [legacy desk](https://chuanqili77.github.io/fairgate-genlayer/?legacy=1) continues to expose the original state and withdrawal action. The following records apply only to that deployment.
+
+### Contract
 
 - Protocol: **fairgate-1.5**
 - Address: [0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE](https://explorer-studio.genlayer.com/address/0x0c1327e107D6DA6f1ec6499b159576c7bAF721EE)
@@ -17,7 +49,7 @@ FairGate combines fixed-price concert tickets, capped resale and event-outcome s
 - Chain: Stable Studionet, **61999**; RPC: https://studio.genlayer.com/api
 - Canonical source: [contracts/fairgate.py](contracts/fairgate.py), byte-identical to the deployed code.
 
-## Positive-evidence settlement
+### Positive-evidence settlement
 
 Absence of cancellation does **not** prove that a show happened. EVENT_HELD needs positive evidence from each of two independently fetched, frozen sources identifying the act, venue and configured performance date. Accepted forms are explicit dated past performance, an original same-day first-night retrospective, an original same-day report of a past performance on the matching weekday night, or a dated completed-gig measured-spending record. Update timestamps, forecasts, negation, prior-week references and another act's dates cannot replace that proof.
 
@@ -25,7 +57,7 @@ Every validator independently fetches both sources and reproduces the verdict, f
 
 Settlement also requires the pinned transaction time to reach the first second after the local event day. The contract derives and checks this boundary from start and UTC offset. Configuration is creator-only and precedes sales. Rescheduling is creator-only, POSTPONED-only and later-date-only; it changes no ticket, holder or escrow.
 
-## Recorded state
+### Recorded state
 
 | Event | Current date | Latest-final status | Escrow GEN |
 |---|---|---|---|
@@ -44,7 +76,7 @@ Local checks: **168 named Python checks**, including 5120 verdict/flag combinati
 
 The live browser workflow bought E3 ticket #8, listed it at 11 GEN, transferred it to an independent test buyer, and withdrew the seller's 9.9 GEN credit. The retained artist test account withdrew 1.1 GEN through the auxiliary SDK, explicitly labeled as SDK. Reload while the UI showed a pending purchase continued tracking the same hash without resending. [public/browser-transactions.json](public/browser-transactions.json) records actual signing surfaces and addresses; [EXPECTED.md](EXPECTED.md) preserves the prospective plan.
 
-## Evidence and reproduction
+### Evidence and reproduction
 
 - [EVIDENCE.md](EVIDENCE.md): finalized outcomes, transaction links and ledger.
 - [REVIEWER.md](REVIEWER.md): frozen source anchors, mechanism and limits.
@@ -65,11 +97,11 @@ node scripts/byte_parity.mjs
 
 The frontend retains pending hashes across refresh, verifies finality and consensus, and reads latest-final state. A timeout remains unknown and is polled without resending. A changed=false settlement is explicitly shown as no state or fund movement. Temporary test-account backup downloads stay local; they are never evidence files.
 
-## Source history and limits
+### Source history and limits
 
 V1.4's Lloyds page returned an HTTP-200 error document inside GenVM. Two E1 attempts correctly returned changed=false/UNREACHABLE. Original source, expectations, failed receipts and readback are preserved under [evidence/v1.4-first/](evidence/v1.4-first/); the recorded old balance was 70 GEN escrow plus 32 GEN withdrawable resale credits. V1.5 uses Radio X and The Independent/PA for E1. A JamBase preflight failed, so E2 uses the original do615 dated cancellation page. Diagnostic observations are recorded separately and never count as product settlement acceptance.
 
-Historical V1.3 and older deployments are retired and archived. Their receipts prove historical execution, not safety of their old absence-of-cancellation payout rule. Use the current address above.
+Historical V1.3 and older deployments are retired and archived. Their receipts prove historical execution, not safety of their old absence-of-cancellation payout rule. Use the v1.5 legacy address above when inspecting these historical records.
 
 The English extractor recognizes bounded evidence forms, not general semantic truth. Source outages, changed wording or disagreement can lock escrow; beneficiaries cannot replace frozen URLs. Publisher independence is not cryptographic proof of reality. E3 is not settled before 2026-12-10T06:00:00Z; E4 stays postponed/rescheduled. SOLD_OUT and forged-validator cases are local tests, not live business demonstrations. Tickets are payment records, not venue admission credentials. Failed-payable negatives use zero value because Studionet retains value on failed payable calls.
 
@@ -77,8 +109,8 @@ The live E3 event remains writable. The fixed ledger assertions describe the rec
 
 Browser evidence: [actual JSON export](evidence/browser-ui-v1.5.json) and [ledger screenshot](evidence/browser-v1.5-final.jpg). The export retains canonical chain status values and includes all 58 evidence records.
 
-## Continued use
+### Continued use
 
-The current deployment has four fixed event slots; it is not an open event factory. Remaining E3 tickets can still be bought and resold, and settlement becomes eligible only after its configured event day. Holders and organizers can withdraw any credits created by later valid settlements.
+The v1.5 deployment has four fixed event slots; it is not an open event factory. Remaining E3 tickets can still be bought and resold, and settlement becomes eligible only after its configured event day. Holders and organizers can withdraw any credits created by later valid settlements.
 
 For a later concert programme, the maintenance plan is a separately versioned deployment with independently checked, date-specific source pairs, configuration before sales, and the same escrow and withdrawal checks. This is prospective work, not a capability to add events to the current contract. Published deployment records and access to withdrawals on earlier contracts must remain available. Source availability and evidence wording require monitoring; monitoring alone cannot authorize a payout or replace frozen URLs.
