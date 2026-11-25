@@ -11,8 +11,18 @@ const snapshot = load('evidence/v2-readback.json');
 const browser = load('evidence/v2-browser.json');
 const address = deployment.contract_address;
 const reader = createClient({chain: studionet});
-const read = async (method, args = []) =>
-  JSON.parse(await reader.readContract({address,functionName:method,args,transactionHashVariant:'latest-final'}));
+async function readEvents() {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return JSON.parse(await reader.readContract({
+        address, functionName: 'get_all_events', args: [], transactionHashVariant: 'latest-final',
+      }));
+    } catch (error) {
+      if (attempt >= 2) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1800 * (attempt + 1)));
+    }
+  }
+}
 assert.equal(await reader.getChainId(), 61999);
 const source = readFileSync(deployment.source_file, 'utf8');
 assert.equal(createHash('sha256').update(source).digest('hex'), deployment.source_sha256);
@@ -30,7 +40,9 @@ async function verify(item) {
   if (item.expected_error) assert(JSON.stringify(leader).includes(item.expected_error), item.label);
 }
 for (let i = 0; i < rows.length; i += 4) await Promise.all(rows.slice(i, i + 4).map(verify));
-const [held, cancelled] = await Promise.all([read('get_event',[1]),read('get_event',[2])]);
+const liveEvents = await readEvents();
+const held = liveEvents.find(event => event.event_id === 1);
+const cancelled = liveEvents.find(event => event.event_id === 2);
 assert.equal(held.verdict, 'EVENT_HELD');
 assert.equal(cancelled.verdict, 'CANCELLED');
 assert.notEqual(held.organizer, cancelled.organizer);
